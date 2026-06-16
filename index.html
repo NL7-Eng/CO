@@ -271,6 +271,10 @@
     .t-wrap { overflow-x: auto; }
     .hol-dual { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     @media(max-width:680px){ .hol-dual { grid-template-columns: 1fr; } }
+    .hol-dual table { font-size: .75rem; }
+    .hol-dual th { font-size: .65rem; padding: 7px 8px; }
+    .hol-dual td { padding: 6px 8px; white-space: normal; }
+    .hol-dual td:first-child, .hol-dual td:nth-child(2) { white-space: nowrap; }
     table { width: 100%; border-collapse: collapse; font-size: .86rem; }
     th {
       background: #f9fafb; padding: 9px 13px; text-align: left;
@@ -399,12 +403,12 @@
             <option value="folga">Folga / Outro</option>
           </select>
         </div>
-        <div class="fg" style="flex:0 0 auto;justify-content:flex-end;">
-          <label style="visibility:hidden;">.</label>
-          <label class="chk-lbl" style="white-space:nowrap;">
-            <input type="checkbox" id="cusRepeat" />
-            Repetir todo ano
-          </label>
+        <div class="fg" style="min-width:120px;max-width:140px;">
+          <label for="cusRepeat">Repetir todo ano</label>
+          <select id="cusRepeat">
+            <option value="nao">Não</option>
+            <option value="sim">Sim</option>
+          </select>
         </div>
         <button class="btn btn-add" onclick="addCustomHol()">Adicionar</button>
       </div>
@@ -881,7 +885,7 @@ function addCustomHol(){
   const dateStr=document.getElementById('cusDate').value.trim();
   const name=document.getElementById('cusName').value.trim();
   const type=document.getElementById('cusType').value;
-  const repeat=document.getElementById('cusRepeat').checked;
+  const repeat=document.getElementById('cusRepeat').value==='sim';
   if(!dateStr||!name){ showAlert('err','Preencha a data e a descrição.'); return; }
   const dt=parseBR(dateStr);
   if(!dt){ showAlert('err','Data inválida. Use DD/MM/AAAA.'); return; }
@@ -896,6 +900,7 @@ function addCustomHol(){
   customHols.sort((a,b)=>a.dt-b.dt);
   document.getElementById('cusDate').value='';
   document.getElementById('cusName').value='';
+  document.getElementById('cusRepeat').value='nao';
   renderCustomList();
   if(hasCalcResult) document.getElementById('recalcNotice').classList.add('on');
 }
