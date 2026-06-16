@@ -97,6 +97,23 @@
     .chk-lbl:has(input:checked) { border-color: #374151; color: #1f2937; font-weight: 600; }
     .chk-lbl input { accent-color: #374151; width: 14px; height: 14px; cursor: pointer; }
 
+    /* período climático */
+    .periodo-section { margin-top: 22px; border-top: 1px solid var(--border-l); padding-top: 18px; }
+    .periodo-grid { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+    .periodo-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; background: #f9fafb; border: 1px solid var(--border-l); border-radius: var(--r); padding: 10px 14px; }
+    .periodo-mes { font-weight: 600; font-size: .88rem; min-width: 110px; color: var(--text); }
+    .periodo-row select, .periodo-row input[type=number] {
+      border: 1px solid var(--border); border-radius: var(--r); padding: 6px 9px;
+      font-family: var(--fb); font-size: .84rem; color: var(--text);
+      background: #fff; outline: none; cursor: pointer;
+    }
+    .periodo-row select { min-width: 160px; }
+    .periodo-row input[type=number] { width: 80px; }
+    .periodo-tag { display:inline-block; font-size:.72rem; font-weight:700; border-radius:3px; padding:2px 7px; margin-left:4px; }
+    .tag-umido    { background:#bfdbfe; color:#1e3a8a; }
+    .tag-transicao{ background:#d1fae5; color:#065f46; }
+    .tag-seco     { background:#fef9c3; color:#713f12; }
+
     /* datas especiais */
     .custom-section { margin-top: 22px; border-top: 1px solid var(--border-l); padding-top: 18px; }
     .custom-title { font-family: var(--fd); font-size: .82rem; font-weight: 700; color: var(--text); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 3px; }
@@ -234,17 +251,17 @@
     tr:last-child td { border-bottom: none; }
 
     .badge { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: .72rem; font-weight: 700; }
-    .b-nat { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
-    .b-mun { background: #fff4ee; color: #ea580c; border: 1px solid #fbd0b3; }
-    .b-bri { background: #fefce8; color: #b45309; border: 1px solid #fde68a; }
-    .b-rec { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; }
-    .b-fol { background: #ede9fe; color: #5b21b6; border: 1px solid #c4b5fd; }
+    .b-nat { background: #c2410c; color: #fff; border: none; }
+    .b-mun { background: #ea7c39; color: #fff; border: none; }
+    .b-bri { background: #fbbf24; color: #374151; border: none; }
+    .b-rec { background: #fef9c3; color: #713f12; border: 1px solid #fde68a; }
+    .b-fol { background: #ddd6fe; color: #5b21b6; border: none; }
     .custom-badge { display:inline-block; font-size:.68rem; font-weight:600; border-radius:3px; padding:1px 5px; margin-right:5px; vertical-align:middle; }
     .badge-mun { background:#fff3e6; color:#9a3412; border:1px solid #fcd9b4; }
     .badge-rec { background:#f3f4f6; color:#374151; border:1px solid #d1d5db; }
     .badge-fol { background:#ede9fe; color:#5b21b6; border:1px solid #c4b5fd; }
     .s-f { background: #a78bfa; }
-    .b-cus { background: #fdf4ff; color: #7e22ce; border: 1px solid #e9d5ff; }
+    .b-cus { background: #ea7c39; color: #fff; border: none; }
 
     /* monthly table */
     .mt th, .mt td { text-align: center; }
@@ -289,7 +306,7 @@
         <input type="hidden" id="cidadeId" />
         <input type="hidden" id="cidadeNome" />
         <input type="hidden" id="cidadeUF" />
-        <div class="muni-status loading" id="muniStatus">Carregando base de municípios…</div>
+        <div class="muni-status" id="muniStatus" style="display:none"></div>
       </div>
       <div class="fg">
         <label for="dataOS">Data da OS (dd/mm/aaaa)</label>
@@ -310,6 +327,13 @@
         <input type="checkbox" id="chkRecesso" checked />
         Recesso fim de ano (24/12 &ndash; 01/01)
       </label>
+    </div>
+
+    <!-- PERÍODO CLIMÁTICO -->
+    <div class="periodo-section" id="periodoSection" style="display:none">
+      <div class="custom-title">Classificação Climática por Mês</div>
+      <p class="custom-sub">Defina o período climático e as horas produtivas por dia útil em cada mês. O total de horas trabalhadas por mês será calculado automaticamente.</p>
+      <div class="periodo-grid" id="periodoGrid"></div>
     </div>
 
     <!-- DATAS ESPECIAIS -->
@@ -663,6 +687,42 @@ document.addEventListener('click',e=>{ if(!e.target.closest('.ac-wrap')) closeAC
     this.value=v;
   });
 });
+
+/* ====================================================================
+   PERÍODO CLIMÁTICO
+   ==================================================================== */
+const PERIODO_OPT = [
+  {v:'umido',    l:'Período Úmido',      cls:'tag-umido'},
+  {v:'transicao',l:'Período de Transição',cls:'tag-transicao'},
+  {v:'seco',     l:'Período Seco',       cls:'tag-seco'},
+];
+// periodoData: { 'YYYY-MM': {tipo, horas} }
+let periodoData = {};
+
+function renderPeriodoGrid(mos){
+  const MO_FULL=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const grid = document.getElementById('periodoGrid');
+  grid.innerHTML = mos.map(mk => {
+    const [y,m]=mk.split('-');
+    const prev=periodoData[mk]||{tipo:'seco',horas:8};
+    const opts=PERIODO_OPT.map(o=>`<option value="${o.v}"${prev.tipo===o.v?' selected':''}>${o.l}</option>`).join('');
+    return `<div class="periodo-row" id="pr-${mk}">
+      <span class="periodo-mes">${MO_FULL[parseInt(m,10)-1]} / ${y}</span>
+      <select onchange="savePeriodo('${mk}')" id="psel-${mk}">${opts}</select>
+      <div class="fg" style="display:flex;align-items:center;gap:6px;flex:0 0 auto;">
+        <label style="font-size:.8rem;color:var(--muted);white-space:nowrap;">Horas/dia útil</label>
+        <input type="number" min="1" max="24" step="0.5" value="${prev.horas}"
+          id="phrs-${mk}" onchange="savePeriodo('${mk}')" style="width:70px;" />
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function savePeriodo(mk){
+  const tipo = document.getElementById('psel-'+mk)?.value || 'seco';
+  const horas = parseFloat(document.getElementById('phrs-'+mk)?.value) || 8;
+  periodoData[mk] = {tipo, horas};
+}
 
 /* ====================================================================
    CUSTOM HOLIDAYS
@@ -1046,17 +1106,44 @@ function render(res){
   }).join('')
   :'<tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:20px;">Nenhum registro no período</td></tr>';
 
+  // Período climático — seed defaults then render grid
+  mos.forEach(mk=>{ if(!periodoData[mk]) periodoData[mk]={tipo:'seco',horas:8}; });
+  document.getElementById('periodoSection').style.display='';
+  renderPeriodoGrid(mos);
+
   // Monthly table
   const hdr=mos.map(mk=>`<th>${monthData[mk].lbl}</th>`).join('');
   const rC=mos.map(mk=>`<td>${monthData[mk].c}</td>`).join('');
   const rU=mos.map(mk=>`<td>${monthData[mk].u}</td>`).join('');
   const tC=mos.reduce((s,mk)=>s+monthData[mk].c,0);
   const tU=mos.reduce((s,mk)=>s+monthData[mk].u,0);
+
+  // Horas por mês: lê periodoData (já preenchido por renderPeriodoGrid com defaults)
+  const rH=mos.map(mk=>{
+    const p=periodoData[mk]||{horas:8};
+    const hrs=(monthData[mk].u*(p.horas||8));
+    return `<td>${hrs%1===0?hrs:hrs.toFixed(1)}</td>`;
+  }).join('');
+  const tH=mos.reduce((s,mk)=>{
+    const p=periodoData[mk]||{horas:8};
+    return s+monthData[mk].u*(p.horas||8);
+  },0);
+  const tHfmt=tH%1===0?tH:tH.toFixed(1);
+
+  // Período badge por mês
+  const rP=mos.map(mk=>{
+    const p=periodoData[mk]||{tipo:'seco'};
+    const opt=PERIODO_OPT.find(o=>o.v===p.tipo)||PERIODO_OPT[2];
+    return `<td><span class="periodo-tag ${opt.cls}">${opt.l.replace('Período ','')}</span></td>`;
+  }).join('');
+
   document.getElementById('moTable').innerHTML=`
     <thead><tr><th style="min-width:115px;">Métrica</th>${hdr}<th class="tc">Total</th></tr></thead>
     <tbody>
       <tr class="rc"><td>Dias no período</td>${rC}<td class="tc">${tC}</td></tr>
       <tr class="ru"><td>Dias úteis</td>${rU}<td class="tc">${tU}</td></tr>
+      <tr><td>Período climático</td>${rP}<td class="tc">—</td></tr>
+      <tr><td>Horas produtivas</td>${rH}<td class="tc">${tHfmt} h</td></tr>
     </tbody>`;
 
   document.getElementById('results').scrollIntoView({behavior:'smooth',block:'start'});
@@ -1091,10 +1178,15 @@ function exportarExcel(){
   XLSX.utils.book_append_sheet(wb,ws2,'Feriados');
 
   const mos=Object.keys(monthData).sort();
+  const periodoOPT_FULL={umido:'Período Úmido',transicao:'Período de Transição',seco:'Período Seco'};
   const ws3=XLSX.utils.aoa_to_sheet([
     ['Métrica',...mos.map(mk=>monthData[mk].lbl),'TOTAL'],
     ['Dias no período',...mos.map(mk=>monthData[mk].c),mos.reduce((s,mk)=>s+monthData[mk].c,0)],
     ['Dias úteis',     ...mos.map(mk=>monthData[mk].u),mos.reduce((s,mk)=>s+monthData[mk].u,0)],
+    ['Período climático',...mos.map(mk=>periodoOPT_FULL[(periodoData[mk]||{}).tipo]||'Período Seco'),'—'],
+    ['Horas/dia útil', ...mos.map(mk=>(periodoData[mk]||{horas:8}).horas),'—'],
+    ['Horas produtivas',...mos.map(mk=>monthData[mk].u*((periodoData[mk]||{horas:8}).horas)),
+      mos.reduce((s,mk)=>s+monthData[mk].u*((periodoData[mk]||{horas:8}).horas),0)],
   ]);
   ws3['!cols']=[{wch:18},...mos.map(()=>({wch:9})),{wch:9}];
   XLSX.utils.book_append_sheet(wb,ws3,'Dias Úteis');
@@ -1121,6 +1213,8 @@ function limpar(){
   document.getElementById('chkPontes').checked=true;
   document.getElementById('chkRecesso').checked=true;
   customHols=[]; renderCustomList();
+  periodoData={};
+  document.getElementById('periodoSection').style.display='none';
   hasCalcResult=false;
   document.getElementById('recalcNotice').classList.remove('on');
   document.getElementById('results').classList.add('hidden');
