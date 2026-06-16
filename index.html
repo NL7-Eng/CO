@@ -98,18 +98,24 @@
     .chk-lbl input { accent-color: #374151; width: 14px; height: 14px; cursor: pointer; }
 
     /* período climático */
-    .periodo-section { margin-top: 22px; border-top: 1px solid var(--border-l); padding-top: 18px; }
-    .periodo-grid { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
-    .periodo-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; background: #f9fafb; border: 1px solid var(--border-l); border-radius: var(--r); padding: 10px 14px; }
-    .periodo-mes { font-weight: 600; font-size: .88rem; min-width: 110px; color: var(--text); }
-    .periodo-row select, .periodo-row input[type=number] {
-      border: 1px solid var(--border); border-radius: var(--r); padding: 6px 9px;
-      font-family: var(--fb); font-size: .84rem; color: var(--text);
-      background: #fff; outline: none; cursor: pointer;
-    }
-    .periodo-row select { min-width: 160px; }
-    .periodo-row input[type=number] { width: 80px; }
-    .periodo-tag { display:inline-block; font-size:.72rem; font-weight:700; border-radius:3px; padding:2px 7px; margin-left:4px; }
+    .periodo-section { margin-top: 22px; border-top: 1px solid var(--border-l); padding-top: 16px; }
+    .pc-table { width:100%; border-collapse:collapse; margin-top:10px; font-size:.78rem; }
+    .pc-table th { font-weight:600; color:var(--muted); text-align:center; padding:3px 2px; font-size:.72rem; text-transform:uppercase; letter-spacing:.4px; }
+    .pc-table td { text-align:center; padding:3px 2px; }
+    .pc-tipo { display:flex; flex-direction:column; gap:3px; align-items:center; }
+    .pc-radio { display:none; }
+    .pc-lbl { display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px;
+      border-radius:4px; border:1.5px solid #d1d5db; font-size:.68rem; font-weight:700; cursor:pointer;
+      color:#9ca3af; transition:background .1s,color .1s,border-color .1s; user-select:none; }
+    .pc-radio:checked + .pc-lbl { border-color:transparent; }
+    .pc-radio[value="umido"]:checked    + .pc-lbl { background:#bfdbfe; color:#1e3a8a; }
+    .pc-radio[value="transicao"]:checked + .pc-lbl { background:#d1fae5; color:#065f46; }
+    .pc-radio[value="seco"]:checked    + .pc-lbl { background:#fef9c3; color:#713f12; }
+    .pc-hrs { width:36px; border:1px solid var(--border); border-radius:4px; padding:3px 4px;
+      font-size:.75rem; font-family:var(--fb); text-align:center; color:var(--text);
+      background:#fff; outline:none; }
+    .pc-hrs:focus { border-color:#6b7280; }
+    .periodo-tag { display:inline-block; font-size:.72rem; font-weight:700; border-radius:3px; padding:2px 7px; }
     .tag-umido    { background:#bfdbfe; color:#1e3a8a; }
     .tag-transicao{ background:#d1fae5; color:#065f46; }
     .tag-seco     { background:#fef9c3; color:#713f12; }
@@ -331,9 +337,9 @@
 
     <!-- PERÍODO CLIMÁTICO -->
     <div class="periodo-section" id="periodoSection" style="display:none">
-      <div class="custom-title">Classificação Climática por Mês</div>
-      <p class="custom-sub">Defina o período climático e as horas produtivas por dia útil em cada mês. O total de horas trabalhadas por mês será calculado automaticamente.</p>
-      <div class="periodo-grid" id="periodoGrid"></div>
+      <div class="custom-title">Período Climático por Mês</div>
+      <p class="custom-sub">Marque o tipo de cada mês e informe as horas produtivas por dia útil. Válido para todos os anos do período calculado.</p>
+      <div id="periodoGrid"></div>
     </div>
 
     <!-- DATAS ESPECIAIS -->
@@ -691,37 +697,48 @@ document.addEventListener('click',e=>{ if(!e.target.closest('.ac-wrap')) closeAC
 /* ====================================================================
    PERÍODO CLIMÁTICO
    ==================================================================== */
-const PERIODO_OPT = [
-  {v:'umido',    l:'Período Úmido',      cls:'tag-umido'},
-  {v:'transicao',l:'Período de Transição',cls:'tag-transicao'},
-  {v:'seco',     l:'Período Seco',       cls:'tag-seco'},
-];
-// periodoData: { 'YYYY-MM': {tipo, horas} }
+// periodoData: keyed by month number 1-12 (same setting for all years)
 let periodoData = {};
 
-function renderPeriodoGrid(mos){
-  const MO_FULL=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+function renderPeriodoGrid(){
+  const MO_ABR=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const tipos=[{v:'U',k:'umido'},{v:'T',k:'transicao'},{v:'S',k:'seco'}];
   const grid = document.getElementById('periodoGrid');
-  grid.innerHTML = mos.map(mk => {
-    const [y,m]=mk.split('-');
-    const prev=periodoData[mk]||{tipo:'seco',horas:8};
-    const opts=PERIODO_OPT.map(o=>`<option value="${o.v}"${prev.tipo===o.v?' selected':''}>${o.l}</option>`).join('');
-    return `<div class="periodo-row" id="pr-${mk}">
-      <span class="periodo-mes">${MO_FULL[parseInt(m,10)-1]} / ${y}</span>
-      <select onchange="savePeriodo('${mk}')" id="psel-${mk}">${opts}</select>
-      <div class="fg" style="display:flex;align-items:center;gap:6px;flex:0 0 auto;">
-        <label style="font-size:.8rem;color:var(--muted);white-space:nowrap;">Horas/dia útil</label>
-        <input type="number" min="1" max="24" step="0.5" value="${prev.horas}"
-          id="phrs-${mk}" onchange="savePeriodo('${mk}')" style="width:70px;" />
-      </div>
-    </div>`;
+
+  // header row
+  let thd=MO_ABR.map(m=>`<th>${m}</th>`).join('');
+  // tipo row
+  let ttr=Array.from({length:12},(_,i)=>{
+    const m=i+1;
+    const cur=(periodoData[m]||{tipo:'seco'}).tipo;
+    const chips=tipos.map(t=>`
+      <input class="pc-radio" type="radio" name="pt${m}" id="pt${m}${t.k}" value="${t.k}"${cur===t.k?' checked':''}
+        onchange="savePeriodo(${m})">
+      <label class="pc-lbl" for="pt${m}${t.k}">${t.v}</label>`).join('');
+    return `<td><div class="pc-tipo">${chips}</div></td>`;
   }).join('');
+  // horas row
+  let thr=Array.from({length:12},(_,i)=>{
+    const m=i+1;
+    const h=(periodoData[m]||{horas:8}).horas;
+    return `<td><input class="pc-hrs" type="number" min="1" max="24" step="0.5" value="${h}"
+      id="phrs${m}" onchange="savePeriodo(${m})"></td>`;
+  }).join('');
+
+  grid.innerHTML=`<table class="pc-table">
+    <thead><tr><th style="text-align:left;padding-left:2px;"></th>${thd}</tr></thead>
+    <tbody>
+      <tr><td style="font-size:.7rem;color:var(--muted);white-space:nowrap;text-align:right;padding-right:6px;">Período</td>${ttr}</tr>
+      <tr><td style="font-size:.7rem;color:var(--muted);white-space:nowrap;text-align:right;padding-right:6px;">Horas/dia</td>${thr}</tr>
+    </tbody>
+  </table>`;
 }
 
-function savePeriodo(mk){
-  const tipo = document.getElementById('psel-'+mk)?.value || 'seco';
-  const horas = parseFloat(document.getElementById('phrs-'+mk)?.value) || 8;
-  periodoData[mk] = {tipo, horas};
+function savePeriodo(m){
+  const checked=document.querySelector(`input[name="pt${m}"]:checked`);
+  const tipo=checked?checked.value:'seco';
+  const horas=parseFloat(document.getElementById('phrs'+m)?.value)||8;
+  periodoData[m]={tipo,horas};
 }
 
 /* ====================================================================
@@ -1106,10 +1123,14 @@ function render(res){
   }).join('')
   :'<tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:20px;">Nenhum registro no período</td></tr>';
 
-  // Período climático — seed defaults then render grid
-  mos.forEach(mk=>{ if(!periodoData[mk]) periodoData[mk]={tipo:'seco',horas:8}; });
+  // Período climático — render compact 12-month grid
   document.getElementById('periodoSection').style.display='';
-  renderPeriodoGrid(mos);
+  renderPeriodoGrid();
+
+  // Helper: get periodo for a YYYY-MM key (by month number)
+  const getPer = mk => periodoData[parseInt(mk.split('-')[1],10)] || {tipo:'seco',horas:8};
+  const TAG_CLS = {umido:'tag-umido',transicao:'tag-transicao',seco:'tag-seco'};
+  const TAG_LBL = {umido:'Úmido',transicao:'Transição',seco:'Seco'};
 
   // Monthly table
   const hdr=mos.map(mk=>`<th>${monthData[mk].lbl}</th>`).join('');
@@ -1118,23 +1139,16 @@ function render(res){
   const tC=mos.reduce((s,mk)=>s+monthData[mk].c,0);
   const tU=mos.reduce((s,mk)=>s+monthData[mk].u,0);
 
-  // Horas por mês: lê periodoData (já preenchido por renderPeriodoGrid com defaults)
   const rH=mos.map(mk=>{
-    const p=periodoData[mk]||{horas:8};
-    const hrs=(monthData[mk].u*(p.horas||8));
+    const hrs=monthData[mk].u*(getPer(mk).horas||8);
     return `<td>${hrs%1===0?hrs:hrs.toFixed(1)}</td>`;
   }).join('');
-  const tH=mos.reduce((s,mk)=>{
-    const p=periodoData[mk]||{horas:8};
-    return s+monthData[mk].u*(p.horas||8);
-  },0);
+  const tH=mos.reduce((s,mk)=>s+monthData[mk].u*(getPer(mk).horas||8),0);
   const tHfmt=tH%1===0?tH:tH.toFixed(1);
 
-  // Período badge por mês
   const rP=mos.map(mk=>{
-    const p=periodoData[mk]||{tipo:'seco'};
-    const opt=PERIODO_OPT.find(o=>o.v===p.tipo)||PERIODO_OPT[2];
-    return `<td><span class="periodo-tag ${opt.cls}">${opt.l.replace('Período ','')}</span></td>`;
+    const t=getPer(mk).tipo;
+    return `<td><span class="periodo-tag ${TAG_CLS[t]||'tag-seco'}">${TAG_LBL[t]||'Seco'}</span></td>`;
   }).join('');
 
   document.getElementById('moTable').innerHTML=`
@@ -1179,14 +1193,15 @@ function exportarExcel(){
 
   const mos=Object.keys(monthData).sort();
   const periodoOPT_FULL={umido:'Período Úmido',transicao:'Período de Transição',seco:'Período Seco'};
+  const getPerX=mk=>periodoData[parseInt(mk.split('-')[1],10)]||{tipo:'seco',horas:8};
   const ws3=XLSX.utils.aoa_to_sheet([
     ['Métrica',...mos.map(mk=>monthData[mk].lbl),'TOTAL'],
     ['Dias no período',...mos.map(mk=>monthData[mk].c),mos.reduce((s,mk)=>s+monthData[mk].c,0)],
     ['Dias úteis',     ...mos.map(mk=>monthData[mk].u),mos.reduce((s,mk)=>s+monthData[mk].u,0)],
-    ['Período climático',...mos.map(mk=>periodoOPT_FULL[(periodoData[mk]||{}).tipo]||'Período Seco'),'—'],
-    ['Horas/dia útil', ...mos.map(mk=>(periodoData[mk]||{horas:8}).horas),'—'],
-    ['Horas produtivas',...mos.map(mk=>monthData[mk].u*((periodoData[mk]||{horas:8}).horas)),
-      mos.reduce((s,mk)=>s+monthData[mk].u*((periodoData[mk]||{horas:8}).horas),0)],
+    ['Período climático',...mos.map(mk=>periodoOPT_FULL[getPerX(mk).tipo]||'Período Seco'),'—'],
+    ['Horas/dia útil', ...mos.map(mk=>getPerX(mk).horas),'—'],
+    ['Horas produtivas',...mos.map(mk=>monthData[mk].u*getPerX(mk).horas),
+      mos.reduce((s,mk)=>s+monthData[mk].u*getPerX(mk).horas,0)],
   ]);
   ws3['!cols']=[{wch:18},...mos.map(()=>({wch:9})),{wch:9}];
   XLSX.utils.book_append_sheet(wb,ws3,'Dias Úteis');
