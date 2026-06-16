@@ -1147,34 +1147,6 @@ function render(res){
   const{nC,nU,nW,nH,nHm,nB,nR,nF}=totals;
   document.getElementById('results').classList.remove('hidden');
 
-  // Cards
-  // Totais de horas para os cards
-  const tHprodCard = +(mos.reduce((s,mk)=>s+monthData[mk].u*jp,0)).toFixed(1);
-  const tHpratCard = +(mos.reduce((s,mk)=>s+monthData[mk].u*getPer(mk).horas,0)).toFixed(1);
-  // % médio ponderado de praticabilidade (pela quantidade de dias úteis de cada mês)
-  const pctMedio = nU>0
-    ? +(mos.reduce((s,mk)=>s+monthData[mk].u*(getPer(mk).perc??100),0)/nU).toFixed(1)
-    : 0;
-
-  const fmt1 = v => v%1===0?String(v):v.toFixed(1);
-
-  document.getElementById('sumCards').innerHTML=`
-    <div class="sc sc-date"><div class="sc-lbl">Início</div><div class="sc-val sc-val-sm">${fBR(start)}</div><div class="sc-sub">${WD[dow(start)]}</div></div>
-    <div class="sc sc-date"><div class="sc-lbl">Término</div><div class="sc-val sc-val-sm">${fBR(end)}</div><div class="sc-sub">${WD[dow(end)]}</div></div>
-    <div class="sc sc-hrs"><div class="sc-lbl">Horas Produtivas</div><div class="sc-val">${fmt1(tHprodCard)}</div><div class="sc-sub">h no período</div></div>
-    <div class="sc sc-prat"><div class="sc-lbl">Horas Praticáveis</div><div class="sc-val">${fmt1(tHpratCard)}</div><div class="sc-sub">h no período</div></div>
-    <div class="sc sc-pct"><div class="sc-lbl">Praticabilidade Média</div><div class="sc-val">${pctMedio}%</div><div class="sc-sub">ponderada por dias úteis</div></div>
-    <hr class="sum-divider" style="grid-column:1/-1">
-    <div class="sc sc-tot"><div class="sc-lbl">Dias Corridos</div><div class="sc-val">${nC}</div></div>
-    <div class="sc sc-ute"><div class="sc-lbl">Dias Úteis</div><div class="sc-val">${nU}</div></div>
-    <div class="sc sc-fds"><div class="sc-lbl">Fins de Semana</div><div class="sc-val">${nW}</div></div>
-    <div class="sc sc-nat"><div class="sc-lbl">Feriados Nac.</div><div class="sc-val">${nH}</div></div>
-    <div class="sc sc-nat" style="border-left-color:#ea7c39"><div class="sc-lbl">Feriados Mun.</div><div class="sc-val">${nHm}</div></div>
-    <div class="sc sc-bri"><div class="sc-lbl">Compensações</div><div class="sc-val">${nB}</div></div>
-    <div class="sc sc-rec"><div class="sc-lbl">Recesso</div><div class="sc-val">${nR}</div></div>
-    ${nF>0?`<div class="sc sc-fol"><div class="sc-lbl">Folgas</div><div class="sc-val">${nF}</div></div>`:''}
-  `;
-
   // Timeline
   const total=nC;
   const segs=[
@@ -1265,6 +1237,29 @@ function render(res){
   };
   const TAG_CLS = {umido:'tag-umido',transicao:'tag-transicao',seco:'tag-seco'};
   const TAG_LBL = {umido:'Úmido',transicao:'Transição',seco:'Seco'};
+
+  // Cards — now after mos/jp/getPer are defined
+  const tHprodCard = +(mos.reduce((s,mk)=>s+monthData[mk].u*jp,0)).toFixed(1);
+  const tHpratCard = +(mos.reduce((s,mk)=>s+monthData[mk].u*getPer(mk).horas,0)).toFixed(1);
+  const pctMedio   = nU>0 ? +(mos.reduce((s,mk)=>s+monthData[mk].u*(getPer(mk).perc??100),0)/nU).toFixed(1) : 0;
+  const fmt1 = v => v%1===0?String(v):v.toFixed(1);
+
+  document.getElementById('sumCards').innerHTML=`
+    <div class="sc sc-date"><div class="sc-lbl">Início</div><div class="sc-val sc-val-sm">${fBR(start)}</div><div class="sc-sub">${WD[dow(start)]}</div></div>
+    <div class="sc sc-date"><div class="sc-lbl">Término</div><div class="sc-val sc-val-sm">${fBR(end)}</div><div class="sc-sub">${WD[dow(end)]}</div></div>
+    <div class="sc sc-hrs"><div class="sc-lbl">Horas Produtivas</div><div class="sc-val">${fmt1(tHprodCard)}</div><div class="sc-sub">h no período</div></div>
+    <div class="sc sc-prat"><div class="sc-lbl">Horas Praticáveis</div><div class="sc-val">${fmt1(tHpratCard)}</div><div class="sc-sub">h no período</div></div>
+    <div class="sc sc-pct"><div class="sc-lbl">Praticabilidade Média</div><div class="sc-val">${pctMedio}%</div><div class="sc-sub">ponderada por dias úteis</div></div>
+    <hr class="sum-divider" style="grid-column:1/-1">
+    <div class="sc sc-tot"><div class="sc-lbl">Dias Corridos</div><div class="sc-val">${nC}</div></div>
+    <div class="sc sc-ute"><div class="sc-lbl">Dias Úteis</div><div class="sc-val">${nU}</div></div>
+    <div class="sc sc-fds"><div class="sc-lbl">Fins de Semana</div><div class="sc-val">${nW}</div></div>
+    <div class="sc sc-nat"><div class="sc-lbl">Feriados Nac.</div><div class="sc-val">${nH}</div></div>
+    <div class="sc sc-nat" style="border-left-color:#ea7c39"><div class="sc-lbl">Feriados Mun.</div><div class="sc-val">${nHm}</div></div>
+    <div class="sc sc-bri"><div class="sc-lbl">Compensações</div><div class="sc-val">${nB}</div></div>
+    <div class="sc sc-rec"><div class="sc-lbl">Recesso</div><div class="sc-val">${nR}</div></div>
+    ${nF>0?`<div class="sc sc-fol"><div class="sc-lbl">Folgas</div><div class="sc-val">${nF}</div></div>`:''}
+  `;
 
   // Monthly summary table
   const hdr=mos.map(mk=>`<th>${monthData[mk].lbl}</th>`).join('');
