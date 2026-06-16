@@ -719,9 +719,9 @@ let periodoData = {};  // not used for input anymore; rebuilt in getPer()
 function renderPeriodoGrid(){
   const MO_ABR=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
   const tipos=[
-    {k:'umido',    lbl:'Período Úmido',   rc:'r-u'},
-    {k:'transicao',lbl:'Transição',        rc:'r-t'},
-    {k:'seco',     lbl:'Período Seco',     rc:'r-s'},
+    {k:'umido',    lbl:'Úmido',     rc:'r-u'},
+    {k:'transicao',lbl:'Transição',  rc:'r-t'},
+    {k:'seco',     lbl:'Seco',       rc:'r-s'},
   ];
   const grid = document.getElementById('periodoGrid');
 
@@ -745,7 +745,7 @@ function renderPeriodoGrid(){
   }).join('');
 
   grid.innerHTML=`<div class="pc-wrap"><table class="pc-table">
-    <thead><tr><th></th><th></th>${thd}</tr></thead>
+    <thead><tr><th style="text-align:left;">Período</th><th style="text-align:left;">Hora praticável/dia</th>${thd}</tr></thead>
     <tbody>${rows}</tbody>
   </table></div>`;
 }
