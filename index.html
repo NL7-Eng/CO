@@ -97,22 +97,30 @@
     .chk-lbl:has(input:checked) { border-color: #374151; color: #1f2937; font-weight: 600; }
     .chk-lbl input { accent-color: #374151; width: 14px; height: 14px; cursor: pointer; }
 
-    /* custom holidays section */
-    .custom-section { margin-top: 20px; border-top: 1px solid var(--border-l); padding-top: 18px; }
-    .custom-toggle { font-family: var(--fd); font-size: .8rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; cursor: pointer; display: flex; align-items: center; gap: 8px; user-select: none; }
-    .custom-toggle::before { content: '+'; font-size: 1rem; font-weight: 700; color: var(--subtle); transition: transform .2s; display: inline-block; }
-    .custom-toggle.open::before { content: '−'; }
-    .custom-body { display: none; margin-top: 14px; }
-    .custom-body.open { display: block; }
-    .custom-note { font-size: .82rem; color: var(--muted); margin-bottom: 12px; line-height: 1.5; }
-    .custom-row  { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
-    .custom-row .fg { flex: 1; min-width: 140px; }
-    .custom-list { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
-    .custom-item { display: flex; align-items: center; justify-content: space-between; background: #fafafa; border: 1px solid var(--border-l); border-radius: 6px; padding: 7px 12px; font-size: .87rem; }
-    .custom-item-info { color: var(--text); }
-    .custom-item-date { font-weight: 600; margin-right: 8px; }
-    .remove-btn { background: none; border: none; color: var(--subtle); font-size: .78rem; cursor: pointer; padding: 2px 6px; border-radius: 4px; font-family: var(--fb); }
+    /* datas especiais */
+    .custom-section { margin-top: 22px; border-top: 1px solid var(--border-l); padding-top: 18px; }
+    .custom-title { font-family: var(--fd); font-size: .82rem; font-weight: 700; color: var(--text); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 3px; }
+    .custom-sub   { font-size: .8rem; color: var(--muted); margin-bottom: 14px; line-height: 1.5; }
+    .custom-row   { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
+    .custom-row .fg { flex: 1; min-width: 130px; }
+    .custom-row select {
+      border: 1px solid var(--border); border-radius: var(--r); padding: 9px 10px;
+      font-family: var(--fb); font-size: .88rem; color: var(--text);
+      background: #fff; outline: none; cursor: pointer; width: 100%;
+      transition: border-color .15s;
+    }
+    .custom-row select:focus { border-color: #6b7280; box-shadow: 0 0 0 3px rgba(107,114,128,.12); }
+    .custom-list  { margin-top: 12px; display: flex; flex-direction: column; gap: 5px; }
+    .custom-item  { display: flex; align-items: center; gap: 8px; background: #fafafa; border: 1px solid var(--border-l); border-radius: 6px; padding: 7px 12px; font-size: .85rem; }
+    .custom-item-date { font-weight: 700; color: var(--text); white-space: nowrap; }
+    .custom-item-name { color: var(--muted); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .remove-btn { background: none; border: none; color: var(--subtle); font-size: .75rem; cursor: pointer; padding: 2px 6px; border-radius: 4px; font-family: var(--fb); white-space: nowrap; }
     .remove-btn:hover { background: #fee2e2; color: #b91c1c; }
+    .recalc-notice { display:none; background:#fffbeb; border:1px solid #fde68a; color:#92400e; font-size:.82rem; border-radius:6px; padding:8px 12px; margin-top:10px; }
+    .recalc-notice.on { display:block; }
+    /* folga calendar day */
+    .cd.folga   { background: #ddd6fe; color: #5b21b6; font-weight: 700; }
+    .ld-folga   { background: #ddd6fe; border: 1px solid #c4b5fd; }
 
     /* buttons */
     .btn-row { display: flex; gap: 8px; margin-top: 18px; flex-wrap: wrap; }
@@ -155,6 +163,7 @@
     .sc-nat  { border-left-color: #c2410c; }
     .sc-bri  { border-left-color: #f59e0b; }
     .sc-rec  { border-left-color: #fbbf24; }
+    .sc-fol  { border-left-color: #a78bfa; }
 
     /* ── TIMELINE ── */
     .tl-wrap { margin-top: 18px; background: #f9fafb; border: 1px solid var(--border); border-radius: var(--r); padding: 13px 15px; overflow-x: auto; }
@@ -229,6 +238,12 @@
     .b-mun { background: #fff4ee; color: #ea580c; border: 1px solid #fbd0b3; }
     .b-bri { background: #fefce8; color: #b45309; border: 1px solid #fde68a; }
     .b-rec { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; }
+    .b-fol { background: #ede9fe; color: #5b21b6; border: 1px solid #c4b5fd; }
+    .custom-badge { display:inline-block; font-size:.68rem; font-weight:600; border-radius:3px; padding:1px 5px; margin-right:5px; vertical-align:middle; }
+    .badge-mun { background:#fff3e6; color:#9a3412; border:1px solid #fcd9b4; }
+    .badge-rec { background:#f3f4f6; color:#374151; border:1px solid #d1d5db; }
+    .badge-fol { background:#ede9fe; color:#5b21b6; border:1px solid #c4b5fd; }
+    .s-f { background: #a78bfa; }
     .b-cus { background: #fdf4ff; color: #7e22ce; border: 1px solid #e9d5ff; }
 
     /* monthly table */
@@ -297,28 +312,37 @@
       </label>
     </div>
 
-    <!-- FERIADOS ADICIONAIS -->
-    <div class="custom-section">
-      <div class="custom-toggle" id="customToggle" onclick="toggleCustom()">Feriados adicionais / municipais manuais</div>
-      <div class="custom-body" id="customBody">
-        <p class="custom-note">
-          A base de dados de feriados municipais cobre as principais cidades, mas pode estar incompleta ou desatualizada.
-          Adicione manualmente qualquer feriado municipal que o sistema não tenha reconhecido, consultando o calendário oficial da prefeitura.
-        </p>
-        <div class="custom-row">
-          <div class="fg">
-            <label for="cusDate">Data (dd/mm/aaaa)</label>
-            <input type="text" id="cusDate" placeholder="15/08/2026" maxlength="10" />
-          </div>
-          <div class="fg" style="flex:2;">
-            <label for="cusName">Descrição</label>
-            <input type="text" id="cusName" placeholder="Ex: Nossa Senhora da Assunção" />
-          </div>
-          <button class="btn btn-add" onclick="addCustomHol()" style="margin-bottom:1px;">Adicionar</button>
+    <!-- DATAS ESPECIAIS -->
+    <div class="custom-section" id="customSection">
+      <div class="custom-title">Datas Especiais da Obra</div>
+      <p class="custom-sub">
+        Adicione feriados municipais não cadastrados, recessos específicos, folgas por pagamento ou qualquer dia não trabalhado da obra.
+        Cada data é inserida automaticamente no calendário e na contagem de dias úteis.
+      </p>
+      <div class="custom-row">
+        <div class="fg" style="min-width:130px;max-width:155px;">
+          <label for="cusDate">Data (dd/mm/aaaa)</label>
+          <input type="text" id="cusDate" placeholder="15/08/2026" maxlength="10" />
         </div>
-        <div class="custom-list" id="customList">
-          <div style="color:var(--subtle);font-size:.84rem;font-style:italic;margin-top:4px;">Nenhum feriado adicional cadastrado.</div>
+        <div class="fg" style="flex:3;">
+          <label for="cusName">Descrição</label>
+          <input type="text" id="cusName" placeholder="Ex: Nossa Senhora da Assunção" />
         </div>
+        <div class="fg" style="min-width:150px;max-width:185px;">
+          <label for="cusType">Tipo</label>
+          <select id="cusType">
+            <option value="municipal">Feriado Municipal</option>
+            <option value="recess">Recesso</option>
+            <option value="folga">Folga / Outro</option>
+          </select>
+        </div>
+        <button class="btn btn-add" onclick="addCustomHol()">Adicionar</button>
+      </div>
+      <div class="custom-list" id="customList">
+        <span style="color:var(--subtle);font-size:.82rem;font-style:italic;">Nenhuma data especial cadastrada.</span>
+      </div>
+      <div class="recalc-notice" id="recalcNotice">
+        Datas especiais modificadas — clique em Calcular para atualizar o calendário.
       </div>
     </div>
 
@@ -352,6 +376,7 @@
         <div class="leg-i"><div class="leg-d ld-m"></div>Feriado municipal</div>
         <div class="leg-i"><div class="leg-d ld-b"></div>Compensação (ponte)</div>
         <div class="leg-i"><div class="leg-d ld-r"></div>Recesso</div>
+        <div class="leg-i"><div class="leg-d ld-folga"></div>Folga / Outro</div>
         <div class="leg-i"><div class="leg-d ld-o"></div>Fora do contrato</div>
       </div>
       <div class="cal-grid" id="calGrid"></div>
@@ -643,40 +668,45 @@ document.addEventListener('click',e=>{ if(!e.target.closest('.ac-wrap')) closeAC
    CUSTOM HOLIDAYS
    ==================================================================== */
 let customHols=[];
+let hasCalcResult=false;
 
-function toggleCustom(){
-  const t=document.getElementById('customToggle');
-  const b=document.getElementById('customBody');
-  t.classList.toggle('open'); b.classList.toggle('open');
-}
 function addCustomHol(){
   const dateStr=document.getElementById('cusDate').value.trim();
   const name=document.getElementById('cusName').value.trim();
-  if(!dateStr||!name){ showAlert('err','Preencha a data e a descrição do feriado.'); return; }
+  const type=document.getElementById('cusType').value;
+  if(!dateStr||!name){ showAlert('err','Preencha a data e a descrição.'); return; }
   const dt=parseBR(dateStr);
   if(!dt){ showAlert('err','Data inválida. Use DD/MM/AAAA.'); return; }
   clearAlerts();
   const key=YMD(dt);
   if(customHols.find(h=>h.key===key)){ showAlert('err','Esta data já foi adicionada.'); return; }
-  customHols.push({key,name,dt});
+  customHols.push({key,name,dt,type});
   customHols.sort((a,b)=>a.dt-b.dt);
   document.getElementById('cusDate').value='';
   document.getElementById('cusName').value='';
   renderCustomList();
+  if(hasCalcResult) document.getElementById('recalcNotice').classList.add('on');
 }
 function removeCustomHol(key){
   customHols=customHols.filter(h=>h.key!==key);
   renderCustomList();
+  if(hasCalcResult) document.getElementById('recalcNotice').classList.add('on');
 }
 function renderCustomList(){
   const el=document.getElementById('customList');
   if(!customHols.length){
-    el.innerHTML='<div style="color:var(--subtle);font-size:.84rem;font-style:italic;margin-top:4px;">Nenhum feriado adicional cadastrado.</div>';
+    el.innerHTML='<span style="color:var(--subtle);font-size:.84rem;font-style:italic;">Nenhuma data especial cadastrada.</span>';
     return;
   }
+  const typeLabel={municipal:'Municipal',recess:'Recesso',folga:'Folga'};
+  const typeClass={municipal:'badge-mun',recess:'badge-rec',folga:'badge-fol'};
   el.innerHTML=customHols.map(h=>
     `<div class="custom-item">
-       <span class="custom-item-info"><span class="custom-item-date">${fBR(h.dt)}</span>${h.name}</span>
+       <span class="custom-item-info">
+         <span class="custom-item-date">${fBR(h.dt)}</span>
+         <span class="custom-badge ${typeClass[h.type]||'badge-mun'}">${typeLabel[h.type]||h.type}</span>
+         ${h.name}
+       </span>
        <button class="remove-btn" onclick="removeCustomHol('${h.key}')">Remover</button>
      </div>`
   ).join('');
@@ -841,17 +871,13 @@ async function calcular(){
     if(Object.keys(mh).length){ Object.assign(allHols,mh); hasMuni=true; }
   }
 
-  // Custom holidays
-  for(const h of customHols){
-    allHols[h.key]=allHols[h.key]||{name:h.name,type:'municipal'};
-    hasMuni=true;
-  }
-
   clearAlerts();
   document.getElementById('btnCalc').disabled=false;
 
-  if(!hasMuni)
-    showAlert('warn',`Feriados municipais de ${selectedCity.nome} não constam na base de dados. Use a seção "Feriados adicionais" para cadastrá-los manualmente, consultando a prefeitura.`);
+  if(!hasMuni){
+    showAlert('warn',`Feriados municipais de ${selectedCity.nome} não constam na base de dados. Use a seção "Datas Especiais da Obra" para cadastrá-los manualmente, consultando a prefeitura.`);
+    document.getElementById('customSection').scrollIntoView({behavior:'smooth',block:'center'});
+  }
 
   // Recess
   const recSet=new Set();
@@ -861,6 +887,15 @@ async function calcular(){
       recSet.add(YMD(D(yr,0,1)));
     }
     recSet.add(YMD(D(Math.max(...years)+1,0,1)));
+  }
+
+  // Custom holidays — applied after recSet is built
+  for(const h of customHols){
+    if(h.type==='recess'){
+      recSet.add(h.key);
+    } else if(!allHols[h.key]){
+      allHols[h.key]={name:h.name,type:h.type==='folga'?'folga':'municipal'};
+    }
   }
 
   // Bridge
@@ -874,7 +909,7 @@ async function calcular(){
   }
 
   const dayMap={};
-  let nC=0,nW=0,nH=0,nHm=0,nB=0,nR=0,nU=0;
+  let nC=0,nW=0,nH=0,nHm=0,nB=0,nR=0,nF=0,nU=0;
   const monthData={};
   const todayStr=YMD(new Date());
 
@@ -891,6 +926,7 @@ async function calcular(){
     // Calendar DISPLAY: holiday color takes priority over weekend
     let display = 'working';
     if(onRec)                              display = 'recess';
+    else if(onHol?.type==='folga')         display = 'folga';
     else if(onHol?.type==='municipal')     display = 'mun-hol';
     else if(onHol)                         display = 'nat-hol';
     else if(onBri)                         display = 'bridge';
@@ -901,13 +937,16 @@ async function calcular(){
     // since holidays on weekends don't reduce workable days
     if(onRec)                              nR++;
     else if(onWE)                          nW++;
+    else if(onHol?.type==='folga')         nF++;
     else if(onHol?.type==='municipal')     nHm++;
     else if(onHol)                         nH++;
     else if(onBri)                         nB++;
     else                                   { nU++; monthData[mk].u++; }
   }
 
-  lastResult={city:selectedCity,start,end,totals:{nC,nU,nW,nH,nHm,nB,nR},dayMap,monthData,allHols,bridgeDays,recSet,todayStr};
+  hasCalcResult=true;
+  document.getElementById('recalcNotice').classList.remove('on');
+  lastResult={city:selectedCity,start,end,totals:{nC,nU,nW,nH,nHm,nB,nR,nF},dayMap,monthData,allHols,bridgeDays,recSet,todayStr};
   render(lastResult);
 }
 
@@ -916,11 +955,11 @@ async function calcular(){
    ==================================================================== */
 function render(res){
   const{city,start,end,totals,dayMap,monthData,allHols,bridgeDays,recSet,todayStr}=res;
-  const{nC,nU,nW,nH,nHm,nB,nR}=totals;
+  const{nC,nU,nW,nH,nHm,nB,nR,nF}=totals;
   document.getElementById('results').classList.remove('hidden');
 
   // Cards
-  document.getElementById('sumCards').innerHTML=`
+  const fCards=`
     <div class="sc sc-date"><div class="sc-lbl">Início</div><div class="sc-val sc-val-sm">${fBR(start)}</div><div class="sc-sub">${WD[dow(start)]}</div></div>
     <div class="sc sc-date"><div class="sc-lbl">Término</div><div class="sc-val sc-val-sm">${fBR(end)}</div><div class="sc-sub">${WD[dow(end)]}</div></div>
     <div class="sc sc-tot"><div class="sc-lbl">Dias Corridos</div><div class="sc-val">${nC}</div></div>
@@ -929,14 +968,17 @@ function render(res){
     <div class="sc sc-nat"><div class="sc-lbl">Feriados Nac.</div><div class="sc-val">${nH}</div></div>
     <div class="sc sc-nat" style="border-left-color:#ea7c39"><div class="sc-lbl">Feriados Mun.</div><div class="sc-val">${nHm}</div></div>
     <div class="sc sc-bri"><div class="sc-lbl">Compensações</div><div class="sc-val">${nB}</div></div>
-    <div class="sc sc-rec"><div class="sc-lbl">Recesso</div><div class="sc-val">${nR}</div></div>`;
+    <div class="sc sc-rec"><div class="sc-lbl">Recesso</div><div class="sc-val">${nR}</div></div>`
+    +(nF>0?`<div class="sc sc-fol"><div class="sc-lbl">Folgas</div><div class="sc-val">${nF}</div></div>`:'');
+  document.getElementById('sumCards').innerHTML=fCards;
 
   // Timeline
   const total=nC;
   const segs=[
     {p:nU/total,c:'s-u',l:`${nU} úteis`},{p:nW/total,c:'s-w',l:`${nW} FDS`},
     {p:nH/total,c:'s-h',l:`${nH} nac.`},{p:nHm/total,c:'s-m',l:`${nHm} mun.`},
-    {p:nB/total,c:'s-b',l:`${nB} comp.`},{p:nR/total,c:'s-r',l:`${nR} rec.`}
+    {p:nB/total,c:'s-b',l:`${nB} comp.`},{p:nR/total,c:'s-r',l:`${nR} rec.`},
+    {p:(nF||0)/total,c:'s-f',l:`${nF} folgas`}
   ].filter(s=>s.p>0);
   const mos=Object.keys(monthData).sort();
   document.getElementById('tlSection').innerHTML=`
@@ -991,9 +1033,15 @@ function render(res){
 
   const tbody=document.getElementById('holBody');
   tbody.innerHTML=rows.length?rows.map(r=>{
-    const isCustom=customHols.find(h=>h.key===r.key);
-    const bc=isCustom?'b-cus':r.type==='national'?'b-nat':r.type==='municipal'?'b-mun':r.type==='bridge'?'b-bri':'b-rec';
-    const tl=isCustom?'Municipal (manual)':r.type==='national'?'Feriado Nacional':r.type==='municipal'?`Municipal – ${city.nome}`:r.type==='bridge'?'Compensação':'Recesso';
+    const cusEntry=customHols.find(h=>h.key===r.key);
+    let bc,tl;
+    if(cusEntry){
+      bc=cusEntry.type==='folga'?'b-fol':cusEntry.type==='recess'?'b-rec':'b-cus';
+      tl=cusEntry.type==='folga'?'Folga / Outro':cusEntry.type==='recess'?'Recesso (manual)':'Municipal (manual)';
+    } else {
+      bc=r.type==='national'?'b-nat':r.type==='municipal'?'b-mun':r.type==='bridge'?'b-bri':r.type==='folga'?'b-fol':'b-rec';
+      tl=r.type==='national'?'Feriado Nacional':r.type==='municipal'?`Municipal – ${city.nome}`:r.type==='bridge'?'Compensação':r.type==='folga'?'Folga / Outro':'Recesso';
+    }
     return `<tr><td><strong>${fBR(r.dt)}</strong></td><td>${WD[dow(r.dt)]}</td><td>${r.name}</td><td><span class="badge ${bc}">${tl}</span></td></tr>`;
   }).join('')
   :'<tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:20px;">Nenhum registro no período</td></tr>';
@@ -1020,7 +1068,7 @@ function render(res){
 function exportarExcel(){
   if(!lastResult){showAlert('err','Calcule antes de exportar.');return;}
   const{city,start,end,totals,monthData}=lastResult;
-  const{nC,nU,nW,nH,nHm,nB,nR}=totals;
+  const{nC,nU,nW,nH,nHm,nB,nR,nF}=totals;
   const wb=XLSX.utils.book_new();
   const ws1=XLSX.utils.aoa_to_sheet([
     ['Campo','Valor'],
@@ -1028,7 +1076,7 @@ function exportarExcel(){
     ['Início',fBR(start)],['Término',fBR(end)],
     ['Dias corridos',nC],['Dias úteis',nU],['Fins de semana',nW],
     ['Feriados nacionais',nH],['Feriados municipais',nHm],
-    ['Compensações',nB],['Recesso',nR],
+    ['Compensações',nB],['Recesso',nR],['Folgas',nF||0],
   ]);
   ws1['!cols']=[{wch:24},{wch:20}];
   XLSX.utils.book_append_sheet(wb,ws1,'Resumo');
@@ -1073,6 +1121,8 @@ function limpar(){
   document.getElementById('chkPontes').checked=true;
   document.getElementById('chkRecesso').checked=true;
   customHols=[]; renderCustomList();
+  hasCalcResult=false;
+  document.getElementById('recalcNotice').classList.remove('on');
   document.getElementById('results').classList.add('hidden');
   lastResult=null;
 }
