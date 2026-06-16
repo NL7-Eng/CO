@@ -97,6 +97,19 @@
     .chk-lbl:has(input:checked) { border-color: #374151; color: #1f2937; font-weight: 600; }
     .chk-lbl input { accent-color: #374151; width: 14px; height: 14px; cursor: pointer; }
 
+    /* cálculo de jornada */
+    .jornada-section { margin-top: 22px; border-top: 1px solid var(--border-l); padding-top: 16px; }
+    .jornada-body { display: flex; flex-direction: column; gap: 10px; }
+    .jornada-row { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
+    .jornada-improd-hdr { display: flex; align-items: center; gap: 12px; margin-top: 4px; }
+    .jornada-improd-hdr span { font-size: .82rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+    .jornada-improd-list { display: flex; flex-direction: column; gap: 5px; }
+    .jornada-improd-item { display: flex; align-items: center; gap: 8px; background: #f9fafb; border: 1px solid var(--border-l); border-radius: 6px; padding: 6px 10px; font-size: .84rem; }
+    .jornada-improd-item input[type=text]   { flex: 1; border: none; background: transparent; font-size: .84rem; font-family: var(--fb); color: var(--text); outline: none; }
+    .jornada-improd-item input[type=number] { width: 52px; border: 1px solid var(--border); border-radius: 4px; padding: 3px 5px; font-size: .82rem; font-family: var(--fb); text-align: center; }
+    .jornada-result { font-size: .88rem; color: var(--muted); margin-top: 2px; }
+    .jornada-result strong { color: var(--text); font-size: 1rem; }
+
     /* período climático */
     .periodo-section { margin-top: 22px; border-top: 1px solid var(--border-l); padding-top: 16px; }
     .pc-wrap { overflow-x: auto; }
@@ -375,10 +388,34 @@
       </div>
     </div>
 
+    <!-- CÁLCULO DE JORNADA -->
+    <div class="jornada-section" id="jornadaSection">
+      <div class="custom-title">Cálculo de Jornada</div>
+      <p class="custom-sub">Informe a jornada útil diária e os tempos improdutivos. A jornada produtiva será calculada automaticamente e usada na projeção de horas.</p>
+      <div class="jornada-body">
+        <div class="jornada-row">
+          <div class="fg" style="max-width:200px;">
+            <label for="jornadaUtil">Jornada útil (h/dia)</label>
+            <input type="number" id="jornadaUtil" min="1" max="24" step="0.5" value="8" oninput="calcJornada()" />
+          </div>
+        </div>
+        <div class="jornada-improd-hdr">
+          <span>Tempos improdutivos</span>
+          <button class="btn btn-add" style="font-size:.75rem;padding:4px 12px;" onclick="addImprod()">+ Adicionar</button>
+        </div>
+        <div class="jornada-improd-list" id="improdList">
+          <span style="color:var(--subtle);font-size:.82rem;font-style:italic;">Nenhum tempo improdutivo cadastrado.</span>
+        </div>
+        <div class="jornada-result">
+          Jornada produtiva: <strong id="jornadaProdutiva">8,0 h/dia</strong>
+        </div>
+      </div>
+    </div>
+
     <!-- PERÍODO CLIMÁTICO -->
     <div class="periodo-section" id="periodoSection">
       <div class="custom-title">Período Climático por Mês</div>
-      <p class="custom-sub">Defina as horas produtivas por tipo de período e marque qual é o tipo de cada mês. Válido para todos os anos do período calculado.</p>
+      <p class="custom-sub">Defina o percentual de praticabilidade por tipo de período e marque o tipo de cada mês. Horas praticáveis/dia = Jornada produtiva × % praticabilidade.</p>
       <div id="periodoGrid"></div>
     </div>
 
@@ -706,29 +743,78 @@ document.addEventListener('click',e=>{ if(!e.target.closest('.ac-wrap')) closeAC
 });
 
 /* ====================================================================
+   CÁLCULO DE JORNADA
+   ==================================================================== */
+let improdList = [];  // [{id, nome, horas}]
+let _improdId  = 0;
+
+function jornadaUtil(){
+  return parseFloat(document.getElementById('jornadaUtil')?.value) || 8;
+}
+function jornadaProdutiva(){
+  const total = improdList.reduce((s,i)=>s+(i.horas||0), 0);
+  return Math.max(0, jornadaUtil() - total);
+}
+function calcJornada(){
+  const jp = jornadaProdutiva();
+  const fmt = v => v%1===0 ? v+'h' : v.toFixed(1)+'h';
+  const el = document.getElementById('jornadaProdutiva');
+  if(el) el.textContent = fmt(jp)+'/dia';
+}
+function addImprod(){
+  const id = ++_improdId;
+  improdList.push({id, nome:'', horas:0});
+  renderImprodList();
+  // focus on the newly added name input
+  setTimeout(()=>document.getElementById('imp-n-'+id)?.focus(), 50);
+}
+function removeImprod(id){
+  improdList = improdList.filter(i=>i.id!==id);
+  renderImprodList();
+  calcJornada();
+}
+function updateImprod(id, field, val){
+  const item = improdList.find(i=>i.id===id);
+  if(item){ item[field] = field==='horas' ? (parseFloat(val)||0) : val; }
+  calcJornada();
+}
+function renderImprodList(){
+  const el = document.getElementById('improdList');
+  if(!improdList.length){
+    el.innerHTML='<span style="color:var(--subtle);font-size:.82rem;font-style:italic;">Nenhum tempo improdutivo cadastrado.</span>';
+    calcJornada(); return;
+  }
+  el.innerHTML = improdList.map(i=>`
+    <div class="jornada-improd-item">
+      <input type="text" id="imp-n-${i.id}" placeholder="Ex: Deslocamento" value="${i.nome}"
+        oninput="updateImprod(${i.id},'nome',this.value)" />
+      <input type="number" id="imp-h-${i.id}" min="0" max="24" step="0.5" value="${i.horas||''}"
+        placeholder="h" oninput="updateImprod(${i.id},'horas',this.value)" />
+      <span style="font-size:.75rem;color:var(--muted);">h/dia</span>
+      <button class="remove-btn" onclick="removeImprod(${i.id})">Remover</button>
+    </div>`).join('');
+  calcJornada();
+}
+
+/* ====================================================================
    PERÍODO CLIMÁTICO
    ==================================================================== */
-// periodoMes[m] = 'umido'|'transicao'|'seco'  (m = 1..12)
-// periodoHoras  = {umido:8, transicao:8, seco:8}
-let periodoMes   = {};
-let periodoHoras = {umido:8, transicao:8, seco:8};
-
-// legacy alias kept so render() helper still works
-let periodoData = {};  // not used for input anymore; rebuilt in getPer()
+// periodoMes[m]  = 'umido'|'transicao'|'seco'  (m = 1..12)
+// periodoPerc    = {umido:100, transicao:80, seco:60}  — % praticabilidade
+let periodoMes  = {};
+let periodoPerc = {umido:100, transicao:80, seco:60};
 
 function renderPeriodoGrid(){
   const MO_ABR=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
   const tipos=[
-    {k:'umido',    lbl:'Úmido',     rc:'r-u'},
-    {k:'transicao',lbl:'Transição',  rc:'r-t'},
-    {k:'seco',     lbl:'Seco',       rc:'r-s'},
+    {k:'umido',    lbl:'Úmido',    rc:'r-u'},
+    {k:'transicao',lbl:'Transição', rc:'r-t'},
+    {k:'seco',     lbl:'Seco',      rc:'r-s'},
   ];
   const grid = document.getElementById('periodoGrid');
-
   const thd=MO_ABR.map(m=>`<th>${m}</th>`).join('');
-
   const rows=tipos.map(t=>{
-    const h=periodoHoras[t.k]||8;
+    const p=periodoPerc[t.k]??100;
     const tds=Array.from({length:12},(_,i)=>{
       const m=i+1;
       const cur=periodoMes[m]||'seco';
@@ -738,14 +824,13 @@ function renderPeriodoGrid(){
     }).join('');
     return `<tr>
       <td class="pc-type-lbl">${t.lbl}</td>
-      <td class="pc-hrs-cell"><input class="pc-hrs" type="number" min="1" max="24" step="0.5"
-        value="${h}" id="phrs-${t.k}" onchange="savePeriodoHoras('${t.k}')"> h/dia</td>
+      <td class="pc-hrs-cell"><input class="pc-hrs" type="number" min="0" max="100" step="1"
+        value="${p}" id="pperc-${t.k}" onchange="savePeriodoPerc('${t.k}')">%</td>
       ${tds}
     </tr>`;
   }).join('');
-
   grid.innerHTML=`<div class="pc-wrap"><table class="pc-table">
-    <thead><tr><th style="text-align:left;">Período</th><th style="text-align:left;">Hora praticável/dia</th>${thd}</tr></thead>
+    <thead><tr><th style="text-align:left;">Período</th><th style="text-align:left;">% Praticabilidade</th>${thd}</tr></thead>
     <tbody>${rows}</tbody>
   </table></div>`;
 }
@@ -754,8 +839,8 @@ function savePeriodoMes(m){
   const checked=document.querySelector(`input[name="pm${m}"]:checked`);
   if(checked) periodoMes[m]=checked.value;
 }
-function savePeriodoHoras(tipo){
-  periodoHoras[tipo]=parseFloat(document.getElementById('phrs-'+tipo)?.value)||8;
+function savePeriodoPerc(tipo){
+  periodoPerc[tipo]=parseFloat(document.getElementById('pperc-'+tipo)?.value)??100;
 }
 
 /* ====================================================================
@@ -1146,11 +1231,13 @@ function render(res){
   renderPeriodoGrid();
 
   // Helper: get periodo for a YYYY-MM key (by month number)
+  const jp = jornadaProdutiva();
   const getPer = mk => {
     const m=parseInt(mk.split('-')[1],10);
     const tipo=periodoMes[m]||'seco';
-    const horas=periodoHoras[tipo]||8;
-    return {tipo,horas};
+    const perc=(periodoPerc[tipo]??100)/100;
+    const horas=+(jp*perc).toFixed(2);
+    return {tipo,horas,perc:periodoPerc[tipo]??100};
   };
   const TAG_CLS = {umido:'tag-umido',transicao:'tag-transicao',seco:'tag-seco'};
   const TAG_LBL = {umido:'Úmido',transicao:'Transição',seco:'Seco'};
@@ -1180,7 +1267,7 @@ function render(res){
       <tr class="rc"><td>Dias no período</td>${rC}<td class="tc">${tC}</td></tr>
       <tr class="ru"><td>Dias úteis</td>${rU}<td class="tc">${tU}</td></tr>
       <tr><td>Período climático</td>${rP}<td class="tc">—</td></tr>
-      <tr><td>Horas produtivas</td>${rH}<td class="tc">${tHfmt} h</td></tr>
+      <tr><td>Horas praticáveis</td>${rH}<td class="tc">${tHfmt} h</td></tr>
     </tbody>`;
 
   document.getElementById('results').scrollIntoView({behavior:'smooth',block:'start'});
@@ -1216,15 +1303,18 @@ function exportarExcel(){
 
   const mos=Object.keys(monthData).sort();
   const periodoOPT_FULL={umido:'Período Úmido',transicao:'Período de Transição',seco:'Período Seco'};
-  const getPerX=mk=>{ const m=parseInt(mk.split('-')[1],10); const tipo=periodoMes[m]||'seco'; return {tipo,horas:periodoHoras[tipo]||8}; };
+  const jpX=jornadaProdutiva();
+  const getPerX=mk=>{ const m=parseInt(mk.split('-')[1],10); const tipo=periodoMes[m]||'seco'; const perc=(periodoPerc[tipo]??100)/100; return {tipo,horas:+(jpX*perc).toFixed(2)}; };
   const ws3=XLSX.utils.aoa_to_sheet([
     ['Métrica',...mos.map(mk=>monthData[mk].lbl),'TOTAL'],
     ['Dias no período',...mos.map(mk=>monthData[mk].c),mos.reduce((s,mk)=>s+monthData[mk].c,0)],
     ['Dias úteis',     ...mos.map(mk=>monthData[mk].u),mos.reduce((s,mk)=>s+monthData[mk].u,0)],
     ['Período climático',...mos.map(mk=>periodoOPT_FULL[getPerX(mk).tipo]||'Período Seco'),'—'],
-    ['Horas/dia útil', ...mos.map(mk=>getPerX(mk).horas),'—'],
-    ['Horas produtivas',...mos.map(mk=>monthData[mk].u*getPerX(mk).horas),
-      mos.reduce((s,mk)=>s+monthData[mk].u*getPerX(mk).horas,0)],
+    ['Jornada útil (h/dia)', jornadaUtil(),'—'],
+    ['Jornada produtiva (h/dia)', jpX,'—'],
+    ['Horas praticáveis/dia',...mos.map(mk=>getPerX(mk).horas),'—'],
+    ['Horas praticáveis totais',...mos.map(mk=>+(monthData[mk].u*getPerX(mk).horas).toFixed(1)),
+      +mos.reduce((s,mk)=>s+monthData[mk].u*getPerX(mk).horas,0).toFixed(1)],
   ]);
   ws3['!cols']=[{wch:18},...mos.map(()=>({wch:9})),{wch:9}];
   XLSX.utils.book_append_sheet(wb,ws3,'Dias Úteis');
@@ -1251,7 +1341,8 @@ function limpar(){
   document.getElementById('chkPontes').checked=true;
   document.getElementById('chkRecesso').checked=true;
   customHols=[]; renderCustomList();
-  periodoMes={}; periodoHoras={umido:8,transicao:8,seco:8};
+  periodoMes={}; periodoPerc={umido:100,transicao:80,seco:60};
+  improdList=[]; _improdId=0; renderImprodList(); calcJornada();
   renderPeriodoGrid();
   hasCalcResult=false;
   document.getElementById('recalcNotice').classList.remove('on');
@@ -1263,6 +1354,7 @@ function limpar(){
 document.getElementById('dataOS').value='01/06/2026';
 document.getElementById('prazo').value='180';
 renderPeriodoGrid();
+calcJornada();
 </script>
 </body>
 </html>
