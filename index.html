@@ -238,7 +238,10 @@
     .mt .ru td  { font-family: var(--fd); font-weight: 700; font-size: .95rem; color: var(--text); }
     .mt .tc     { background: #f3f4f6; font-weight: 700; color: var(--text); }
 
-    .hidden { display: none !important; }
+    .muni-status { font-size: .74rem; margin-top: 5px; color: var(--subtle); }
+    .muni-status.loading { color: #b45309; }
+    .muni-status.ok  { color: #166534; }
+    .muni-status.err { color: #b91c1c; }
     @media(max-width:600px){
       header h1 { font-size: 1.3rem; }
       .card { padding: 18px; }
@@ -271,6 +274,7 @@
         <input type="hidden" id="cidadeId" />
         <input type="hidden" id="cidadeNome" />
         <input type="hidden" id="cidadeUF" />
+        <div class="muni-status loading" id="muniStatus">Carregando base de municípios…</div>
       </div>
       <div class="fg">
         <label for="dataOS">Data da OS (dd/mm/aaaa)</label>
@@ -446,6 +450,68 @@ const CITIES_BUNDLED = [
   ['2702306','Arapiraca','AL'],['4304606','Caxias do Sul','RS'],['5107602','Várzea Grande','MT'],
   ['5005004','Dourados','MS'],['1100015','Ariquemes','RO'],['1713700','Araguaína','TO'],
   ['2403756','Mossoró','RN'],['4307708','Farroupilha','RS'],
+  // MG — ampliado
+  ['3147501','Passos','MG'],['3171303','Varginha','MG'],['3102605','Alfenas','MG'],
+  ['3107307','Bom Despacho','MG'],['3116209','Coronel Fabriciano','MG'],
+  ['3119401','Curvelo','MG'],['3122306','Divinópolis','MG'],['3126109','Formiga','MG'],
+  ['3128709','Ituiutaba','MG'],['3134608','Lavras','MG'],['3136306','Manhuaçu','MG'],
+  ['3139409','Muriaé','MG'],['3144805','Ouro Preto','MG'],['3146107','Patos de Minas','MG'],
+  ['3149309','Pirapora','MG'],['3150158','Pouso Alegre','MG'],['3151800','Sabará','MG'],
+  ['3155504','Santa Luzia','MG'],['3157807','São João del-Rei','MG'],
+  ['3165537','Sete Lagoas','MG'],['3169901','Três Corações','MG'],
+  ['3170107','Três Pontas','MG'],['3171303','Varginha','MG'],
+  // PA — ampliado
+  ['1505064','Parauapebas','PA'],['1501956','Ananindeua','PA'],
+  ['1502400','Barcarena','PA'],['1503903','Castanhal','PA'],
+  ['1504208','Marabá','PA'],['1504422','Marituba','PA'],
+  ['1505536','Redenção','PA'],['1507805','Tucuruí','PA'],
+  ['1500602','Altamira','PA'],['1502708','Bragança','PA'],
+  // SP — ampliado
+  ['3501608','Americana','SP'],['3502804','Araçatuba','SP'],['3503901','Araraquara','SP'],
+  ['3504800','Assis','SP'],['3509007','Botucatu','SP'],['3510203','Catanduva','SP'],
+  ['3522604','Jaú','SP'],['3526209','Marília','SP'],['3529005','Mogi Guaçu','SP'],
+  ['3541000','Presidente Prudente','SP'],['3544301','Rio Claro','SP'],
+  ['3549102','São Carlos','SP'],['3554003','Taubaté','SP'],['3556206','Votuporanga','SP'],
+  // RJ — ampliado
+  ['3300209','Angra dos Reis','RJ'],['3301405','Cabo Frio','RJ'],
+  ['3304110','Nova Friburgo','RJ'],['3305505','Teresópolis','RJ'],
+  // RS — ampliado
+  ['4302105','Bagé','RS'],['4309100','Ijuí','RS'],['4309308','Lajeado','RS'],
+  ['4317202','Santo Ângelo','RS'],['4320107','Santa Maria','RS'],['4321600','Uruguaiana','RS'],
+  // PR — ampliado
+  ['4102307','Apucarana','PR'],['4108304','Foz do Iguaçu','PR'],
+  ['4108502','Guarapuava','PR'],['4115903','Paranaguá','PR'],['4127700','Toledo','PR'],
+  // SC — ampliado
+  ['4201505','Balneário Camboriú','SC'],['4204806','Criciúma','SC'],
+  ['4207007','Jaraguá do Sul','SC'],['4211306','Lages','SC'],['4214805','Palhoça','SC'],
+  // BA — ampliado
+  ['2900405','Alagoinhas','BA'],['2902908','Barreiras','BA'],
+  ['2913606','Ilhéus','BA'],['2916401','Itabuna','BA'],['2918001','Jequié','BA'],
+  ['2933307','Teixeira de Freitas','BA'],
+  // CE — ampliado
+  ['2301909','Crato','CE'],['2307650','Juazeiro do Norte','CE'],
+  ['2309409','Maracanaú','CE'],['2307304','Sobral','CE'],
+  // PE — ampliado
+  ['2603207','Garanhuns','PE'],['2611101','Petrolina','PE'],
+  // GO — ampliado
+  ['5201405','Anápolis','GO'],['5213087','Rio Verde','GO'],
+  // ES — ampliado
+  ['3202603','Guarapari','ES'],['3203205','Linhares','ES'],['3204302','São Mateus','ES'],
+  ['3205200','Serra','ES'],['3205069','Vila Velha','ES'],
+  // MT — ampliado
+  ['5100250','Alta Floresta','MT'],['5106224','Rondonópolis','MT'],['5106778','Sinop','MT'],
+  // MS — ampliado
+  ['5003702','Corumbá','MS'],['5009407','Três Lagoas','MS'],
+  // MA — ampliado
+  ['2100055','Açailândia','MA'],['2105302','Imperatriz','MA'],['2114700','Timon','MA'],
+  // PI — ampliado
+  ['2210508','Picos','PI'],
+  // RO — ampliado
+  ['1100114','Cacoal','RO'],['1101005','Ji-Paraná','RO'],['1101807','Vilhena','RO'],
+  // TO — ampliado
+  ['1709500','Gurupi','TO'],
+  // AM — ampliado
+  ['1300029','Coari','AM'],['1302603','Manaus','AM'],['1303403','Parintins','AM'],
 ].map(([id,nome,uf])=>({id,nome,uf}));
 
 /* ====================================================================
@@ -453,22 +519,70 @@ const CITIES_BUNDLED = [
    ==================================================================== */
 let municipios = CITIES_BUNDLED.slice();
 let selectedCity = null;
+let ibgeReady = false;
 const elCidade = document.getElementById('cidadeInput');
 const elAcList = document.getElementById('acList');
+const elStatus = document.getElementById('muniStatus');
 let acIdx=-1, debTimer;
 const norm = s => s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
 
-// Expand with full IBGE list in background; re-trigger search on completion
-let ibgeReady = false;
-fetch('https://servicodados.ibge.gov.br/api/v1/localidades/municipios?orderBy=nome')
-  .then(r=>{ if(!r.ok) throw 0; return r.json(); })
-  .then(data=>{
+function setStatus(state, msg){
+  elStatus.className = 'muni-status ' + state;
+  elStatus.textContent = msg;
+}
+
+/* Load from BrasilAPI — 27 parallel calls, one per UF */
+async function loadBrasilAPI(){
+  const UFS=['AC','AL','AM','AP','BA','CE','DF','ES','GO','MA','MG','MS','MT',
+             'PA','PB','PE','PI','PR','RJ','RN','RO','RR','RS','SC','SE','SP','TO'];
+  const sig = AbortSignal.timeout(10000);
+  const chunks = await Promise.all(UFS.map(uf=>
+    fetch(`https://brasilapi.com.br/api/ibge/municipios/v1/${uf}`,{signal:sig})
+      .then(r=>{ if(!r.ok) throw 0; return r.json(); })
+      .then(arr=>arr.map(m=>({id:m.codigo_ibge,nome:m.nome,uf})))
+      .catch(()=>[])
+  ));
+  return chunks.flat();
+}
+
+/* Load all municipalities: IBGE first, BrasilAPI as fallback */
+async function loadMunicipios(){
+  // 1) try IBGE (single endpoint, all ~5570)
+  try {
+    const r = await fetch(
+      'https://servicodados.ibge.gov.br/api/v1/localidades/municipios?orderBy=nome',
+      { signal: AbortSignal.timeout(12000) }
+    );
+    if(!r.ok) throw 0;
+    const data = await r.json();
+    if(!Array.isArray(data)||!data.length) throw 0;
     municipios = data.map(m=>({id:String(m.id),nome:m.nome,uf:m.microrregiao.mesorregiao.UF.sigla}));
     ibgeReady = true;
-    // if user already typed something, refresh the dropdown with full results
-    if(norm(elCidade.value.trim()).length >= 2 && !selectedCity) doSearch();
-  })
-  .catch(()=>{ ibgeReady = true; /* keep bundled */ });
+    setStatus('ok', `Base completa: ${municipios.length.toLocaleString('pt-BR')} municípios carregados`);
+    if(norm(elCidade.value.trim()).length>=2&&!selectedCity) doSearch();
+    return;
+  } catch(e){}
+
+  // 2) fallback: BrasilAPI (27 parallel calls by UF)
+  setStatus('loading','IBGE indisponível — tentando fonte alternativa…');
+  try {
+    const data = await loadBrasilAPI();
+    if(data.length > 100){
+      municipios = data.sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
+      ibgeReady = true;
+      setStatus('ok', `Base alternativa: ${municipios.length.toLocaleString('pt-BR')} municípios carregados`);
+      if(norm(elCidade.value.trim()).length>=2&&!selectedCity) doSearch();
+      return;
+    }
+  } catch(e){}
+
+  // 3) both failed — bundled list only
+  ibgeReady = true;
+  setStatus('err', `Base completa indisponível — buscando em ${municipios.length} municípios pré-carregados`);
+  if(norm(elCidade.value.trim()).length>=2&&!selectedCity) doSearch();
+}
+
+loadMunicipios();
 
 elCidade.addEventListener('input',()=>{ clearTimeout(debTimer); resetCity(); debTimer=setTimeout(doSearch,200); });
 
@@ -477,13 +591,13 @@ function doSearch(){
   if(q.length<2){ closeAC(); return; }
   const matches=municipios.filter(m=>norm(m.nome).includes(q)).slice(0,14);
   if(!matches.length){
-    if(!ibgeReady){
-      elAcList.innerHTML='<div class="ac-status">Carregando lista completa de municípios…</div>';
-      elAcList.classList.add('open');
-    } else { closeAC(); }
+    elAcList.innerHTML = ibgeReady
+      ? `<div class="ac-info">Nenhum município encontrado para "<strong>${elCidade.value.trim()}</strong>"</div>`
+      : '<div class="ac-status">Carregando base completa — aguarde e tente novamente…</div>';
+    elAcList.classList.add('open');
     return;
   }
-  const footer = !ibgeReady ? '<div class="ac-status">Carregando mais municípios…</div>' : '';
+  const footer = !ibgeReady ? '<div class="ac-status">Carregando base completa…</div>' : '';
   elAcList.innerHTML=matches.map((m,i)=>
     `<div class="ac-item" data-i="${i}" data-id="${m.id}" data-nome="${m.nome}" data-uf="${m.uf}">
        <span class="ac-name">${m.nome}</span><span class="ac-uf">${m.uf}</span>
