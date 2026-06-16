@@ -24,8 +24,8 @@
       --c-wknd: #e5e7eb;
       --c-nat:  #c2410c;   /* dark orange  — feriado nacional  */
       --c-mun:  #ea7c39;   /* medium orange — feriado municipal */
-      --c-bri:  #f59e0b;   /* amber         — compensação       */
-      --c-rec:  #374151;   /* dark gray     — recesso           */
+      --c-bri:  #fbbf24;   /* amber         — compensação       */
+      --c-rec:  #fef9c3;   /* pale yellow   — recesso           */
       --c-out:  #f9fafb;   /* off-white     — fora do contrato  */
 
       --r: 8px;
@@ -154,7 +154,7 @@
     .sc-fds  { border-left-color: #d1d5db; }
     .sc-nat  { border-left-color: #c2410c; }
     .sc-bri  { border-left-color: #f59e0b; }
-    .sc-rec  { border-left-color: #374151; }
+    .sc-rec  { border-left-color: #fbbf24; }
 
     /* ── TIMELINE ── */
     .tl-wrap { margin-top: 18px; background: #f9fafb; border: 1px solid var(--border); border-radius: var(--r); padding: 13px 15px; overflow-x: auto; }
@@ -167,7 +167,7 @@
     .s-h { background: #c2410c; }
     .s-m { background: #ea7c39; }
     .s-b { background: #f59e0b; color: #374151; }
-    .s-r { background: #6b7280; }
+    .s-r { background: #fef9c3; color: #713f12; }
     .tl-mos { display: flex; min-width: 360px; margin-top: 5px; }
     .tl-mo  { font-size: .65rem; color: var(--subtle); font-weight: 600; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
@@ -180,7 +180,7 @@
     .ld-n   { background: var(--c-nat); }
     .ld-m   { background: var(--c-mun); }
     .ld-b   { background: var(--c-bri); }
-    .ld-r   { background: var(--c-rec); }
+    .ld-r   { background: var(--c-rec); border: 1px solid #fde68a; }
     .ld-o   { background: var(--c-out); border: 1px solid #e5e7eb; }
 
     /* ── CALENDAR ── */
@@ -202,7 +202,7 @@
     .cd.nat-hol { background: var(--c-nat); color: #fff; font-weight: 700; }
     .cd.mun-hol { background: var(--c-mun); color: #fff; font-weight: 700; }
     .cd.bridge  { background: var(--c-bri); color: #374151; font-weight: 700; }
-    .cd.recess  { background: var(--c-rec); color: #fff; font-weight: 700; }
+    .cd.recess  { background: var(--c-rec); color: #713f12; font-weight: 700; }
     .cd.today   { box-shadow: inset 0 0 0 2px #6b7280; }
     .cd[title]:hover::after {
       content: attr(title);
@@ -458,11 +458,17 @@ const elAcList = document.getElementById('acList');
 let acIdx=-1, debTimer;
 const norm = s => s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
 
-// Expand with full IBGE list in background
+// Expand with full IBGE list in background; re-trigger search on completion
+let ibgeReady = false;
 fetch('https://servicodados.ibge.gov.br/api/v1/localidades/municipios?orderBy=nome')
   .then(r=>{ if(!r.ok) throw 0; return r.json(); })
-  .then(data=>{ municipios=data.map(m=>({id:String(m.id),nome:m.nome,uf:m.microrregiao.mesorregiao.UF.sigla})); })
-  .catch(()=>{/* keep bundled */});
+  .then(data=>{
+    municipios = data.map(m=>({id:String(m.id),nome:m.nome,uf:m.microrregiao.mesorregiao.UF.sigla}));
+    ibgeReady = true;
+    // if user already typed something, refresh the dropdown with full results
+    if(norm(elCidade.value.trim()).length >= 2 && !selectedCity) doSearch();
+  })
+  .catch(()=>{ ibgeReady = true; /* keep bundled */ });
 
 elCidade.addEventListener('input',()=>{ clearTimeout(debTimer); resetCity(); debTimer=setTimeout(doSearch,200); });
 
@@ -470,12 +476,19 @@ function doSearch(){
   const q=norm(elCidade.value.trim());
   if(q.length<2){ closeAC(); return; }
   const matches=municipios.filter(m=>norm(m.nome).includes(q)).slice(0,14);
-  if(!matches.length){ closeAC(); return; }
+  if(!matches.length){
+    if(!ibgeReady){
+      elAcList.innerHTML='<div class="ac-status">Carregando lista completa de municípios…</div>';
+      elAcList.classList.add('open');
+    } else { closeAC(); }
+    return;
+  }
+  const footer = !ibgeReady ? '<div class="ac-status">Carregando mais municípios…</div>' : '';
   elAcList.innerHTML=matches.map((m,i)=>
     `<div class="ac-item" data-i="${i}" data-id="${m.id}" data-nome="${m.nome}" data-uf="${m.uf}">
        <span class="ac-name">${m.nome}</span><span class="ac-uf">${m.uf}</span>
      </div>`
-  ).join('');
+  ).join('') + footer;
   elAcList.classList.add('open'); acIdx=-1;
   elAcList.querySelectorAll('.ac-item').forEach(el=>el.addEventListener('mousedown',e=>{e.preventDefault();pickCity(el);}));
 }
@@ -755,16 +768,29 @@ async function calcular(){
     const key=YMD(dt), mk=key.slice(0,7);
     if(!monthData[mk]) monthData[mk]={c:0,u:0,lbl:MS[dt.getUTCMonth()]+'/'+String(dt.getUTCFullYear()).slice(2)};
     monthData[mk].c++; nC++;
-    let t='working';
-    if(isWE(dt))           { t='weekend'; nW++; }
-    else if(recSet.has(key))   { t='recess'; nR++; }
-    else if(allHols[key]){
-      if(allHols[key].type==='municipal'){ t='mun-hol'; nHm++; }
-      else                               { t='nat-hol'; nH++;  }
-    }
-    else if(bridgeDays[key])   { t='bridge'; nB++; }
-    else                       { nU++; monthData[mk].u++; }
-    dayMap[key]=t;
+
+    const onWE  = isWE(dt);
+    const onRec = recSet.has(key);
+    const onHol = allHols[key];
+    const onBri = bridgeDays[key];
+
+    // Calendar DISPLAY: holiday color takes priority over weekend
+    let display = 'working';
+    if(onRec)                              display = 'recess';
+    else if(onHol?.type==='municipal')     display = 'mun-hol';
+    else if(onHol)                         display = 'nat-hol';
+    else if(onBri)                         display = 'bridge';
+    else if(onWE)                          display = 'weekend';
+    dayMap[key] = display;
+
+    // COUNTING: weekend days (incl. those with holidays) count as FDS
+    // since holidays on weekends don't reduce workable days
+    if(onRec)                              nR++;
+    else if(onWE)                          nW++;
+    else if(onHol?.type==='municipal')     nHm++;
+    else if(onHol)                         nH++;
+    else if(onBri)                         nB++;
+    else                                   { nU++; monthData[mk].u++; }
   }
 
   lastResult={city:selectedCity,start,end,totals:{nC,nU,nW,nH,nHm,nB,nR},dayMap,monthData,allHols,bridgeDays,recSet,todayStr};
