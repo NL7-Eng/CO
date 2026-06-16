@@ -4,90 +4,151 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Calendário de Obras</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --primary: #667eea;
-      --primary-dark: #5a6fd6;
-      --primary-light: #e8ecff;
-      --weekend: #e5e7eb;
-      --holiday: #ea580c;
-      --holiday-bg: #fff7ed;
-      --bridge: #ca8a04;
-      --bridge-bg: #fefce8;
-      --recess: #d97706;
-      --recess-bg: #fffbeb;
-      --working: #ffffff;
-      --outside: #f9fafb;
-      --text: #1f2937;
-      --text-muted: #6b7280;
-      --border: #e5e7eb;
-      --radius: 12px;
-      --shadow: 0 4px 6px -1px rgba(0,0,0,.1), 0 2px 4px -1px rgba(0,0,0,.06);
-      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05);
+      --navy:    #0f2d63;
+      --blue:    #1d4ed8;
+      --blue-m:  #2563eb;
+      --blue-l:  #3b82f6;
+      --sky:     #60a5fa;
+      --blue-50: #eff6ff;
+      --blue-100:#dbeafe;
+      --blue-200:#bfdbfe;
+
+      --cal-work:    #ffffff;
+      --cal-wknd:    #dbeafe;
+      --cal-holiday: #1d4ed8;
+      --cal-bridge:  #93c5fd;
+      --cal-recess:  #0f2d63;
+      --cal-outside: #f8fafc;
+
+      --text:       #0f172a;
+      --text-muted: #64748b;
+      --border:     #e2e8f0;
+      --bg:         #f0f7ff;
+      --surface:    #ffffff;
+
+      --r:  10px;
+      --r-lg: 16px;
+      --sh: 0 1px 3px rgba(15,45,99,.08), 0 4px 12px rgba(15,45,99,.06);
+      --sh-lg: 0 4px 24px rgba(15,45,99,.12);
+
+      --font-display: 'Space Grotesk', sans-serif;
+      --font-body:    'DM Sans', sans-serif;
     }
 
     body {
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      background: linear-gradient(135deg, #f0f4ff 0%, #fafafa 100%);
+      font-family: var(--font-body);
+      background: var(--bg);
       color: var(--text);
       min-height: 100vh;
-      padding-bottom: 60px;
     }
 
-    /* ── Header ── */
+    /* ── HEADER ── */
     header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: #fff;
-      padding: 28px 24px;
+      background: linear-gradient(135deg, var(--navy) 0%, #1a3f8f 60%, var(--blue-m) 100%);
+      padding: 40px 24px 36px;
       text-align: center;
-      box-shadow: var(--shadow-lg);
+      position: relative;
+      overflow: hidden;
     }
-    header h1 { font-size: 1.9rem; font-weight: 700; letter-spacing: -0.5px; }
-    header p  { margin-top: 6px; opacity: .85; font-size: .95rem; }
+    header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 59px,
+        rgba(255,255,255,.04) 59px,
+        rgba(255,255,255,.04) 60px
+      ),
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 59px,
+        rgba(255,255,255,.04) 59px,
+        rgba(255,255,255,.04) 60px
+      );
+    }
+    .header-inner { position: relative; z-index: 1; }
+    header h1 {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -.5px;
+    }
+    header h1 span { color: var(--sky); }
+    header p {
+      margin-top: 8px;
+      color: rgba(255,255,255,.7);
+      font-size: .95rem;
+    }
 
-    /* ── Main container ── */
-    .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+    /* ── LAYOUT ── */
+    .container { max-width: 1140px; margin: 0 auto; padding: 0 16px 60px; }
 
-    /* ── Card ── */
+    /* ── CARD ── */
     .card {
-      background: #fff;
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
+      background: var(--surface);
+      border-radius: var(--r-lg);
+      box-shadow: var(--sh);
+      border: 1px solid var(--border);
       padding: 28px;
       margin-top: 24px;
     }
     .card-title {
-      font-size: 1.05rem;
+      font-family: var(--font-display);
+      font-size: 1rem;
       font-weight: 700;
-      color: var(--primary-dark);
-      margin-bottom: 20px;
+      color: var(--navy);
+      margin-bottom: 22px;
       display: flex;
       align-items: center;
       gap: 8px;
+      padding-bottom: 14px;
+      border-bottom: 2px solid var(--blue-100);
     }
 
-    /* ── Form ── */
+    /* ── FORM ── */
     .form-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      grid-template-columns: 2fr 1fr 1fr;
       gap: 18px;
     }
+    @media(max-width:700px){ .form-grid { grid-template-columns: 1fr; } }
+
     .form-group { display: flex; flex-direction: column; gap: 6px; }
-    .form-group label { font-size: .85rem; font-weight: 600; color: var(--text-muted); }
-    .form-group input[type="text"],
-    .form-group input[type="date"],
-    .form-group input[type="number"] {
-      border: 1.5px solid var(--border);
-      border-radius: 8px;
-      padding: 10px 14px;
-      font-size: .95rem;
-      outline: none;
-      transition: border-color .2s;
+    label {
+      font-size: .8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: .5px;
     }
-    .form-group input:focus { border-color: var(--primary); }
+
+    input[type="text"], input[type="number"] {
+      border: 1.5px solid var(--border);
+      border-radius: var(--r);
+      padding: 11px 14px;
+      font-family: var(--font-body);
+      font-size: .95rem;
+      color: var(--text);
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+      background: #fff;
+    }
+    input[type="text"]:focus, input[type="number"]:focus {
+      border-color: var(--blue-m);
+      box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+    }
+    input.loading { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10' stroke='%23bfdbfe' stroke-width='3' fill='none'/%3E%3Cpath d='M12 2a10 10 0 0 1 10 10' stroke='%232563eb' stroke-width='3' fill='none' stroke-linecap='round'%3E%3CanimateTransform attributeName='transform' type='rotate' from='0 12 12' to='360 12 12' dur='.8s' repeatCount='indefinite'/%3E%3C/path%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 38px; }
 
     /* autocomplete */
     .autocomplete-wrap { position: relative; }
@@ -96,314 +157,295 @@
       top: calc(100% + 4px);
       left: 0; right: 0;
       background: #fff;
-      border: 1.5px solid var(--border);
-      border-radius: 8px;
-      box-shadow: var(--shadow-lg);
-      max-height: 220px;
+      border: 1.5px solid var(--blue-200);
+      border-radius: var(--r);
+      box-shadow: var(--sh-lg);
+      max-height: 240px;
       overflow-y: auto;
       z-index: 1000;
       display: none;
     }
     .autocomplete-list.show { display: block; }
-    .autocomplete-item {
+    .ac-item {
       padding: 10px 14px;
       cursor: pointer;
       font-size: .9rem;
-      border-bottom: 1px solid #f3f4f6;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid var(--blue-50);
     }
-    .autocomplete-item:last-child { border-bottom: none; }
-    .autocomplete-item:hover, .autocomplete-item.active { background: var(--primary-light); }
+    .ac-item:last-child { border-bottom: none; }
+    .ac-item:hover, .ac-item.active { background: var(--blue-50); }
+    .ac-city { font-weight: 600; color: var(--text); }
+    .ac-uf { font-size: .78rem; font-weight: 700; background: var(--blue-100); color: var(--blue); padding: 2px 7px; border-radius: 20px; }
+    .ac-msg { padding: 12px 14px; font-size: .88rem; color: var(--text-muted); font-style: italic; }
 
     /* checkboxes */
-    .checkbox-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-      align-items: center;
-      margin-top: 4px;
+    .checks-row { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 20px; }
+    .check-label {
+      display: flex; align-items: center; gap: 9px;
+      cursor: pointer; font-size: .9rem; font-weight: 500;
+      background: var(--blue-50);
+      border: 1.5px solid var(--blue-100);
+      border-radius: 8px;
+      padding: 9px 16px;
+      transition: border-color .2s, background .2s;
+      user-select: none;
     }
-    .checkbox-label {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      cursor: pointer;
-      font-size: .9rem;
-      font-weight: 500;
+    .check-label:has(input:checked) {
+      background: var(--blue-100);
+      border-color: var(--blue-m);
     }
-    .checkbox-label input[type="checkbox"] {
-      width: 18px;
-      height: 18px;
-      accent-color: var(--primary);
-      cursor: pointer;
-    }
+    .check-label input { accent-color: var(--blue-m); width: 16px; height: 16px; cursor: pointer; }
 
     /* buttons */
-    .btn-row { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
+    .btn-row { display: flex; gap: 12px; margin-top: 22px; flex-wrap: wrap; }
     .btn {
-      padding: 11px 28px;
-      border-radius: 8px;
-      font-size: .95rem;
-      font-weight: 600;
-      cursor: pointer;
-      border: none;
-      transition: transform .15s, box-shadow .15s, opacity .15s;
-    }
-    .btn:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
-    .btn:active { transform: translateY(0); }
-    .btn-primary {
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      color: #fff;
-    }
-    .btn-secondary {
-      background: #f3f4f6;
-      color: var(--text);
-      border: 1.5px solid var(--border);
-    }
-    .btn-export {
-      background: linear-gradient(135deg, #10b981, #059669);
-      color: #fff;
-    }
-
-    /* ── Alert ── */
-    .alert {
-      border-radius: 8px;
-      padding: 12px 16px;
+      font-family: var(--font-display);
       font-size: .9rem;
-      margin-top: 16px;
-      display: none;
+      font-weight: 600;
+      padding: 11px 26px;
+      border-radius: var(--r);
+      border: none;
+      cursor: pointer;
+      transition: transform .15s, box-shadow .15s;
+      display: flex; align-items: center; gap: 8px;
     }
-    .alert.show { display: block; }
+    .btn:hover { transform: translateY(-1px); box-shadow: var(--sh-lg); }
+    .btn:active { transform: translateY(0); }
+    .btn-primary  { background: linear-gradient(135deg, var(--blue-m), var(--navy)); color: #fff; }
+    .btn-secondary { background: #fff; color: var(--text-muted); border: 1.5px solid var(--border); }
+    .btn-export   { background: linear-gradient(135deg, #059669, #047857); color: #fff; }
+    .btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+    /* alerts */
+    .alert { border-radius: var(--r); padding: 12px 16px; font-size: .88rem; margin-top: 16px; display: none; }
+    .alert.show { display: flex; align-items: flex-start; gap: 8px; }
     .alert-error   { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
     .alert-warning { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
-    .alert-info    { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+    .alert-info    { background: var(--blue-50); color: var(--blue); border: 1px solid var(--blue-200); }
 
-    /* ── Summary cards ── */
+    /* ── SUMMARY CARDS ── */
     .summary-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
       gap: 14px;
     }
-    .sum-card {
-      border-radius: 10px;
-      padding: 16px;
+    .sc {
+      border-radius: var(--r);
+      padding: 18px 14px;
       text-align: center;
+      border: 1px solid transparent;
     }
-    .sum-card .sc-label { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; opacity: .75; }
-    .sum-card .sc-value { font-size: 2rem; font-weight: 800; margin-top: 4px; line-height: 1; }
-    .sum-card .sc-sub   { font-size: .78rem; margin-top: 4px; opacity: .7; }
+    .sc-label { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .7px; opacity: .7; }
+    .sc-value {
+      font-family: var(--font-display);
+      font-size: 1.9rem;
+      font-weight: 700;
+      margin-top: 4px;
+      line-height: 1;
+    }
+    .sc-sub { font-size: .75rem; margin-top: 5px; opacity: .65; }
 
-    .sc-start    { background: linear-gradient(135deg,#eff6ff,#dbeafe); color:#1d4ed8; }
-    .sc-end      { background: linear-gradient(135deg,#f0fdf4,#dcfce7); color:#166534; }
-    .sc-corridos { background: linear-gradient(135deg,#f8fafc,#f1f5f9); color:#334155; }
-    .sc-uteis    { background: linear-gradient(135deg,#eef2ff,#e0e7ff); color:#4338ca; }
-    .sc-fds      { background: linear-gradient(135deg,#fff1f2,#ffe4e6); color:#be123c; }
-    .sc-feriados { background: linear-gradient(135deg,#fff7ed,#ffedd5); color:#c2410c; }
-    .sc-comp     { background: linear-gradient(135deg,#f0f9ff,#e0f2fe); color:#0369a1; }
-    .sc-recesso  { background: linear-gradient(135deg,#fffbeb,#fef3c7); color:#b45309; }
+    .sc-date  { background: linear-gradient(135deg,#eff6ff,#dbeafe); color:#1e40af; border-color:#bfdbfe; }
+    .sc-total { background: linear-gradient(135deg,#f8fafc,#f1f5f9); color:#334155; border-color:#e2e8f0; }
+    .sc-uteis { background: linear-gradient(135deg,#dbeafe,#bfdbfe); color:#1e3a8a; border-color:#93c5fd; }
+    .sc-fds   { background: linear-gradient(135deg,#e0e7ff,#c7d2fe); color:#3730a3; border-color:#a5b4fc; }
+    .sc-fer   { background: linear-gradient(135deg,#eff6ff,#dbeafe); color:#1d4ed8; border-color:#bfdbfe; }
+    .sc-comp  { background: linear-gradient(135deg,#f0f9ff,#e0f2fe); color:#0369a1; border-color:#7dd3fc; }
+    .sc-rec   { background: linear-gradient(135deg,#f0f4ff,#e8edff); color:#0f2d63; border-color:#a5b4fc; }
 
-    /* ── Legend ── */
-    .legend {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-bottom: 20px;
+    /* ── TIMELINE BAR ── */
+    .timeline-wrap {
+      margin-top: 22px;
+      background: var(--blue-50);
+      border: 1px solid var(--blue-200);
+      border-radius: var(--r);
+      padding: 16px;
+      overflow-x: auto;
     }
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      font-size: .82rem;
-      font-weight: 500;
+    .timeline-label { font-size: .75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
+    .timeline-bar { display: flex; height: 28px; border-radius: 6px; overflow: hidden; min-width: 400px; }
+    .tl-seg {
+      display: flex; align-items: center; justify-content: center;
+      font-size: .65rem; font-weight: 700; color: #fff;
+      transition: opacity .2s;
+      cursor: default;
+      min-width: 2px;
     }
-    .legend-dot {
-      width: 14px; height: 14px;
-      border-radius: 4px;
-      flex-shrink: 0;
-    }
-    .ld-working  { background: #fff; border: 1.5px solid #d1d5db; }
-    .ld-weekend  { background: #e5e7eb; }
-    .ld-holiday  { background: #ea580c; }
-    .ld-bridge   { background: #fef08a; border: 1.5px solid #ca8a04; }
-    .ld-recess   { background: #fb923c; }
-    .ld-outside  { background: #f3f4f6; border: 1.5px solid #e5e7eb; opacity:.5; }
+    .tl-seg:hover { opacity: .85; }
+    .tl-seg.s-uteis   { background: var(--blue-m); }
+    .tl-seg.s-wknd    { background: var(--blue-200); color: var(--blue); }
+    .tl-seg.s-holiday { background: var(--navy); }
+    .tl-seg.s-bridge  { background: var(--sky); color: var(--navy); }
+    .tl-seg.s-recess  { background: #475569; }
+    .timeline-months { display: flex; min-width: 400px; margin-top: 6px; }
+    .tl-month { font-size: .68rem; color: var(--text-muted); font-weight: 600; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-    /* ── Calendar grid ── */
+    /* ── LEGEND ── */
+    .legend { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+    .legend-item { display: flex; align-items: center; gap: 7px; font-size: .82rem; font-weight: 500; }
+    .ld { width: 13px; height: 13px; border-radius: 3px; flex-shrink: 0; }
+    .ld-work    { background: var(--cal-work);    border: 1.5px solid #cbd5e1; }
+    .ld-wknd    { background: var(--cal-wknd); }
+    .ld-holiday { background: var(--cal-holiday); }
+    .ld-bridge  { background: var(--cal-bridge); border: 1px solid #60a5fa; }
+    .ld-recess  { background: var(--cal-recess); }
+    .ld-outside { background: var(--cal-outside); border: 1.5px solid #e2e8f0; opacity:.6; }
+
+    /* ── CALENDAR GRID ── */
     .calendars-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(auto-fill, minmax(285px, 1fr));
+      gap: 18px;
     }
-    .month-cal {
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      overflow: hidden;
-    }
+    .month-cal { border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; }
     .month-header {
-      background: linear-gradient(135deg, #667eea, #764ba2);
+      background: linear-gradient(135deg, var(--navy), var(--blue-m));
       color: #fff;
       text-align: center;
-      padding: 10px;
+      padding: 11px 8px;
+      font-family: var(--font-display);
       font-weight: 700;
-      font-size: .95rem;
+      font-size: .92rem;
       letter-spacing: .5px;
     }
-    .cal-weekdays {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      background: #f8fafc;
-      border-bottom: 1px solid var(--border);
+    .cal-wkdays {
+      display: grid; grid-template-columns: repeat(7, 1fr);
+      background: var(--blue-50);
+      border-bottom: 1px solid var(--blue-100);
     }
-    .cal-weekday {
-      text-align: center;
-      padding: 6px 2px;
-      font-size: .72rem;
-      font-weight: 700;
-      color: var(--text-muted);
-      text-transform: uppercase;
-    }
-    .cal-days { display: grid; grid-template-columns: repeat(7, 1fr); }
+    .cal-wkday { text-align: center; padding: 6px 2px; font-size: .68rem; font-weight: 700; color: var(--blue); text-transform: uppercase; }
+    .cal-days  { display: grid; grid-template-columns: repeat(7, 1fr); }
+
     .cal-day {
       aspect-ratio: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-display);
       font-size: .82rem;
       font-weight: 500;
-      border: .5px solid #f0f0f0;
-      min-height: 36px;
+      border: .5px solid rgba(0,0,0,.04);
+      min-height: 34px;
       position: relative;
-      cursor: default;
     }
-    .cal-day.empty  { background: #fafafa; }
-    .cal-day.outside { background: var(--outside); color: #c4c4c4; font-size: .75rem; }
-    .cal-day.working { background: var(--working); color: var(--text); }
-    .cal-day.weekend { background: var(--weekend); color: #6b7280; }
-    .cal-day.holiday { background: var(--holiday); color: #fff; font-weight: 700; }
-    .cal-day.bridge  { background: #fef08a; color: #854d0e; font-weight: 700; border: 1px solid #fde047; }
-    .cal-day.recess  { background: #fb923c; color: #fff; font-weight: 700; }
-    .cal-day.today   { box-shadow: inset 0 0 0 2px #667eea; }
+    .cal-day.empty   { background: #fafafa; }
+    .cal-day.outside { background: var(--cal-outside); color: #c8d3dd; font-size: .73rem; }
+    .cal-day.working { background: var(--cal-work); color: var(--text); }
+    .cal-day.weekend { background: var(--cal-wknd); color: #3730a3; }
+    .cal-day.holiday { background: var(--cal-holiday); color: #fff; font-weight: 700; }
+    .cal-day.bridge  { background: var(--cal-bridge); color: var(--navy); font-weight: 700; }
+    .cal-day.recess  { background: var(--cal-recess); color: #fff; font-weight: 700; }
+    .cal-day.today   { box-shadow: inset 0 0 0 2px var(--blue-l); }
+
     .cal-day[title]:hover::after {
       content: attr(title);
       position: absolute;
       bottom: calc(100% + 4px);
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,.8);
-      color: #fff;
-      font-size: .72rem;
-      padding: 4px 8px;
-      border-radius: 4px;
-      white-space: nowrap;
-      z-index: 100;
+      left: 50%; transform: translateX(-50%);
+      background: rgba(15,45,99,.92);
+      color: #fff; font-size: .68rem;
+      padding: 4px 8px; border-radius: 5px;
+      white-space: nowrap; z-index: 100;
       pointer-events: none;
+      font-family: var(--font-body);
     }
 
-    /* ── Tables ── */
+    /* ── TABLES ── */
     .table-wrap { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; font-size: .88rem; }
     th {
-      background: #f8fafc;
-      padding: 10px 12px;
+      background: var(--blue-50);
+      padding: 10px 14px;
       text-align: left;
+      font-family: var(--font-display);
       font-weight: 700;
-      color: var(--text-muted);
-      font-size: .8rem;
+      font-size: .75rem;
+      color: var(--blue);
       text-transform: uppercase;
-      letter-spacing: .4px;
-      border-bottom: 2px solid var(--border);
+      letter-spacing: .5px;
+      border-bottom: 2px solid var(--blue-100);
       white-space: nowrap;
     }
-    td {
-      padding: 9px 12px;
-      border-bottom: 1px solid #f3f4f6;
-      white-space: nowrap;
-    }
-    tr:hover td { background: #fafafa; }
+    td { padding: 9px 14px; border-bottom: 1px solid #f1f5f9; white-space: nowrap; }
+    tr:hover td { background: var(--blue-50); }
+    tr:last-child td { border-bottom: none; }
 
     .badge {
-      display: inline-block;
-      padding: 3px 10px;
-      border-radius: 20px;
-      font-size: .75rem;
-      font-weight: 700;
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 10px; border-radius: 20px;
+      font-size: .74rem; font-weight: 700;
     }
-    .badge-national { background: #fff7ed; color: #c2410c; }
-    .badge-municipal { background: #eff6ff; color: #1d4ed8; }
-    .badge-bridge    { background: #fefce8; color: #854d0e; }
-    .badge-recess    { background: #fffbeb; color: #b45309; }
+    .badge-nat  { background: var(--blue-100); color: var(--navy); }
+    .badge-mun  { background: #ddd6fe; color: #5b21b6; }
+    .badge-bri  { background: #e0f2fe; color: #075985; }
+    .badge-rec  { background: #e0e7ff; color: #3730a3; }
 
     /* monthly table */
     .month-table th, .month-table td { text-align: center; }
-    .month-table td:first-child, .month-table th:first-child { text-align: left; font-weight: 600; }
-    .month-table tr.total-row td { background: #f0f4ff; font-weight: 700; color: var(--primary-dark); }
-    .month-table tr.uteis-row td { background: #eef2ff; font-weight: 800; color: #4338ca; font-size: 1rem; }
-    .month-table .total-col { background: #f8fafc; font-weight: 800; color: var(--text); }
+    .month-table td:first-child, .month-table th:first-child { text-align: left; }
+    .month-table tr.row-corridos td { background: #f8fafc; }
+    .month-table tr.row-uteis td    { background: var(--blue-50); font-family: var(--font-display); font-weight: 800; font-size: 1.05rem; color: var(--navy); }
+    .month-table .col-total { background: var(--blue-100) !important; color: var(--navy); font-weight: 800; }
 
-    /* hidden */
     .hidden { display: none !important; }
 
-    /* responsive */
-    @media (max-width: 600px) {
-      header h1 { font-size: 1.4rem; }
+    @media(max-width:600px){
+      header h1 { font-size: 1.5rem; }
       .card { padding: 18px; }
-      .summary-grid { grid-template-columns: repeat(2, 1fr); }
+      .summary-grid { grid-template-columns: repeat(2,1fr); }
       .calendars-grid { grid-template-columns: 1fr; }
-      .btn { padding: 10px 18px; font-size: .88rem; }
     }
   </style>
 </head>
 <body>
 
 <header>
-  <h1>🏗️ Calendário de Obras</h1>
-  <p>Calcule dias úteis, feriados e compensações para seu contrato de obra</p>
+  <div class="header-inner">
+    <h1>📐 Calendário de <span>Obras</span></h1>
+    <p>Calcule dias úteis, feriados e compensações para contratos de infraestrutura</p>
+  </div>
 </header>
 
 <div class="container">
 
-  <!-- ── FORM ── -->
+  <!-- FORM -->
   <div class="card">
-    <div class="card-title">📋 Dados da Obra</div>
+    <div class="card-title">📋 Dados do Contrato</div>
     <div class="form-grid">
-      <!-- Cidade -->
-      <div class="form-group" style="grid-column: span 2;">
+      <div class="form-group">
         <label for="cidadeInput">🏙️ Cidade da Obra</label>
         <div class="autocomplete-wrap">
-          <input type="text" id="cidadeInput" placeholder="Digite o nome da cidade…" autocomplete="off" />
-          <div class="autocomplete-list" id="autocompleteList"></div>
+          <input type="text" id="cidadeInput" placeholder="Digite para buscar a cidade…" autocomplete="off" spellcheck="false" />
+          <div class="autocomplete-list" id="acList"></div>
         </div>
         <input type="hidden" id="cidadeId" />
         <input type="hidden" id="cidadeNome" />
         <input type="hidden" id="cidadeUF" />
       </div>
-
-      <!-- Data OS -->
       <div class="form-group">
-        <label for="dataOS">📅 Data da OS (dd/mm/aaaa)</label>
+        <label for="dataOS">📅 Data da OS</label>
         <input type="text" id="dataOS" placeholder="01/06/2026" maxlength="10" />
       </div>
-
-      <!-- Prazo -->
       <div class="form-group">
         <label for="prazo">⏱️ Prazo (dias corridos)</label>
         <input type="number" id="prazo" min="1" placeholder="180" value="180" />
       </div>
     </div>
 
-    <!-- Checkboxes -->
-    <div class="checkbox-row" style="margin-top:18px;">
-      <label class="checkbox-label">
+    <div class="checks-row">
+      <label class="check-label">
         <input type="checkbox" id="chkPontes" checked />
-        🌉 Considerar pontes (quinta→sexta / terça→segunda)
+        🌉 Considerar pontes (qui→sex / ter→seg)
       </label>
-      <label class="checkbox-label">
+      <label class="check-label">
         <input type="checkbox" id="chkRecesso" checked />
-        🎄 Recesso fim de ano (24/12 a 01/01)
+        🎄 Recesso fim de ano (24/12 – 01/01)
       </label>
     </div>
 
     <div class="btn-row">
-      <button class="btn btn-primary" onclick="calcular()">🔢 Calcular Calendário</button>
+      <button class="btn btn-primary" id="btnCalc" onclick="calcular()">🔢 Calcular Calendário</button>
       <button class="btn btn-secondary" onclick="limpar()">🗑️ Limpar</button>
     </div>
 
@@ -412,13 +454,14 @@
     <div class="alert alert-info"    id="alertInfo"></div>
   </div>
 
-  <!-- ── RESULTS (hidden until calculated) ── -->
+  <!-- RESULTS -->
   <div id="results" class="hidden">
 
-    <!-- Summary cards -->
+    <!-- Summary -->
     <div class="card">
       <div class="card-title">📊 Resumo do Contrato</div>
       <div class="summary-grid" id="summaryCards"></div>
+      <div id="timelineSection"></div>
       <div class="btn-row" style="margin-top:20px;">
         <button class="btn btn-export" onclick="exportarExcel()">📥 Exportar para Excel</button>
       </div>
@@ -428,12 +471,12 @@
     <div class="card">
       <div class="card-title">📆 Calendário Visual</div>
       <div class="legend">
-        <div class="legend-item"><div class="legend-dot ld-working"></div> Dia útil</div>
-        <div class="legend-item"><div class="legend-dot ld-weekend"></div> Fim de semana</div>
-        <div class="legend-item"><div class="legend-dot ld-holiday"></div> Feriado</div>
-        <div class="legend-item"><div class="legend-dot ld-bridge"></div> Compensação (ponte)</div>
-        <div class="legend-item"><div class="legend-dot ld-recess"></div> Recesso</div>
-        <div class="legend-item"><div class="legend-dot ld-outside"></div> Fora do contrato</div>
+        <div class="legend-item"><div class="ld ld-work"></div> Dia útil</div>
+        <div class="legend-item"><div class="ld ld-wknd"></div> Fim de semana</div>
+        <div class="legend-item"><div class="ld ld-holiday"></div> Feriado</div>
+        <div class="legend-item"><div class="ld ld-bridge"></div> Compensação (ponte)</div>
+        <div class="legend-item"><div class="ld ld-recess"></div> Recesso</div>
+        <div class="legend-item"><div class="ld ld-outside"></div> Fora do contrato</div>
       </div>
       <div class="calendars-grid" id="calendarsGrid"></div>
     </div>
@@ -442,640 +485,695 @@
     <div class="card">
       <div class="card-title">🎉 Feriados e Compensações no Período</div>
       <div class="table-wrap">
-        <table id="holidayTable">
-          <thead>
-            <tr>
-              <th>Data</th>
-              <th>Dia da Semana</th>
-              <th>Descrição</th>
-              <th>Tipo</th>
-            </tr>
-          </thead>
+        <table>
+          <thead><tr>
+            <th>Data</th><th>Dia</th><th>Descrição</th><th>Tipo</th>
+          </tr></thead>
           <tbody id="holidayTbody"></tbody>
         </table>
       </div>
     </div>
 
-    <!-- Working days per month -->
+    <!-- Monthly table -->
     <div class="card">
-      <div class="card-title">📅 Dias Úteis por Mês</div>
+      <div class="card-title">📅 Dias por Mês</div>
       <div class="table-wrap">
         <table class="month-table" id="monthTable"></table>
       </div>
     </div>
 
-  </div><!-- /results -->
-</div><!-- /container -->
+  </div>
+</div>
 
 <script>
-/* ===================================================================
-   GLOBALS & HELPERS
-   =================================================================== */
-const WEEKDAYS_PT = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
-const MONTHS_PT   = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
-                     'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-const MONTHS_SHORT = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+/* ====================================================================
+   CONSTANTS
+   ==================================================================== */
+const WD_PT = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+const MO_PT = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+               'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const MO_S  = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
 
-let municipios = [];
-let selectedCity = null;  // { id, nome, uf }
-let lastResult  = null;   // store for export
+/* ====================================================================
+   DATE HELPERS  (all UTC, no timezone drift)
+   ==================================================================== */
+const D    = (y,m,d) => new Date(Date.UTC(y,m,d));
+const YMD  = dt => `${dt.getUTCFullYear()}-${p2(dt.getUTCMonth()+1)}-${p2(dt.getUTCDate())}`;
+const add  = (dt,n) => new Date(dt.getTime() + n*864e5);
+const dow  = dt => dt.getUTCDay();           // 0=Sun … 6=Sat
+const isWE = dt => { const d=dow(dt); return d===0||d===6; }
+const p2   = n => String(n).padStart(2,'0');
+const fmtBR= dt => `${p2(dt.getUTCDate())}/${p2(dt.getUTCMonth()+1)}/${dt.getUTCFullYear()}`;
 
-// UTC date helpers (avoid timezone drift)
-function d(y,m,day){ return new Date(Date.UTC(y,m,day)); }
-function ymd(dt){ return `${dt.getUTCFullYear()}-${String(dt.getUTCMonth()+1).padStart(2,'0')}-${String(dt.getUTCDate()).padStart(2,'0')}`; }
-function addDays(dt,n){ return new Date(dt.getTime() + n*864e5); }
-function dayOfWeek(dt){ return dt.getUTCDay(); } // 0=Sun … 6=Sat
-function isWeekend(dt){ const dw=dayOfWeek(dt); return dw===0||dw===6; }
-
-function fmtDate(dt){
-  return `${String(dt.getUTCDate()).padStart(2,'0')}/${String(dt.getUTCMonth()+1).padStart(2,'0')}/${dt.getUTCFullYear()}`;
-}
-function parseBR(str){
-  const [d2,m,y] = str.split('/');
-  if(!d2||!m||!y) return null;
-  const dt = new Date(Date.UTC(+y,+m-1,+d2));
-  if(isNaN(dt)) return null;
-  if(dt.getUTCFullYear()!==+y||dt.getUTCMonth()!==+m-1||dt.getUTCDate()!==+d2) return null;
+function parseBR(s){
+  const [d,m,y] = (s||'').split('/');
+  if(!d||!m||!y) return null;
+  const dt = new Date(Date.UTC(+y,+m-1,+d));
+  if(isNaN(dt)||dt.getUTCFullYear()!==+y||dt.getUTCMonth()!==+m-1||dt.getUTCDate()!==+d) return null;
   return dt;
 }
 
-/* ===================================================================
-   IBGE MUNICIPALITIES
-   =================================================================== */
-async function loadMunicipios(){
-  try {
-    const r = await fetch('https://servicodados.ibge.gov.br/api/v1/localidades/municipios?orderBy=nome');
-    if(!r.ok) throw new Error();
-    const data = await r.json();
-    municipios = data.map(m => ({
-      id: m.id,
-      nome: m.nome,
-      uf: m.microrregiao.mesorregiao.UF.sigla,
-      label: `${m.nome}, ${m.microrregiao.mesorregiao.UF.sigla}`
-    }));
-  } catch(e){
-    showAlert('warning','Não foi possível carregar a lista de cidades do IBGE. Você pode digitar livremente.');
-  }
+/* ====================================================================
+   IBGE AUTOCOMPLETE
+   ==================================================================== */
+let municipios   = null;   // null = not yet loaded
+let loadPromise  = null;
+let selectedCity = null;
+
+const cidadeInput = document.getElementById('cidadeInput');
+const acList      = document.getElementById('acList');
+let acIdx = -1;
+let debTimer;
+
+function normalize(s){ return s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase(); }
+
+async function getMunicipios(){
+  if(municipios) return municipios;
+  if(loadPromise) return loadPromise;
+  loadPromise = fetch('https://servicodados.ibge.gov.br/api/v1/localidades/municipios?orderBy=nome')
+    .then(r=>{ if(!r.ok) throw new Error(); return r.json(); })
+    .then(data => {
+      municipios = data.map(m=>({
+        id:    String(m.id),
+        nome:  m.nome,
+        uf:    m.microrregiao.mesorregiao.UF.sigla
+      }));
+      return municipios;
+    })
+    .catch(()=>{
+      municipios = [];
+      showAlert('warning','Não foi possível carregar as cidades do IBGE. Digite livremente.');
+      return [];
+    });
+  return loadPromise;
 }
 
-/* ── autocomplete ── */
-const cidadeInput   = document.getElementById('cidadeInput');
-const autocompleteList = document.getElementById('autocompleteList');
-let acActiveIdx = -1;
-
-function normalizeStr(s){ return s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase(); }
+cidadeInput.addEventListener('focus', () => {
+  if(!municipios && !loadPromise){
+    cidadeInput.classList.add('loading');
+    getMunicipios().then(()=>{ cidadeInput.classList.remove('loading'); });
+  }
+});
 
 cidadeInput.addEventListener('input', () => {
-  const q = normalizeStr(cidadeInput.value.trim());
-  selectedCity = null;
-  document.getElementById('cidadeId').value   = '';
-  document.getElementById('cidadeNome').value = '';
-  document.getElementById('cidadeUF').value   = '';
+  clearTimeout(debTimer);
+  resetCity();
+  debTimer = setTimeout(doSearch, 200);
+});
 
+async function doSearch(){
+  const q = normalize(cidadeInput.value.trim());
   if(q.length < 2){ closeAC(); return; }
 
-  const matches = municipios.filter(m => normalizeStr(m.label).includes(q)).slice(0,10);
+  if(!municipios){
+    cidadeInput.classList.add('loading');
+    acList.innerHTML = '<div class="ac-msg">Carregando cidades…</div>';
+    acList.classList.add('show');
+    await getMunicipios();
+    cidadeInput.classList.remove('loading');
+  }
+
+  const matches = municipios
+    .filter(m => normalize(m.nome).includes(q) || normalize(`${m.nome} ${m.uf}`).includes(q))
+    .slice(0, 12);
+
   if(!matches.length){ closeAC(); return; }
 
-  autocompleteList.innerHTML = matches.map((m,i) =>
-    `<div class="autocomplete-item" data-idx="${i}" data-id="${m.id}" data-nome="${m.nome}" data-uf="${m.uf}" data-label="${m.label}">${m.label}</div>`
+  acList.innerHTML = matches.map((m,i) =>
+    `<div class="ac-item" data-i="${i}" data-id="${m.id}" data-nome="${m.nome}" data-uf="${m.uf}">
+       <span class="ac-city">${m.nome}</span>
+       <span class="ac-uf">${m.uf}</span>
+     </div>`
   ).join('');
-  autocompleteList.classList.add('show');
-  acActiveIdx = -1;
+  acList.classList.add('show');
+  acIdx = -1;
 
-  autocompleteList.querySelectorAll('.autocomplete-item').forEach(el => {
-    el.addEventListener('mousedown', e => {
-      e.preventDefault();
-      selectCity(el);
-    });
+  acList.querySelectorAll('.ac-item').forEach(el => {
+    el.addEventListener('mousedown', e => { e.preventDefault(); pickCity(el); });
   });
-});
+}
 
 cidadeInput.addEventListener('keydown', e => {
-  const items = autocompleteList.querySelectorAll('.autocomplete-item');
+  const items = acList.querySelectorAll('.ac-item');
   if(!items.length) return;
-  if(e.key==='ArrowDown'){
-    e.preventDefault();
-    acActiveIdx = Math.min(acActiveIdx+1, items.length-1);
-    items.forEach((el,i)=>el.classList.toggle('active',i===acActiveIdx));
-  } else if(e.key==='ArrowUp'){
-    e.preventDefault();
-    acActiveIdx = Math.max(acActiveIdx-1, 0);
-    items.forEach((el,i)=>el.classList.toggle('active',i===acActiveIdx));
-  } else if(e.key==='Enter'){
-    if(acActiveIdx>=0) selectCity(items[acActiveIdx]);
-    else closeAC();
-  } else if(e.key==='Escape'){ closeAC(); }
+  if(e.key==='ArrowDown'){ e.preventDefault(); acIdx=Math.min(acIdx+1,items.length-1); hilite(items); }
+  else if(e.key==='ArrowUp'){ e.preventDefault(); acIdx=Math.max(acIdx-1,0); hilite(items); }
+  else if(e.key==='Enter'){ if(acIdx>=0) pickCity(items[acIdx]); closeAC(); }
+  else if(e.key==='Escape'){ closeAC(); }
 });
 
-document.addEventListener('click', e => { if(!e.target.closest('.autocomplete-wrap')) closeAC(); });
+function hilite(items){ items.forEach((el,i)=>el.classList.toggle('active',i===acIdx)); }
 
-function selectCity(el){
+function pickCity(el){
   selectedCity = { id: el.dataset.id, nome: el.dataset.nome, uf: el.dataset.uf };
-  cidadeInput.value = el.dataset.label;
+  cidadeInput.value = `${el.dataset.nome}, ${el.dataset.uf}`;
   document.getElementById('cidadeId').value   = el.dataset.id;
   document.getElementById('cidadeNome').value = el.dataset.nome;
   document.getElementById('cidadeUF').value   = el.dataset.uf;
   closeAC();
 }
-function closeAC(){ autocompleteList.classList.remove('show'); acActiveIdx=-1; }
+function resetCity(){
+  selectedCity=null;
+  document.getElementById('cidadeId').value='';
+}
+function closeAC(){ acList.classList.remove('show'); acIdx=-1; }
+document.addEventListener('click', e=>{ if(!e.target.closest('.autocomplete-wrap')) closeAC(); });
 
-/* dd/mm/yyyy mask for dataOS */
+/* date mask */
 document.getElementById('dataOS').addEventListener('input', function(){
-  let v = this.value.replace(/\D/g,'');
-  if(v.length>2) v = v.slice(0,2)+'/'+v.slice(2);
-  if(v.length>5) v = v.slice(0,5)+'/'+v.slice(5,9);
-  this.value = v;
+  let v=this.value.replace(/\D/g,'');
+  if(v.length>2) v=v.slice(0,2)+'/'+v.slice(2);
+  if(v.length>5) v=v.slice(0,5)+'/'+v.slice(5,9);
+  this.value=v;
 });
 
-/* ===================================================================
-   EASTER (Meeus/Jones/Butcher)
-   =================================================================== */
-function getEaster(year){
-  const a=year%19, b=Math.floor(year/100), c=year%100,
-        dd=Math.floor(b/4), e=b%4, f=Math.floor((b+8)/25),
-        g=Math.floor((b-f+1)/3), h=(19*a+b-dd-g+15)%30,
-        i=Math.floor(c/4), k=c%4, l=(32+2*e+2*i-h-k)%7,
+/* ====================================================================
+   EASTER
+   ==================================================================== */
+function easter(yr){
+  const a=yr%19,b=Math.floor(yr/100),c=yr%100,
+        d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),
+        g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,
+        i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,
         m=Math.floor((a+11*h+22*l)/451),
-        month=Math.floor((h+l-7*m+114)/31),
-        day=(h+l-7*m+114)%31+1;
-  return d(year,month-1,day);
+        mo=Math.floor((h+l-7*m+114)/31),
+        dy=(h+l-7*m+114)%31+1;
+  return D(yr,mo-1,dy);
 }
 
-/* ===================================================================
-   NATIONAL HOLIDAYS
-   =================================================================== */
-function getNationalHolidays(year){
-  const easter = getEaster(year);
-  const holidays = {};
-  const add = (dt, name) => { holidays[ymd(dt)] = { name, type: 'national' }; };
-
-  // Fixed
-  add(d(year,0,1),  'Confraternização Universal');
-  add(d(year,3,21), 'Tiradentes');
-  add(d(year,4,1),  'Dia do Trabalho');
-  add(d(year,8,7),  'Independência do Brasil');
-  add(d(year,9,12), 'Nossa Senhora Aparecida');
-  add(d(year,10,2), 'Finados');
-  add(d(year,10,15),'Proclamação da República');
-  add(d(year,10,20),'Dia da Consciência Negra');
-  add(d(year,11,25),'Natal');
-
-  // Moveable (relative to Easter)
-  add(addDays(easter,-48), 'Segunda-feira de Carnaval');
-  add(addDays(easter,-47), 'Terça-feira de Carnaval');
-  add(addDays(easter,-2),  'Sexta-feira Santa');
-  add(easter,              'Páscoa');
-  add(addDays(easter,60),  'Corpus Christi');
-
-  return holidays;
+/* ====================================================================
+   NATIONAL HOLIDAYS (fallback + moveable)
+   ==================================================================== */
+function nationalHolidays(yr){
+  const e = easter(yr);
+  const h = {};
+  const a = (dt,n) => { h[YMD(dt)]={name:n,type:'national'}; };
+  a(D(yr,0,1),  'Confraternização Universal');
+  a(D(yr,3,21), 'Tiradentes');
+  a(D(yr,4,1),  'Dia do Trabalho');
+  a(D(yr,8,7),  'Independência do Brasil');
+  a(D(yr,9,12), 'Nossa Senhora Aparecida');
+  a(D(yr,10,2), 'Finados');
+  a(D(yr,10,15),'Proclamação da República');
+  a(D(yr,10,20),'Consciência Negra');
+  a(D(yr,11,25),'Natal');
+  a(add(e,-48), 'Segunda-feira de Carnaval');
+  a(add(e,-47), 'Terça-feira de Carnaval');
+  a(add(e,-2),  'Sexta-feira Santa');
+  a(e,          'Páscoa');
+  a(add(e,60),  'Corpus Christi');
+  return h;
 }
 
-/* ===================================================================
-   MUNICIPAL HOLIDAYS via BrasilAPI
-   =================================================================== */
-async function getMunicipalHolidays(ibgeCode, year){
+/* ====================================================================
+   MUNICIPAL HOLIDAYS DATABASE
+   ==================================================================== */
+const MUNI_DB = {
+  // São Paulo
+  '3550308':[{m:1,d:25,n:'Aniversário de São Paulo'}],
+  // Rio de Janeiro
+  '3304557':[{m:1,d:20,n:'Dia de São Sebastião'},{m:4,d:23,n:'Dia de São Jorge'},{m:11,d:20,n:'Zumbi dos Palmares (já nacional)'}],
+  // Brasília/DF
+  '5300108':[{m:4,d:21,n:'Fundação de Brasília'}],
+  // Belo Horizonte
+  '3106200':[{m:12,d:8,n:'Nossa Senhora da Conceição – Padroeira de BH'}],
+  // Salvador
+  '2927408':[{m:7,d:2,n:'Independência da Bahia'}],
+  // Fortaleza
+  '2304400':[{m:3,d:19,n:'Dia de São José'},{m:8,d:15,n:'Nossa Senhora da Assunção'}],
+  // Manaus
+  '1302603':[{m:9,d:5,n:'Elevação do Amazonas à Província'}],
+  // Curitiba
+  '4106902':[{m:3,d:29,n:'Aniversário de Curitiba'}],
+  // Recife
+  '2611606':[{m:3,d:12,n:'Aniversário do Recife'},{m:6,d:24,n:'Dia de São João'}],
+  // Porto Alegre
+  '4314902':[{m:8,d:2,n:'Nossa Senhora das Neves – Padroeira de POA'}],
+  // Belém
+  '1501402':[{m:10,d:15,n:'Círio de Nazaré'}],
+  // Goiânia
+  '5208707':[{m:10,d:24,n:'Aniversário de Goiânia'}],
+  // Florianópolis
+  '4205407':[{m:2,d:23,n:'Nossa Senhora do Desterro'}],
+  // Maceió
+  '2704302':[{m:9,d:16,n:'Emancipação Política de Alagoas'}],
+  // Campo Grande
+  '5002704':[{m:10,d:26,n:'Aniversário de Campo Grande'}],
+  // Teresina
+  '2211001':[{m:8,d:16,n:'Aniversário de Teresina'}],
+  // João Pessoa
+  '2507507':[{m:8,d:5,n:'Nossa Senhora das Neves – Padroeira de JP'}],
+  // Aracaju
+  '2800308':[{m:3,d:17,n:'Aniversário de Aracaju'}],
+  // Vitória
+  '3205309':[{m:9,d:8,n:'Nossa Senhora da Vitória'}],
+  // Cuiabá
+  '5103403':[{m:4,d:8,n:'Aniversário de Cuiabá'}],
+  // Natal
+  '2408102':[{m:12,d:21,n:'Nossa Senhora da Apresentação – Padroeira de Natal'}],
+  // Macapá
+  '1600303':[{m:2,d:4,n:'Aniversário de Macapá'}],
+  // Porto Velho
+  '1100205':[{m:10,d:2,n:'Aniversário de Porto Velho'}],
+  // Boa Vista
+  '1400100':[{m:7,d:9,n:'Aniversário de Boa Vista'}],
+  // Palmas
+  '1721000':[{m:5,d:20,n:'Aniversário de Palmas'}],
+  // Rio Branco
+  '1200401':[{m:12,d:28,n:'Aniversário do Acre'}],
+  // São Luís
+  '2111300':[{m:8,d:28,n:'Aniversário de São Luís'}],
+  // Nova Lima
+  '3136702':[{m:8,d:25,n:'São Bartolomeu – Padroeiro de Nova Lima'}],
+  // Contagem
+  '3118601':[{m:9,d:8,n:'Nossa Senhora da Assunção – Padroeira de Contagem'}],
+  // Uberlândia
+  '3170206':[{m:8,d:31,n:'Aniversário de Uberlândia'}],
+  // Campinas
+  '3509502':[{m:7,d:14,n:'Aniversário de Campinas'}],
+  // Guarulhos
+  '3518800':[{m:8,d:24,n:'Aniversário de Guarulhos'}],
+  // Santo André
+  '3547809':[{m:11,d:1,n:'Aniversário de Santo André'}],
+  // São Bernardo do Campo
+  '3548708':[{m:10,d:8,n:'Nossa Senhora da Conceição – Padroeira de SBC'}],
+  // Osasco
+  '3534401':[{m:2,d:19,n:'Aniversário de Osasco'}],
+  // Sorocaba
+  '3552205':[{m:8,d:15,n:'Nossa Senhora da Ponte – Padroeira de Sorocaba'}],
+  // Ribeirão Preto
+  '3543402':[{m:6,d:19,n:'Aniversário de Ribeirão Preto'}],
+  // São José dos Campos
+  '3549904':[{m:7,d:27,n:'Aniversário de São José dos Campos'}],
+  // Niterói
+  '3303302':[{m:11,d:22,n:'Aniversário de Niterói'}],
+  // Duque de Caxias
+  '3301702':[{m:12,d:31,n:'Aniversário de Duque de Caxias'}],
+  // São Gonçalo
+  '3304904':[{m:6,d:12,n:'São Gonçalo – Padroeiro'}],
+};
+
+function getMunicipalHolidays(ibgeId, years){
+  const list = MUNI_DB[ibgeId] || [];
+  const result = {};
+  for(const yr of years){
+    for(const h of list){
+      const dt = D(yr, h.m-1, h.d);
+      // validate date didn't overflow (e.g., Feb 30)
+      if(dt.getUTCMonth()===h.m-1 && dt.getUTCDate()===h.d){
+        result[YMD(dt)] = { name: h.n, type: 'municipal' };
+      }
+    }
+  }
+  return result;
+}
+
+/* ====================================================================
+   FETCH NATIONAL HOLIDAYS FROM BRASILAPI
+   ==================================================================== */
+async function fetchBrasilAPI(yr){
   try {
-    const r = await fetch(`https://brasilapi.com.br/api/feriados/v1/${year}`);
-    if(!r.ok) throw new Error();
-    // BrasilAPI only returns national; municipal not available free
-    return {};
-  } catch(e){ return {}; }
-}
-
-/* Fetch from BrasilAPI (national) to cross-check / supplement */
-async function getBrasilAPIHolidays(year){
-  try {
-    const r = await fetch(`https://brasilapi.com.br/api/feriados/v1/${year}`);
+    const r = await fetch(`https://brasilapi.com.br/api/feriados/v1/${yr}`,{signal:AbortSignal.timeout(5000)});
     if(!r.ok) throw new Error();
     const data = await r.json();
-    const result = {};
-    for(const h of data){
-      // date is "YYYY-MM-DD"
-      result[h.date] = { name: h.name, type: 'national' };
-    }
-    return result;
-  } catch(e){ return null; }
+    const out = {};
+    for(const h of data) out[h.date] = { name: h.name, type: 'national' };
+    return out;
+  } catch { return null; }
 }
 
-/* ===================================================================
+/* ====================================================================
    MAIN CALCULATION
-   =================================================================== */
+   ==================================================================== */
+let lastResult = null;
+
 async function calcular(){
   clearAlerts();
 
-  // Validate city
-  const cityName = cidadeInput.value.trim();
-  if(!cityName){
-    showAlert('error','⚠️ Por favor, informe a cidade da obra.');
-    return;
-  }
-  if(!selectedCity && municipios.length){
-    showAlert('error','⚠️ Por favor, selecione a cidade na lista de sugestões.');
-    return;
-  }
-  // If IBGE list failed, allow free text
+  // --- validate city
+  const cityStr = cidadeInput.value.trim();
+  if(!cityStr){ showAlert('error','⚠️ Informe a cidade da obra.'); return; }
   if(!selectedCity){
-    selectedCity = { id: null, nome: cityName, uf: '' };
+    if(municipios && municipios.length){
+      showAlert('error','⚠️ Selecione uma cidade na lista de sugestões.'); return;
+    }
+    selectedCity = { id: null, nome: cityStr, uf: '' };
   }
 
-  // Validate date
-  const dataOSStr = document.getElementById('dataOS').value.trim();
-  const startDate = parseBR(dataOSStr);
-  if(!startDate){
-    showAlert('error','⚠️ Data da OS inválida. Use o formato DD/MM/AAAA.');
-    return;
-  }
+  // --- validate date
+  const start = parseBR(document.getElementById('dataOS').value.trim());
+  if(!start){ showAlert('error','⚠️ Data da OS inválida. Use DD/MM/AAAA.'); return; }
 
-  // Validate prazo
+  // --- validate prazo
   const prazo = parseInt(document.getElementById('prazo').value);
-  if(!prazo || prazo < 1){
-    showAlert('error','⚠️ O prazo deve ser de pelo menos 1 dia corrido.');
-    return;
-  }
+  if(!prazo||prazo<1){ showAlert('error','⚠️ O prazo deve ser ≥ 1 dia.'); return; }
 
-  const usePontes  = document.getElementById('chkPontes').checked;
-  const useRecesso = document.getElementById('chkRecesso').checked;
+  const end         = add(start, prazo-1);
+  const usePontes   = document.getElementById('chkPontes').checked;
+  const useRecesso  = document.getElementById('chkRecesso').checked;
 
-  // End date = start + (prazo-1) days  [inclusive]
-  const endDate = addDays(startDate, prazo - 1);
-
-  // Collect all years in range
   const years = new Set();
-  for(let dt=new Date(startDate); dt<=endDate; dt=addDays(dt,1)){
-    years.add(dt.getUTCFullYear());
-  }
+  for(let dt=new Date(start); dt<=end; dt=add(dt,1)) years.add(dt.getUTCFullYear());
 
-  // Load holidays for all years
-  showAlert('info','⏳ Carregando feriados…');
-  let allHolidays = {};  // key: "YYYY-MM-DD", val: {name, type}
+  // --- fetch holidays
+  document.getElementById('btnCalc').disabled = true;
+  showAlert('info','⏳ Buscando feriados…');
+
+  let allHolidays = {};
 
   for(const yr of years){
-    // Try BrasilAPI first
-    const apiHols = await getBrasilAPIHolidays(yr);
-    const natHols = getNationalHolidays(yr);
-
-    if(apiHols){
-      // Merge (API may have extra state/municipal entries)
-      Object.assign(allHolidays, apiHols);
-    } else {
-      Object.assign(allHolidays, natHols);
-    }
-    // Always ensure our calculated moveable feasts are included
-    Object.assign(allHolidays, natHols);
+    const apiData = await fetchBrasilAPI(yr);
+    const local   = nationalHolidays(yr);
+    if(apiData) Object.assign(allHolidays, apiData);
+    // always merge our calculated moveable feasts (Easter-based)
+    Object.assign(allHolidays, local);
   }
-  clearAlerts();
 
-  // ── Recesso ──
-  const recessDays = new Set(); // keys
+  // municipal holidays
+  let hasMuniData = false;
+  if(selectedCity.id){
+    const muni = getMunicipalHolidays(selectedCity.id, years);
+    if(Object.keys(muni).length){ Object.assign(allHolidays, muni); hasMuniData = true; }
+  }
+
+  clearAlerts();
+  document.getElementById('btnCalc').disabled = false;
+
+  if(!hasMuniData && selectedCity.id){
+    showAlert('warning',`ℹ️ Feriados municipais de ${selectedCity.nome} não estão na base de dados. Apenas feriados nacionais foram considerados.`);
+  }
+
+  // --- recess days
+  const recessSet = new Set();
   if(useRecesso){
     for(const yr of years){
-      // 24/12 to 31/12
-      for(let day=24; day<=31; day++){
-        recessDays.add(ymd(d(yr,11,day)));
-      }
-      // 01/01 of next year already covered by national holiday, but add to recess set too
-      recessDays.add(ymd(d(yr,0,1)));
-      // also include Jan 1 of first year+1
+      for(let d2=24; d2<=31; d2++) recessSet.add(YMD(D(yr,11,d2)));
+      recessSet.add(YMD(D(yr,0,1)));
     }
-    // ensure Jan 1 of year after last year in range
-    const maxYear = Math.max(...years);
-    recessDays.add(ymd(d(maxYear+1,0,1)));
+    const maxYr = Math.max(...years);
+    recessSet.add(YMD(D(maxYr+1,0,1)));
   }
-  // Remove from recesso days that are NOT in range
-  // We'll check range during iteration below
 
-  // ── Bridges ──
-  // Compute bridge days based on holidays within range + a buffer
-  const bridgeDays = {}; // key: YYYY-MM-DD, val: {name, refHoliday}
-
+  // --- bridge days
+  const bridgeDays = {};
   if(usePontes){
-    // look at holidays in range
-    for(const [key, hol] of Object.entries(allHolidays)){
-      const dt = new Date(key+'T00:00:00Z');
-      const dw = dayOfWeek(dt);
-      if(dw===4){ // Thursday → next Friday is bridge
-        const fri = addDays(dt,1);
-        const fkey = ymd(fri);
-        if(!allHolidays[fkey] && !recessDays.has(fkey)){
-          bridgeDays[fkey] = { name: `Ponte (${hol.name})`, type: 'bridge' };
-        }
-      } else if(dw===2){ // Tuesday → prev Monday is bridge
-        const mon = addDays(dt,-1);
-        const mkey = ymd(mon);
-        if(!allHolidays[mkey] && !recessDays.has(mkey)){
-          bridgeDays[mkey] = { name: `Ponte (${hol.name})`, type: 'bridge' };
-        }
+    for(const [key,hol] of Object.entries(allHolidays)){
+      const dt2 = new Date(key+'T00:00:00Z');
+      const dw2 = dow(dt2);
+      if(dw2===4){ // Thursday → Friday bridge
+        const fri = add(dt2,1), fk = YMD(fri);
+        if(!allHolidays[fk] && !recessSet.has(fk))
+          bridgeDays[fk] = { name:`Ponte (${hol.name})`, type:'bridge' };
+      } else if(dw2===2){ // Tuesday → Monday bridge
+        const mon = add(dt2,-1), mk = YMD(mon);
+        if(!allHolidays[mk] && !recessSet.has(mk))
+          bridgeDays[mk] = { name:`Ponte (${hol.name})`, type:'bridge' };
       }
     }
   }
 
-  // ── Iterate over every day in range ──
-  const dayMap = {}; // key: YYYY-MM-DD, val: type string
+  // --- iterate all days
+  const dayMap = {};
+  let nCorr=0,nWE=0,nHol=0,nBri=0,nRec=0,nUtil=0;
+  const monthData = {};
+  const todayStr  = YMD(new Date());
 
-  let totalCorridos=0, totalWeekends=0, totalHolidays=0, totalBridges=0, totalRecess=0, totalUteis=0;
-
-  // Monthly accumulators
-  const monthData = {}; // "YYYY-MM" -> {corridos, uteis, label}
-
-  const today = ymd(new Date());
-
-  for(let dt=new Date(startDate); dt<=endDate; dt=addDays(dt,1)){
-    const key = ymd(dt);
-    const dw  = dayOfWeek(dt);
-    const mk  = `${dt.getUTCFullYear()}-${String(dt.getUTCMonth()+1).padStart(2,'0')}`;
-
-    if(!monthData[mk]) monthData[mk] = { corridos:0, uteis:0, label: MONTHS_SHORT[dt.getUTCMonth()]+'/'+String(dt.getUTCFullYear()).slice(2) };
+  for(let dt=new Date(start); dt<=end; dt=add(dt,1)){
+    const key = YMD(dt);
+    const mk  = key.slice(0,7);
+    if(!monthData[mk]) monthData[mk]={corridos:0,uteis:0,label:MO_S[dt.getUTCMonth()]+'/'+String(dt.getUTCFullYear()).slice(2)};
     monthData[mk].corridos++;
-    totalCorridos++;
+    nCorr++;
 
-    let type = 'working';
+    let type='working';
+    if(isWE(dt))            { type='weekend'; nWE++; }
+    else if(recessSet.has(key))  { type='recess';  nRec++; }
+    else if(allHolidays[key])    { type='holiday'; nHol++; }
+    else if(bridgeDays[key])     { type='bridge';  nBri++; }
+    else                         { nUtil++; monthData[mk].uteis++; }
 
-    if(isWeekend(dt)){
-      type = 'weekend';
-      totalWeekends++;
-    } else if(recessDays.has(key)){
-      type = 'recess';
-      totalRecess++;
-    } else if(allHolidays[key]){
-      type = 'holiday';
-      totalHolidays++;
-    } else if(bridgeDays[key]){
-      type = 'bridge';
-      totalBridges++;
-    } else {
-      totalUteis++;
-      monthData[mk].uteis++;
-    }
-
-    dayMap[key] = type;
+    dayMap[key]=type;
   }
 
-  // ── Holiday/bridge/recess list for table ──
-  // only weekdays (Mon-Fri) within period
-  const holidayList = [];
-
-  const allSpecial = {
-    ...Object.fromEntries(Object.entries(allHolidays).map(([k,v])=>[k,{...v}])),
-    ...Object.fromEntries(Object.entries(bridgeDays).map(([k,v])=>[k,{...v}])),
-  };
-  // Add recess entries
-  for(const k of recessDays){
-    const dt2 = new Date(k+'T00:00:00Z');
-    if(!isWeekend(dt2)){
-      if(!allSpecial[k]) allSpecial[k] = { name: 'Recesso de Fim de Ano', type: 'recess' };
-    }
-  }
-
-  for(const [key, info] of Object.entries(allSpecial).sort()){
-    const dt2 = new Date(key+'T00:00:00Z');
-    if(dt2 < startDate || dt2 > endDate) continue;
-    if(isWeekend(dt2)) continue;
-    holidayList.push({ date: dt2, key, ...info });
-  }
-  holidayList.sort((a,b)=>a.date-b.date);
-
-  // ── Store result for export ──
   lastResult = {
-    city: selectedCity,
-    startDate, endDate, prazo,
-    totals: { totalCorridos, totalUteis, totalWeekends, totalHolidays, totalBridges, totalRecess },
-    dayMap, holidayList, monthData,
-    allHolidays, bridgeDays, recessDays
+    city:selectedCity, start, end, prazo,
+    totals:{nCorr,nUtil,nWE,nHol,nBri,nRec},
+    dayMap, monthData, allHolidays, bridgeDays, recessSet,
+    todayStr
   };
 
-  renderResults(lastResult);
+  render(lastResult);
 }
 
-/* ===================================================================
+/* ====================================================================
    RENDER
-   =================================================================== */
-function renderResults(res){
-  const { city, startDate, endDate, totals, dayMap, holidayList, monthData } = res;
-  const { totalCorridos, totalUteis, totalWeekends, totalHolidays, totalBridges, totalRecess } = totals;
+   ==================================================================== */
+function render(res){
+  const {city,start,end,totals,dayMap,monthData,allHolidays,bridgeDays,recessSet,todayStr} = res;
+  const {nCorr,nUtil,nWE,nHol,nBri,nRec} = totals;
 
   document.getElementById('results').classList.remove('hidden');
 
   // ── Cards ──
   document.getElementById('summaryCards').innerHTML = `
-    <div class="sum-card sc-start">
+    <div class="sc sc-date">
       <div class="sc-label">📅 Início</div>
-      <div class="sc-value" style="font-size:1.25rem;">${fmtDate(startDate)}</div>
-      <div class="sc-sub">${WEEKDAYS_PT[startDate.getUTCDay()]}</div>
+      <div class="sc-value" style="font-size:1.2rem;">${fmtBR(start)}</div>
+      <div class="sc-sub">${WD_PT[dow(start)]}</div>
     </div>
-    <div class="sum-card sc-end">
+    <div class="sc sc-date">
       <div class="sc-label">🏁 Término</div>
-      <div class="sc-value" style="font-size:1.25rem;">${fmtDate(endDate)}</div>
-      <div class="sc-sub">${WEEKDAYS_PT[endDate.getUTCDay()]}</div>
+      <div class="sc-value" style="font-size:1.2rem;">${fmtBR(end)}</div>
+      <div class="sc-sub">${WD_PT[dow(end)]}</div>
     </div>
-    <div class="sum-card sc-corridos">
-      <div class="sc-label">📆 Dias Corridos</div>
-      <div class="sc-value">${totalCorridos}</div>
+    <div class="sc sc-total">
+      <div class="sc-label">📆 Corridos</div>
+      <div class="sc-value">${nCorr}</div>
     </div>
-    <div class="sum-card sc-uteis">
+    <div class="sc sc-uteis">
       <div class="sc-label">✅ Dias Úteis</div>
-      <div class="sc-value">${totalUteis}</div>
+      <div class="sc-value">${nUtil}</div>
     </div>
-    <div class="sum-card sc-fds">
+    <div class="sc sc-fds">
       <div class="sc-label">🛌 Fins de Semana</div>
-      <div class="sc-value">${totalWeekends}</div>
+      <div class="sc-value">${nWE}</div>
     </div>
-    <div class="sum-card sc-feriados">
+    <div class="sc sc-fer">
       <div class="sc-label">🎉 Feriados</div>
-      <div class="sc-value">${totalHolidays}</div>
+      <div class="sc-value">${nHol}</div>
     </div>
-    <div class="sum-card sc-comp">
+    <div class="sc sc-comp">
       <div class="sc-label">🌉 Compensações</div>
-      <div class="sc-value">${totalBridges}</div>
+      <div class="sc-value">${nBri}</div>
     </div>
-    <div class="sum-card sc-recesso">
+    <div class="sc sc-rec">
       <div class="sc-label">🎄 Recesso</div>
-      <div class="sc-value">${totalRecess}</div>
+      <div class="sc-value">${nRec}</div>
     </div>
   `;
 
-  // ── Calendars ──
+  // ── Timeline bar ──
+  renderTimeline(res);
+
+  // ── Calendars ── (all months, simple while loop)
   renderCalendars(res);
 
   // ── Holiday table ──
-  const tbody = document.getElementById('holidayTbody');
-  if(!holidayList.length){
-    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:20px;">Nenhum feriado ou compensação no período</td></tr>';
-  } else {
-    tbody.innerHTML = holidayList.map(h => {
-      const badgeClass = h.type==='national'?'badge-national':h.type==='municipal'?'badge-municipal':h.type==='bridge'?'badge-bridge':'badge-recess';
-      const tl = h.type==='national'?'Feriado Nacional':h.type==='municipal'?`Feriado Municipal (${city.nome})`:(h.type==='bridge'?'Compensação':'Recesso');
-      return `<tr>
-        <td><strong>${fmtDate(h.date)}</strong></td>
-        <td>${WEEKDAYS_PT[dayOfWeek(h.date)]}</td>
-        <td>${h.name}</td>
-        <td><span class="badge ${badgeClass}">${tl}</span></td>
-      </tr>`;
-    }).join('');
+  const specialDays = [];
+  const merged = { ...allHolidays };
+  for(const [k,v] of Object.entries(bridgeDays)) merged[k] = v;
+  for(const k of recessSet){
+    const dt2 = new Date(k+'T00:00:00Z');
+    if(!isWE(dt2)) merged[k] = merged[k] || { name:'Recesso de Fim de Ano', type:'recess' };
   }
+
+  for(const [key,info] of Object.entries(merged)){
+    const dt2 = new Date(key+'T00:00:00Z');
+    if(dt2 < res.start || dt2 > res.end) continue;
+    if(isWE(dt2)) continue;
+    specialDays.push({dt:dt2,key,...info});
+  }
+  specialDays.sort((a,b)=>a.dt-b.dt);
+
+  const tbody = document.getElementById('holidayTbody');
+  tbody.innerHTML = specialDays.length ? specialDays.map(h=>{
+    const bc = h.type==='national'?'badge-nat':h.type==='municipal'?'badge-mun':h.type==='bridge'?'badge-bri':'badge-rec';
+    const tl = h.type==='national'?'Feriado Nacional':
+               h.type==='municipal'?`Municipal – ${city.nome}`:
+               h.type==='bridge'?'Compensação':'Recesso';
+    return `<tr>
+      <td><strong>${fmtBR(h.dt)}</strong></td>
+      <td>${WD_PT[dow(h.dt)]}</td>
+      <td>${h.name}</td>
+      <td><span class="badge ${bc}">${tl}</span></td>
+    </tr>`;
+  }).join('') :
+  '<tr><td colspan="4" style="text-align:center;color:#94a3b8;padding:20px;">Nenhum feriado no período</td></tr>';
 
   // ── Monthly table ──
   const months = Object.keys(monthData).sort();
-  const table = document.getElementById('monthTable');
-  const headerCells = months.map(mk => `<th>${monthData[mk].label}</th>`).join('');
-  const corridosCells = months.map(mk => `<td>${monthData[mk].corridos}</td>`).join('');
-  const uteisCells = months.map(mk => `<td>${monthData[mk].uteis}</td>`).join('');
-  const totalCorrMes = months.reduce((s,mk)=>s+monthData[mk].corridos,0);
-  const totalUteisMes = months.reduce((s,mk)=>s+monthData[mk].uteis,0);
-
-  table.innerHTML = `
-    <thead><tr>
-      <th style="min-width:140px;">Métrica</th>
-      ${headerCells}
-      <th class="total-col">TOTAL</th>
-    </tr></thead>
+  const hdr  = months.map(mk=>`<th>${monthData[mk].label}</th>`).join('');
+  const rCor = months.map(mk=>`<td>${monthData[mk].corridos}</td>`).join('');
+  const rUte = months.map(mk=>`<td>${monthData[mk].uteis}</td>`).join('');
+  const totC = months.reduce((s,mk)=>s+monthData[mk].corridos,0);
+  const totU = months.reduce((s,mk)=>s+monthData[mk].uteis,0);
+  document.getElementById('monthTable').innerHTML = `
+    <thead><tr><th style="min-width:120px;">Métrica</th>${hdr}<th class="col-total">TOTAL</th></tr></thead>
     <tbody>
-      <tr class="total-row">
-        <td>📆 Dias no período</td>
-        ${corridosCells}
-        <td class="total-col">${totalCorrMes}</td>
-      </tr>
-      <tr class="uteis-row">
-        <td>✅ Dias úteis</td>
-        ${uteisCells}
-        <td class="total-col">${totalUteisMes}</td>
-      </tr>
-    </tbody>
-  `;
+      <tr class="row-corridos"><td>📆 Dias no período</td>${rCor}<td class="col-total">${totC}</td></tr>
+      <tr class="row-uteis"><td>✅ Dias úteis</td>${rUte}<td class="col-total">${totU}</td></tr>
+    </tbody>`;
 
-  document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.getElementById('results').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function renderTimeline(res){
+  const {totals,monthData} = res;
+  const {nCorr,nUtil,nWE,nHol,nBri,nRec} = totals;
+  const months = Object.keys(monthData).sort();
+
+  const segs = [
+    {pct:nUtil/nCorr,cls:'s-uteis',label:`${nUtil} úteis`},
+    {pct:nWE/nCorr,  cls:'s-wknd', label:`${nWE} FDS`},
+    {pct:nHol/nCorr, cls:'s-holiday',label:`${nHol} fer.`},
+    {pct:nBri/nCorr, cls:'s-bridge', label:`${nBri} comp.`},
+    {pct:nRec/nCorr, cls:'s-recess', label:`${nRec} rec.`},
+  ].filter(s=>s.pct>0);
+
+  const barHTML = segs.map(s=>{
+    const w = (s.pct*100).toFixed(2);
+    return `<div class="tl-seg ${s.cls}" style="flex:${w}" title="${s.label}">${s.pct>.05?s.label:''}</div>`;
+  }).join('');
+
+  const totalDays = nCorr;
+  const monthHTML = months.map(mk=>{
+    const pct = monthData[mk].corridos/totalDays;
+    return `<div class="tl-month" style="flex:${(pct*100).toFixed(2)}">${monthData[mk].label}</div>`;
+  }).join('');
+
+  document.getElementById('timelineSection').innerHTML = `
+    <div class="timeline-wrap">
+      <div class="timeline-label">Distribuição do período</div>
+      <div class="timeline-bar">${barHTML}</div>
+      <div class="timeline-months">${monthHTML}</div>
+    </div>`;
 }
 
 function renderCalendars(res){
-  const { startDate, endDate, dayMap, allHolidays, bridgeDays, recessDays } = res;
+  const {start,end,dayMap,allHolidays,bridgeDays,recessSet,todayStr} = res;
   const grid = document.getElementById('calendarsGrid');
   grid.innerHTML = '';
 
-  // find first day of first month and last day of last month
-  const firstMonth = new Date(Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), 1));
-  const lastMonth  = new Date(Date.UTC(endDate.getUTCFullYear(),   endDate.getUTCMonth(),   1));
-  const today = ymd(new Date());
+  // Simple while loop — no double-advance bug
+  let yr = start.getUTCFullYear();
+  let mo = start.getUTCMonth();
+  const yrEnd = end.getUTCFullYear();
+  const moEnd = end.getUTCMonth();
 
-  for(let m = new Date(firstMonth); m <= lastMonth; m = addDays(new Date(Date.UTC(m.getUTCFullYear(), m.getUTCMonth()+1, 1)),0)){
-    const yr  = m.getUTCFullYear();
-    const mo  = m.getUTCMonth(); // 0-based
-    const monthLabel = `${MONTHS_PT[mo]} / ${yr}`;
-
-    // days in month
-    const daysInMonth = new Date(Date.UTC(yr, mo+1, 0)).getUTCDate();
-    // first weekday of month (0=Sun, we want 1=Mon … 0=Sun at end)
-    const firstDow = dayOfWeek(d(yr, mo, 1)); // 0=Sun
-    // offset: Mon=0, Tue=1 … Sun=6
-    const offset = (firstDow + 6) % 7; // shift so Mon is column 0
+  while(yr < yrEnd || (yr===yrEnd && mo<=moEnd)){
+    const daysInMonth = new Date(Date.UTC(yr,mo+1,0)).getUTCDate();
+    const firstDow    = dow(D(yr,mo,1));
+    const offset      = (firstDow+6)%7; // Mon=0 … Sun=6
 
     let html = `<div class="month-cal">
-      <div class="month-header">${monthLabel}</div>
-      <div class="cal-weekdays">
-        <div class="cal-weekday">Seg</div><div class="cal-weekday">Ter</div>
-        <div class="cal-weekday">Qua</div><div class="cal-weekday">Qui</div>
-        <div class="cal-weekday">Sex</div><div class="cal-weekday">Sáb</div>
-        <div class="cal-weekday">Dom</div>
+      <div class="month-header">${MO_PT[mo]} / ${yr}</div>
+      <div class="cal-wkdays">
+        <div class="cal-wkday">Seg</div><div class="cal-wkday">Ter</div>
+        <div class="cal-wkday">Qua</div><div class="cal-wkday">Qui</div>
+        <div class="cal-wkday">Sex</div><div class="cal-wkday">Sáb</div>
+        <div class="cal-wkday">Dom</div>
       </div>
       <div class="cal-days">`;
 
-    // empty cells before day 1
-    for(let i=0;i<offset;i++) html += `<div class="cal-day empty"></div>`;
+    for(let i=0;i<offset;i++) html+=`<div class="cal-day empty"></div>`;
 
     for(let day=1; day<=daysInMonth; day++){
-      const dt  = d(yr, mo, day);
-      const key = ymd(dt);
-      const inRange = dt >= startDate && dt <= endDate;
-      const dw = dayOfWeek(dt);
+      const dt  = D(yr,mo,day);
+      const key = YMD(dt);
+      const inRange = dt>=start && dt<=end;
+      let cls='';
+      let tip='';
 
-      let cls = '';
-      let titleAttr = '';
-
-      if(!inRange){
-        cls = 'outside';
-      } else {
-        const type = dayMap[key];
-        cls = type || (isWeekend(dt) ? 'weekend' : 'working');
-
-        if(type==='holiday' && allHolidays[key]) titleAttr = allHolidays[key].name;
-        if(type==='bridge'  && bridgeDays[key])  titleAttr = bridgeDays[key].name;
-        if(type==='recess')  titleAttr = 'Recesso de Fim de Ano';
+      if(!inRange){ cls='outside'; }
+      else {
+        const t = dayMap[key];
+        cls = t || (isWE(dt)?'weekend':'working');
+        if(t==='holiday' && allHolidays[key]) tip=allHolidays[key].name;
+        if(t==='bridge'  && bridgeDays[key])  tip=bridgeDays[key].name;
+        if(t==='recess')                       tip='Recesso de Fim de Ano';
       }
-
-      if(key===today) cls += ' today';
-      const titleHtml = titleAttr ? ` title="${titleAttr.replace(/"/g,'&quot;')}"` : '';
-
-      html += `<div class="cal-day ${cls}"${titleHtml}>${day}</div>`;
+      if(key===todayStr) cls+=' today';
+      const ta = tip?` title="${tip.replace(/"/g,'&quot;')}"` : '';
+      html+=`<div class="cal-day ${cls}"${ta}>${day}</div>`;
     }
 
-    // fill remaining cells
-    const totalCells = offset + daysInMonth;
-    const remainder  = totalCells % 7;
-    if(remainder) for(let i=0; i<7-remainder; i++) html += `<div class="cal-day empty"></div>`;
-
-    html += `</div></div>`;
+    const rem = (offset+daysInMonth)%7;
+    if(rem) for(let i=0;i<7-rem;i++) html+=`<div class="cal-day empty"></div>`;
+    html+=`</div></div>`;
     grid.insertAdjacentHTML('beforeend', html);
 
-    // advance to next month
-    m = new Date(Date.UTC(yr, mo+1, 1));
+    // advance month
+    mo++;
+    if(mo>11){ mo=0; yr++; }
   }
 }
 
-/* ===================================================================
-   EXPORT TO EXCEL
-   =================================================================== */
+/* ====================================================================
+   EXPORT EXCEL
+   ==================================================================== */
 function exportarExcel(){
-  if(!lastResult){ showAlert('error','Calcule o calendário antes de exportar.'); return; }
-  const { city, startDate, endDate, totals, holidayList, monthData } = lastResult;
-  const { totalCorridos, totalUteis, totalWeekends, totalHolidays, totalBridges, totalRecess } = totals;
-
+  if(!lastResult){ showAlert('error','Calcule antes de exportar.'); return; }
+  const {city,start,end,totals,monthData} = lastResult;
+  const {nCorr,nUtil,nWE,nHol,nBri,nRec} = totals;
   const wb = XLSX.utils.book_new();
 
-  // ── Aba 1: Resumo ──
-  const resumoData = [
+  // Resumo
+  const ws1 = XLSX.utils.aoa_to_sheet([
     ['Campo','Valor'],
     ['Cidade', `${city.nome}${city.uf?', '+city.uf:''}`],
-    ['Data de Início', fmtDate(startDate)],
-    ['Data de Término', fmtDate(endDate)],
-    ['Prazo (dias corridos)', totalCorridos],
-    ['Dias Úteis', totalUteis],
-    ['Fins de Semana', totalWeekends],
-    ['Feriados', totalHolidays],
-    ['Compensações (Pontes)', totalBridges],
-    ['Recesso', totalRecess],
-  ];
-  const ws1 = XLSX.utils.aoa_to_sheet(resumoData);
-  ws1['!cols'] = [{wch:30},{wch:20}];
-  XLSX.utils.book_append_sheet(wb, ws1, 'Resumo');
+    ['Início',  fmtBR(start)],
+    ['Término', fmtBR(end)],
+    ['Dias Corridos', nCorr],
+    ['Dias Úteis',    nUtil],
+    ['Fins de Semana',nWE],
+    ['Feriados',      nHol],
+    ['Compensações',  nBri],
+    ['Recesso',       nRec],
+  ]);
+  ws1['!cols']=[{wch:22},{wch:20}];
+  XLSX.utils.book_append_sheet(wb,ws1,'Resumo');
 
-  // ── Aba 2: Feriados ──
-  const feriadosData = [['Data','Dia da Semana','Descrição','Tipo']];
-  for(const h of holidayList){
-    const tl = h.type==='national'?'Feriado Nacional':h.type==='municipal'?`Feriado Municipal (${city.nome})`:(h.type==='bridge'?'Compensação':'Recesso');
-    feriadosData.push([ fmtDate(h.date), WEEKDAYS_PT[dayOfWeek(h.date)], h.name, tl ]);
-  }
-  const ws2 = XLSX.utils.aoa_to_sheet(feriadosData);
-  ws2['!cols'] = [{wch:14},{wch:16},{wch:40},{wch:30}];
-  XLSX.utils.book_append_sheet(wb, ws2, 'Feriados');
+  // Feriados
+  const rows=[['Data','Dia da Semana','Descrição','Tipo']];
+  const tbody = document.getElementById('holidayTbody');
+  tbody.querySelectorAll('tr').forEach(tr=>{
+    const tds=[...tr.querySelectorAll('td')];
+    if(tds.length===4) rows.push(tds.map(td=>td.textContent.trim()));
+  });
+  const ws2=XLSX.utils.aoa_to_sheet(rows);
+  ws2['!cols']=[{wch:14},{wch:14},{wch:44},{wch:32}];
+  XLSX.utils.book_append_sheet(wb,ws2,'Feriados');
 
-  // ── Aba 3: Dias Úteis por Mês ──
-  const months = Object.keys(monthData).sort();
-  const header = ['Métrica', ...months.map(mk=>monthData[mk].label), 'TOTAL'];
-  const rowCorridos = ['Dias no período', ...months.map(mk=>monthData[mk].corridos), months.reduce((s,mk)=>s+monthData[mk].corridos,0)];
-  const rowUteis    = ['Dias úteis',      ...months.map(mk=>monthData[mk].uteis),    months.reduce((s,mk)=>s+monthData[mk].uteis,0)];
-  const ws3 = XLSX.utils.aoa_to_sheet([header, rowCorridos, rowUteis]);
-  ws3['!cols'] = [{wch:18}, ...months.map(()=>({wch:10})), {wch:10}];
-  XLSX.utils.book_append_sheet(wb, ws3, 'Dias Úteis');
+  // Dias úteis por mês
+  const months=Object.keys(monthData).sort();
+  const ws3=XLSX.utils.aoa_to_sheet([
+    ['Métrica',...months.map(mk=>monthData[mk].label),'TOTAL'],
+    ['Dias no período',...months.map(mk=>monthData[mk].corridos),months.reduce((s,mk)=>s+monthData[mk].corridos,0)],
+    ['Dias úteis',     ...months.map(mk=>monthData[mk].uteis),   months.reduce((s,mk)=>s+monthData[mk].uteis,0)],
+  ]);
+  ws3['!cols']=[{wch:18},...months.map(()=>({wch:9})),{wch:9}];
+  XLSX.utils.book_append_sheet(wb,ws3,'Dias Úteis');
 
-  const citySlug = city.nome.replace(/\s+/g,'_');
-  XLSX.writeFile(wb, `Calendario_Obras_${citySlug}.xlsx`);
+  XLSX.writeFile(wb,`Calendario_${city.nome.replace(/\s+/g,'_')}.xlsx`);
 }
 
-/* ===================================================================
+/* ====================================================================
    UI HELPERS
-   =================================================================== */
+   ==================================================================== */
 function showAlert(type, msg){
-  const el = document.getElementById(`alert${type.charAt(0).toUpperCase()+type.slice(1)}`);
-  if(el){ el.textContent = msg; el.classList.add('show'); }
+  const ids={error:'alertError',warning:'alertWarning',info:'alertInfo'};
+  const el=document.getElementById(ids[type]);
+  if(el){ el.textContent=msg; el.classList.add('show'); }
 }
 function clearAlerts(){
   ['alertError','alertWarning','alertInfo'].forEach(id=>{
@@ -1085,28 +1183,25 @@ function clearAlerts(){
 }
 function limpar(){
   clearAlerts();
-  cidadeInput.value = '';
-  selectedCity = null;
-  document.getElementById('cidadeId').value   = '';
-  document.getElementById('cidadeNome').value = '';
-  document.getElementById('cidadeUF').value   = '';
-  document.getElementById('dataOS').value  = '';
-  document.getElementById('prazo').value   = '180';
-  document.getElementById('chkPontes').checked  = true;
-  document.getElementById('chkRecesso').checked = true;
+  cidadeInput.value='';
+  selectedCity=null;
+  document.getElementById('cidadeId').value='';
+  document.getElementById('dataOS').value='';
+  document.getElementById('prazo').value='180';
+  document.getElementById('chkPontes').checked=true;
+  document.getElementById('chkRecesso').checked=true;
   document.getElementById('results').classList.add('hidden');
-  lastResult = null;
+  lastResult=null;
 }
 
-/* ===================================================================
+/* ====================================================================
    INIT
-   =================================================================== */
-(async () => {
-  await loadMunicipios();
-  // Set defaults for testing
-  document.getElementById('dataOS').value = '01/06/2026';
-  document.getElementById('prazo').value  = '180';
-})();
+   ==================================================================== */
+document.getElementById('dataOS').value='01/06/2026';
+document.getElementById('prazo').value='180';
+
+// Preload municipalities in background
+getMunicipios();
 </script>
 </body>
 </html>
