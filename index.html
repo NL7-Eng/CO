@@ -300,11 +300,11 @@
     .b-cus { background: #ea7c39; color: #fff; border: none; }
 
     /* monthly table */
-    .mt th, .mt td { text-align: center; }
-    .mt th:first-child, .mt td:first-child { text-align: left; min-width: 115px; }
-    .mt td, .mt th { font-size: .88rem; }
+    .mt th, .mt td { text-align: center; font-size: .88rem; }
+    .mt th:first-child, .mt td:first-child { text-align: left; min-width: 80px; }
+    .mt th { white-space: normal; line-height: 1.3; vertical-align: bottom; }
     .mt .rc td  { color: var(--muted); }
-    .mt .ru td  { font-family: var(--fd); font-weight: 700; font-size: .88rem; color: var(--text); }
+    .mt .ru-cell { font-family: var(--fd); font-weight: 700; color: var(--text); }
     .mt .tc     { background: #f3f4f6; font-weight: 700; color: var(--text); }
 
     .muni-status { font-size: .74rem; margin-top: 5px; color: var(--subtle); }
@@ -428,7 +428,7 @@
         <div class="jornada-row">
           <div class="fg" style="max-width:200px;">
             <label for="jornadaUtil">Jornada útil (h/dia)</label>
-            <input type="number" id="jornadaUtil" min="1" max="24" step="0.5" value="8" oninput="calcJornada()" />
+            <input type="text" id="jornadaUtil" placeholder="8 ou 8:30" value="8" oninput="calcJornada()" style="max-width:110px;" />
           </div>
         </div>
         <div class="jornada-improd-hdr">
@@ -780,8 +780,29 @@ document.addEventListener('click',e=>{ if(!e.target.closest('.ac-wrap')) closeAC
 let improdList = [];  // [{id, nome, horas}]
 let _improdId  = 0;
 
+// Parse "8", "8.5", "8,5", "8:30", "1:45" → decimal hours
+function parseHora(str){
+  if(!str && str!==0) return 0;
+  str = String(str).trim().replace(',','.');
+  if(str.includes(':')){
+    const [h,m] = str.split(':').map(Number);
+    return (h||0) + (m||0)/60;
+  }
+  return parseFloat(str)||0;
+}
+// Format decimal hours → "8h 30min / 8,5h"
+function fmtHora(dec){
+  dec = Math.max(0,dec);
+  const h = Math.floor(dec);
+  const m = Math.round((dec-h)*60);
+  const hm = m>0 ? `${h}h ${m}min` : `${h}h`;
+  const dec2 = +dec.toFixed(2);
+  const decStr = String(dec2).replace('.',',');
+  return `${hm} / ${decStr}h`;
+}
+
 function jornadaUtil(){
-  return parseFloat(document.getElementById('jornadaUtil')?.value) || 8;
+  return parseHora(document.getElementById('jornadaUtil')?.value);
 }
 function jornadaProdutiva(){
   const total = improdList.reduce((s,i)=>s+(i.horas||0), 0);
@@ -789,9 +810,8 @@ function jornadaProdutiva(){
 }
 function calcJornada(){
   const jp = jornadaProdutiva();
-  const fmt = v => v%1===0 ? v+'h' : v.toFixed(1)+'h';
   const el = document.getElementById('jornadaProdutiva');
-  if(el) el.textContent = fmt(jp)+'/dia';
+  if(el) el.textContent = fmtHora(jp)+'/dia';
 }
 function addImprod(){
   const id = ++_improdId;
@@ -807,7 +827,7 @@ function removeImprod(id){
 }
 function updateImprod(id, field, val){
   const item = improdList.find(i=>i.id===id);
-  if(item){ item[field] = field==='horas' ? (parseFloat(val)||0) : val; }
+  if(item){ item[field] = field==='horas' ? parseHora(val) : val; }
   calcJornada();
 }
 function renderImprodList(){
@@ -820,8 +840,8 @@ function renderImprodList(){
     <div class="jornada-improd-item">
       <input type="text" id="imp-n-${i.id}" placeholder="Ex: Deslocamento" value="${i.nome}"
         oninput="updateImprod(${i.id},'nome',this.value)" />
-      <input type="number" id="imp-h-${i.id}" min="0" max="24" step="0.5" value="${i.horas||''}"
-        placeholder="h" oninput="updateImprod(${i.id},'horas',this.value)" />
+      <input type="text" id="imp-h-${i.id}" value="${i.horas||''}"
+        placeholder="1 ou 1:30" style="width:80px;" oninput="updateImprod(${i.id},'horas',this.value)" />
       <span style="font-size:.75rem;color:var(--muted);">h/dia</span>
       <button class="remove-btn" onclick="removeImprod(${i.id})">Remover</button>
     </div>`).join('');
@@ -1295,40 +1315,45 @@ function render(res){
     ${nF>0?`<div class="sc sc-fol"><div class="sc-lbl">Folgas</div><div class="sc-val">${nF}</div></div>`:''}
   `;
 
-  // Monthly summary table
-  const hdr=mos.map(mk=>`<th>${monthData[mk].lbl}</th>`).join('');
-  const rC=mos.map(mk=>`<td>${monthData[mk].c}</td>`).join('');
-  const rU=mos.map(mk=>`<td>${monthData[mk].u}</td>`).join('');
+  // Monthly summary table — TRANSPOSED: months as rows, metrics as columns
   const tC=mos.reduce((s,mk)=>s+monthData[mk].c,0);
   const tU=mos.reduce((s,mk)=>s+monthData[mk].u,0);
-
-  // Horas produtivas = jornada produtiva × dias úteis (sem fator climático)
-  const rHprod=mos.map(mk=>{
-    const hrs=+(monthData[mk].u*jp).toFixed(1);
-    return `<td>${hrs%1===0?hrs:hrs}</td>`;
-  }).join('');
   const tHprod=+(mos.reduce((s,mk)=>s+monthData[mk].u*jp,0)).toFixed(1);
-
-  // Horas praticáveis = horas produtivas × % praticabilidade do período
-  const rHprat=mos.map(mk=>{
-    const hrs=+(monthData[mk].u*getPer(mk).horas).toFixed(1);
-    return `<td>${hrs}</td>`;
-  }).join('');
   const tHprat=+(mos.reduce((s,mk)=>s+monthData[mk].u*getPer(mk).horas,0)).toFixed(1);
 
-  const rP=mos.map(mk=>{
+  const moRows=mos.map(mk=>{
     const t=getPer(mk).tipo;
-    return `<td><span class="periodo-tag ${TAG_CLS[t]||'tag-seco'}">${TAG_LBL[t]||'Seco'}</span></td>`;
+    const hprod=+(monthData[mk].u*jp).toFixed(1);
+    const hprat=+(monthData[mk].u*getPer(mk).horas).toFixed(1);
+    return `<tr>
+      <td><strong>${monthData[mk].lbl}</strong></td>
+      <td class="tc">${monthData[mk].c}</td>
+      <td class="tc ru-cell">${monthData[mk].u}</td>
+      <td class="tc"><span class="periodo-tag ${TAG_CLS[t]||'tag-seco'}">${TAG_LBL[t]||'Seco'}</span></td>
+      <td class="tc">${hprod}</td>
+      <td class="tc">${hprat}</td>
+    </tr>`;
   }).join('');
 
   document.getElementById('moTable').innerHTML=`
-    <thead><tr><th style="min-width:130px;">Métrica</th>${hdr}<th class="tc">Total</th></tr></thead>
+    <thead><tr>
+      <th>Mês</th>
+      <th class="tc">Dias<br>Período</th>
+      <th class="tc">Dias<br>Úteis</th>
+      <th class="tc">Período<br>Climático</th>
+      <th class="tc">Horas<br>Produtivas</th>
+      <th class="tc">Horas<br>Praticáveis</th>
+    </tr></thead>
     <tbody>
-      <tr class="rc"><td>Dias no período</td>${rC}<td class="tc">${tC}</td></tr>
-      <tr class="ru"><td>Dias úteis</td>${rU}<td class="tc">${tU}</td></tr>
-      <tr><td>Período climático</td>${rP}<td class="tc">—</td></tr>
-      <tr><td>Horas produtivas</td>${rHprod}<td class="tc">${tHprod} h</td></tr>
-      <tr><td>Horas praticáveis</td>${rHprat}<td class="tc">${tHprat} h</td></tr>
+      ${moRows}
+      <tr style="border-top:2px solid var(--border);font-weight:700;">
+        <td>Total</td>
+        <td class="tc">${tC}</td>
+        <td class="tc ru-cell">${tU}</td>
+        <td class="tc">—</td>
+        <td class="tc">${tHprod} h</td>
+        <td class="tc">${tHprat} h</td>
+      </tr>
     </tbody>`;
 
   document.getElementById('results').scrollIntoView({behavior:'smooth',block:'start'});
