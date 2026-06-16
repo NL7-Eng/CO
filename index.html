@@ -812,6 +812,14 @@ function calcJornada(){
   const jp = jornadaProdutiva();
   const el = document.getElementById('jornadaProdutiva');
   if(el) el.textContent = fmtHora(jp)+'/dia';
+  // Update horas praticáveis result cells in the climate grid
+  ['umido','transicao','seco'].forEach(tipo=>{
+    const cell=document.getElementById('phprat-'+tipo);
+    if(!cell) return;
+    const p=periodoPerc[tipo]??100;
+    const hprat=+(jp*(p/100)).toFixed(2);
+    cell.textContent=(hprat%1===0?hprat:hprat.toFixed(2).replace('.',','))+'h/dia';
+  });
 }
 function addImprod(){
   const id = ++_improdId;
@@ -867,6 +875,8 @@ function renderPeriodoGrid(){
   const thd=MO_ABR.map(m=>`<th>${m}</th>`).join('');
   const rows=tipos.map(t=>{
     const p=periodoPerc[t.k]??100;
+    const hprat=+(jornadaProdutiva()*(p/100)).toFixed(2);
+    const hpratFmt = hprat%1===0 ? hprat+'h' : hprat.toFixed(2).replace('.',',')+'h';
     const tds=Array.from({length:12},(_,i)=>{
       const m=i+1;
       const cur=periodoMes[m]||'seco';
@@ -878,11 +888,12 @@ function renderPeriodoGrid(){
       <td class="pc-type-lbl">${t.lbl}</td>
       <td class="pc-hrs-cell"><input class="pc-hrs" type="number" min="0" max="100" step="1"
         value="${p}" id="pperc-${t.k}" onchange="savePeriodoPerc('${t.k}')">%</td>
+      <td class="pc-hrs-cell" id="phprat-${t.k}" style="color:var(--text);font-weight:600;">${hpratFmt}/dia</td>
       ${tds}
     </tr>`;
   }).join('');
   grid.innerHTML=`<div class="pc-wrap"><table class="pc-table">
-    <thead><tr><th style="text-align:left;">Período</th><th style="text-align:left;">% Praticabilidade</th>${thd}</tr></thead>
+    <thead><tr><th style="text-align:left;">Período</th><th style="text-align:left;">% Praticab.</th><th style="text-align:left;">Horas prat./dia</th>${thd}</tr></thead>
     <tbody>${rows}</tbody>
   </table></div>`;
 }
@@ -893,6 +904,12 @@ function savePeriodoMes(m){
 }
 function savePeriodoPerc(tipo){
   periodoPerc[tipo]=parseFloat(document.getElementById('pperc-'+tipo)?.value)??100;
+  // Update the result cell without full re-render
+  const jp=jornadaProdutiva();
+  const hprat=+(jp*(periodoPerc[tipo]/100)).toFixed(2);
+  const hpratFmt=hprat%1===0?hprat+'h':hprat.toFixed(2).replace('.',',')+'h';
+  const cell=document.getElementById('phprat-'+tipo);
+  if(cell) cell.textContent=hpratFmt+'/dia';
 }
 
 /* ====================================================================
@@ -1112,10 +1129,6 @@ async function calcular(){
   clearAlerts();
   document.getElementById('btnCalc').disabled=false;
 
-  if(!hasMuni){
-    showAlert('warn',`Feriados municipais de ${selectedCity.nome} não constam na base de dados. Use a seção "Datas Especiais da Obra" para cadastrá-los manualmente, consultando a prefeitura.`);
-    document.getElementById('customSection').scrollIntoView({behavior:'smooth',block:'center'});
-  }
 
   // Recess
   const recSet=new Set();
