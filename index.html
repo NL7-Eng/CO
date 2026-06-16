@@ -97,6 +97,11 @@
     .chk-lbl:has(input:checked) { border-color: #374151; color: #1f2937; font-weight: 600; }
     .chk-lbl input { accent-color: #374151; width: 14px; height: 14px; cursor: pointer; }
 
+    /* ── SHARED SECTION STYLE (jornada / período / datas especiais) ── */
+    .sec-block { margin-top: 22px; border-top: 1px solid var(--border-l); padding-top: 16px; }
+    .sec-title { font-family: var(--fd); font-size: .82rem; font-weight: 700; color: var(--text); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 3px; }
+    .sec-sub   { font-size: .82rem; color: var(--muted); margin-bottom: 12px; line-height: 1.5; }
+
     /* cálculo de jornada */
     .jornada-section { margin-top: 22px; border-top: 1px solid var(--border-l); padding-top: 16px; }
     .jornada-body { display: flex; flex-direction: column; gap: 10px; }
@@ -104,33 +109,33 @@
     .jornada-improd-hdr { display: flex; align-items: center; gap: 12px; margin-top: 4px; }
     .jornada-improd-hdr span { font-size: .82rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
     .jornada-improd-list { display: flex; flex-direction: column; gap: 5px; }
-    .jornada-improd-item { display: flex; align-items: center; gap: 8px; background: #f9fafb; border: 1px solid var(--border-l); border-radius: 6px; padding: 6px 10px; font-size: .84rem; }
-    .jornada-improd-item input[type=text]   { flex: 1; border: none; background: transparent; font-size: .84rem; font-family: var(--fb); color: var(--text); outline: none; }
-    .jornada-improd-item input[type=number] { width: 52px; border: 1px solid var(--border); border-radius: 4px; padding: 3px 5px; font-size: .82rem; font-family: var(--fb); text-align: center; }
+    .jornada-improd-item { display: flex; align-items: center; gap: 8px; background: #f9fafb; border: 1px solid var(--border-l); border-radius: 6px; padding: 6px 10px; font-size: .88rem; }
+    .jornada-improd-item input[type=text]   { flex: 1; border: none; background: transparent; font-size: .88rem; font-family: var(--fb); color: var(--text); outline: none; }
+    .jornada-improd-item input[type=number] { width: 52px; border: 1px solid var(--border); border-radius: 4px; padding: 3px 5px; font-size: .88rem; font-family: var(--fb); text-align: center; }
     .jornada-result { font-size: .88rem; color: var(--muted); margin-top: 2px; }
     .jornada-result strong { color: var(--text); font-size: 1rem; }
 
     /* período climático */
     .periodo-section { margin-top: 22px; border-top: 1px solid var(--border-l); padding-top: 16px; }
     .pc-wrap { overflow-x: auto; }
-    .pc-table { border-collapse:collapse; font-size:.78rem; white-space:nowrap; }
-    .pc-table th { font-weight:600; color:var(--muted); text-align:center; padding:3px 6px; font-size:.71rem; text-transform:uppercase; letter-spacing:.4px; }
-    .pc-table td { text-align:center; padding:3px 4px; }
-    .pc-type-lbl { text-align:left !important; padding-right:10px !important; font-weight:600; font-size:.8rem; color:var(--text); }
-    .pc-hrs-cell { padding-right:10px !important; font-size:.72rem; color:var(--muted); white-space:nowrap; }
+    .pc-table { border-collapse:collapse; font-size:.82rem; white-space:nowrap; }
+    .pc-table th { font-weight:600; color:var(--muted); text-align:center; padding:4px 6px; font-size:.75rem; text-transform:uppercase; letter-spacing:.4px; }
+    .pc-table td { text-align:center; padding:4px 4px; }
+    .pc-type-lbl { text-align:left !important; padding-right:10px !important; font-weight:600; font-size:.88rem; color:var(--text); }
+    .pc-hrs-cell { padding-right:10px !important; font-size:.82rem; color:var(--muted); white-space:nowrap; }
     .pc-radio { display:none; }
     .pc-lbl { display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px;
-      border-radius:4px; border:1.5px solid #d1d5db; font-size:.7rem; font-weight:700; cursor:pointer;
+      border-radius:4px; border:1.5px solid #d1d5db; font-size:.75rem; font-weight:700; cursor:pointer;
       color:#9ca3af; transition:background .1s,color .1s,border-color .1s; user-select:none; }
     .pc-radio:checked + .pc-lbl { border-color:transparent; }
     .pc-radio.r-u:checked + .pc-lbl { background:#bfdbfe; color:#1e3a8a; }
     .pc-radio.r-t:checked + .pc-lbl { background:#d1fae5; color:#065f46; }
     .pc-radio.r-s:checked + .pc-lbl { background:#fef9c3; color:#713f12; }
-    .pc-hrs { width:34px; border:1px solid var(--border); border-radius:4px; padding:3px 4px;
-      font-size:.78rem; font-family:var(--fb); text-align:center; color:var(--text);
+    .pc-hrs { width:38px; border:1px solid var(--border); border-radius:4px; padding:3px 4px;
+      font-size:.88rem; font-family:var(--fb); text-align:center; color:var(--text);
       background:#fff; outline:none; }
     .pc-hrs:focus { border-color:#6b7280; }
-    .periodo-tag { display:inline-block; font-size:.72rem; font-weight:700; border-radius:3px; padding:2px 7px; }
+    .periodo-tag { display:inline-block; font-size:.75rem; font-weight:700; border-radius:3px; padding:2px 7px; }
     .tag-umido    { background:#bfdbfe; color:#1e3a8a; }
     .tag-transicao{ background:#d1fae5; color:#065f46; }
     .tag-seco     { background:#fef9c3; color:#713f12; }
@@ -138,7 +143,7 @@
     /* datas especiais */
     .custom-section { margin-top: 22px; border-top: 1px solid var(--border-l); padding-top: 18px; }
     .custom-title { font-family: var(--fd); font-size: .82rem; font-weight: 700; color: var(--text); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 3px; }
-    .custom-sub   { font-size: .8rem; color: var(--muted); margin-bottom: 14px; line-height: 1.5; }
+    .custom-sub   { font-size: .82rem; color: var(--muted); margin-bottom: 14px; line-height: 1.5; }
     .custom-row   { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
     .custom-row .fg { flex: 1; min-width: 130px; }
     .custom-row select {
@@ -149,10 +154,10 @@
     }
     .custom-row select:focus { border-color: #6b7280; box-shadow: 0 0 0 3px rgba(107,114,128,.12); }
     .custom-list  { margin-top: 12px; display: flex; flex-direction: column; gap: 5px; }
-    .custom-item  { display: flex; align-items: center; gap: 8px; background: #fafafa; border: 1px solid var(--border-l); border-radius: 6px; padding: 7px 12px; font-size: .85rem; }
+    .custom-item  { display: flex; align-items: center; gap: 8px; background: #fafafa; border: 1px solid var(--border-l); border-radius: 6px; padding: 7px 12px; font-size: .88rem; }
     .custom-item-date { font-weight: 700; color: var(--text); white-space: nowrap; }
     .custom-item-name { color: var(--muted); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .remove-btn { background: none; border: none; color: var(--subtle); font-size: .75rem; cursor: pointer; padding: 2px 6px; border-radius: 4px; font-family: var(--fb); white-space: nowrap; }
+    .remove-btn { background: none; border: none; color: var(--subtle); font-size: .82rem; cursor: pointer; padding: 2px 6px; border-radius: 4px; font-family: var(--fb); white-space: nowrap; }
     .remove-btn:hover { background: #fee2e2; color: #b91c1c; }
     .recalc-notice { display:none; background:#fffbeb; border:1px solid #fde68a; color:#92400e; font-size:.82rem; border-radius:6px; padding:8px 12px; margin-top:10px; }
     .recalc-notice.on { display:block; }
@@ -274,13 +279,13 @@
     tr:hover td { background: #f9fafb; }
     tr:last-child td { border-bottom: none; }
 
-    .badge { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: .72rem; font-weight: 700; }
+    .badge { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: .75rem; font-weight: 700; }
     .b-nat { background: #c2410c; color: #fff; border: none; }
     .b-mun { background: #ea7c39; color: #fff; border: none; }
     .b-bri { background: #fbbf24; color: #374151; border: none; }
     .b-rec { background: #fef9c3; color: #713f12; border: 1px solid #fde68a; }
     .b-fol { background: #ddd6fe; color: #5b21b6; border: none; }
-    .custom-badge { display:inline-block; font-size:.68rem; font-weight:600; border-radius:3px; padding:1px 5px; margin-right:5px; vertical-align:middle; }
+    .custom-badge { display:inline-block; font-size:.75rem; font-weight:600; border-radius:3px; padding:1px 5px; margin-right:5px; vertical-align:middle; }
     .badge-mun { background:#fff3e6; color:#9a3412; border:1px solid #fcd9b4; }
     .badge-rec { background:#f3f4f6; color:#374151; border:1px solid #d1d5db; }
     .badge-fol { background:#ede9fe; color:#5b21b6; border:1px solid #c4b5fd; }
@@ -290,8 +295,9 @@
     /* monthly table */
     .mt th, .mt td { text-align: center; }
     .mt th:first-child, .mt td:first-child { text-align: left; min-width: 115px; }
+    .mt td, .mt th { font-size: .88rem; }
     .mt .rc td  { color: var(--muted); }
-    .mt .ru td  { font-family: var(--fd); font-weight: 700; font-size: .95rem; color: var(--text); }
+    .mt .ru td  { font-family: var(--fd); font-weight: 700; font-size: .88rem; color: var(--text); }
     .mt .tc     { background: #f3f4f6; font-weight: 700; color: var(--text); }
 
     .muni-status { font-size: .74rem; margin-top: 5px; color: var(--subtle); }
@@ -432,12 +438,17 @@
   <!-- RESULTS -->
   <div id="results" class="hidden">
     <div class="card">
-      <div class="section-title">Resumo do Contrato</div>
-      <div class="sum-grid" id="sumCards"></div>
-      <div id="tlSection"></div>
+      <div class="section-title">Projeção de Horas por Mês</div>
+      <div class="t-wrap"><table class="mt" id="moTable"></table></div>
       <div class="btn-row" style="margin-top:16px;">
         <button class="btn btn-export" onclick="exportarExcel()">Exportar para Excel (.xlsx)</button>
       </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">Resumo do Contrato</div>
+      <div class="sum-grid" id="sumCards"></div>
+      <div id="tlSection"></div>
     </div>
 
     <div class="card">
@@ -467,11 +478,6 @@
           <tbody id="holBody2"></tbody></table>
         </div>
       </div>
-    </div>
-
-    <div class="card">
-      <div class="section-title">Dias por Mês</div>
-      <div class="t-wrap"><table class="mt" id="moTable"></table></div>
     </div>
   </div>
 
@@ -1242,19 +1248,26 @@ function render(res){
   const TAG_CLS = {umido:'tag-umido',transicao:'tag-transicao',seco:'tag-seco'};
   const TAG_LBL = {umido:'Úmido',transicao:'Transição',seco:'Seco'};
 
-  // Monthly table
+  // Monthly summary table
   const hdr=mos.map(mk=>`<th>${monthData[mk].lbl}</th>`).join('');
   const rC=mos.map(mk=>`<td>${monthData[mk].c}</td>`).join('');
   const rU=mos.map(mk=>`<td>${monthData[mk].u}</td>`).join('');
   const tC=mos.reduce((s,mk)=>s+monthData[mk].c,0);
   const tU=mos.reduce((s,mk)=>s+monthData[mk].u,0);
 
-  const rH=mos.map(mk=>{
-    const hrs=monthData[mk].u*(getPer(mk).horas||8);
-    return `<td>${hrs%1===0?hrs:hrs.toFixed(1)}</td>`;
+  // Horas produtivas = jornada produtiva × dias úteis (sem fator climático)
+  const rHprod=mos.map(mk=>{
+    const hrs=+(monthData[mk].u*jp).toFixed(1);
+    return `<td>${hrs%1===0?hrs:hrs}</td>`;
   }).join('');
-  const tH=mos.reduce((s,mk)=>s+monthData[mk].u*(getPer(mk).horas||8),0);
-  const tHfmt=tH%1===0?tH:tH.toFixed(1);
+  const tHprod=+(mos.reduce((s,mk)=>s+monthData[mk].u*jp,0)).toFixed(1);
+
+  // Horas praticáveis = horas produtivas × % praticabilidade do período
+  const rHprat=mos.map(mk=>{
+    const hrs=+(monthData[mk].u*getPer(mk).horas).toFixed(1);
+    return `<td>${hrs}</td>`;
+  }).join('');
+  const tHprat=+(mos.reduce((s,mk)=>s+monthData[mk].u*getPer(mk).horas,0)).toFixed(1);
 
   const rP=mos.map(mk=>{
     const t=getPer(mk).tipo;
@@ -1262,12 +1275,13 @@ function render(res){
   }).join('');
 
   document.getElementById('moTable').innerHTML=`
-    <thead><tr><th style="min-width:115px;">Métrica</th>${hdr}<th class="tc">Total</th></tr></thead>
+    <thead><tr><th style="min-width:130px;">Métrica</th>${hdr}<th class="tc">Total</th></tr></thead>
     <tbody>
       <tr class="rc"><td>Dias no período</td>${rC}<td class="tc">${tC}</td></tr>
       <tr class="ru"><td>Dias úteis</td>${rU}<td class="tc">${tU}</td></tr>
       <tr><td>Período climático</td>${rP}<td class="tc">—</td></tr>
-      <tr><td>Horas praticáveis</td>${rH}<td class="tc">${tHfmt} h</td></tr>
+      <tr><td>Horas produtivas</td>${rHprod}<td class="tc">${tHprod} h</td></tr>
+      <tr><td>Horas praticáveis</td>${rHprat}<td class="tc">${tHprat} h</td></tr>
     </tbody>`;
 
   document.getElementById('results').scrollIntoView({behavior:'smooth',block:'start'});
