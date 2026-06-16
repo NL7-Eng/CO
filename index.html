@@ -104,7 +104,7 @@
     .pc-table th { font-weight:600; color:var(--muted); text-align:center; padding:3px 6px; font-size:.71rem; text-transform:uppercase; letter-spacing:.4px; }
     .pc-table td { text-align:center; padding:3px 4px; }
     .pc-type-lbl { text-align:left !important; padding-right:10px !important; font-weight:600; font-size:.8rem; color:var(--text); }
-    .pc-hrs-cell { padding-right:14px !important; }
+    .pc-hrs-cell { padding-right:10px !important; font-size:.72rem; color:var(--muted); white-space:nowrap; }
     .pc-radio { display:none; }
     .pc-lbl { display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px;
       border-radius:4px; border:1.5px solid #d1d5db; font-size:.7rem; font-weight:700; cursor:pointer;
@@ -113,7 +113,7 @@
     .pc-radio.r-u:checked + .pc-lbl { background:#bfdbfe; color:#1e3a8a; }
     .pc-radio.r-t:checked + .pc-lbl { background:#d1fae5; color:#065f46; }
     .pc-radio.r-s:checked + .pc-lbl { background:#fef9c3; color:#713f12; }
-    .pc-hrs { width:42px; border:1px solid var(--border); border-radius:4px; padding:4px 5px;
+    .pc-hrs { width:34px; border:1px solid var(--border); border-radius:4px; padding:3px 4px;
       font-size:.78rem; font-family:var(--fb); text-align:center; color:var(--text);
       background:#fff; outline:none; }
     .pc-hrs:focus { border-color:#6b7280; }
@@ -248,6 +248,8 @@
 
     /* ── TABLES ── */
     .t-wrap { overflow-x: auto; }
+    .hol-dual { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media(max-width:680px){ .hol-dual { grid-template-columns: 1fr; } }
     table { width: 100%; border-collapse: collapse; font-size: .86rem; }
     th {
       background: #f9fafb; padding: 9px 13px; text-align: left;
@@ -374,7 +376,7 @@
     </div>
 
     <!-- PERÍODO CLIMÁTICO -->
-    <div class="periodo-section" id="periodoSection" style="display:none">
+    <div class="periodo-section" id="periodoSection">
       <div class="custom-title">Período Climático por Mês</div>
       <p class="custom-sub">Defina as horas produtivas por tipo de período e marque qual é o tipo de cada mês. Válido para todos os anos do período calculado.</p>
       <div id="periodoGrid"></div>
@@ -418,10 +420,15 @@
 
     <div class="card">
       <div class="section-title">Feriados e Compensações no Período</div>
-      <div class="t-wrap">
-        <table><thead><tr>
-          <th>Data</th><th>Dia</th><th>Descrição</th><th>Tipo</th>
-        </tr></thead><tbody id="holBody"></tbody></table>
+      <div class="hol-dual">
+        <div class="t-wrap">
+          <table><thead><tr><th>Data</th><th>Dia</th><th>Descrição</th><th>Tipo</th></tr></thead>
+          <tbody id="holBody1"></tbody></table>
+        </div>
+        <div class="t-wrap">
+          <table><thead><tr><th>Data</th><th>Dia</th><th>Descrição</th><th>Tipo</th></tr></thead>
+          <tbody id="holBody2"></tbody></table>
+        </div>
       </div>
     </div>
 
@@ -1118,8 +1125,7 @@ function render(res){
     .filter(r=>r.dt>=res.start&&r.dt<=res.end&&!isWE(r.dt))
     .sort((a,b)=>a.dt-b.dt);
 
-  const tbody=document.getElementById('holBody');
-  tbody.innerHTML=rows.length?rows.map(r=>{
+  const rowsHtml=rows.map(r=>{
     const cusEntry=customHols.find(h=>h.key===r.key);
     let bc,tl;
     if(cusEntry){
@@ -1130,11 +1136,13 @@ function render(res){
       tl=r.type==='national'?'Feriado Nacional':r.type==='municipal'?`Municipal – ${city.nome}`:r.type==='bridge'?'Compensação':r.type==='folga'?'Folga / Outro':'Recesso';
     }
     return `<tr><td><strong>${fBR(r.dt)}</strong></td><td>${WD[dow(r.dt)]}</td><td>${r.name}</td><td><span class="badge ${bc}">${tl}</span></td></tr>`;
-  }).join('')
-  :'<tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:20px;">Nenhum registro no período</td></tr>';
+  });
+  const half=Math.ceil(rowsHtml.length/2);
+  const empty='<tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:20px;">Nenhum registro</td></tr>';
+  document.getElementById('holBody1').innerHTML=rowsHtml.length?rowsHtml.slice(0,half).join(''):empty;
+  document.getElementById('holBody2').innerHTML=rowsHtml.length?rowsHtml.slice(half).join(''):'';
 
-  // Período climático — render compact 12-month grid
-  document.getElementById('periodoSection').style.display='';
+  // Re-render período climático to reflect any changes
   renderPeriodoGrid();
 
   // Helper: get periodo for a YYYY-MM key (by month number)
@@ -1198,7 +1206,7 @@ function exportarExcel(){
   XLSX.utils.book_append_sheet(wb,ws1,'Resumo');
 
   const rows2=[['Data','Dia da Semana','Descrição','Tipo']];
-  document.querySelectorAll('#holBody tr').forEach(tr=>{
+  document.querySelectorAll('#holBody1 tr, #holBody2 tr').forEach(tr=>{
     const tds=[...tr.querySelectorAll('td')];
     if(tds.length===4) rows2.push(tds.map(td=>td.textContent.trim()));
   });
@@ -1244,7 +1252,7 @@ function limpar(){
   document.getElementById('chkRecesso').checked=true;
   customHols=[]; renderCustomList();
   periodoMes={}; periodoHoras={umido:8,transicao:8,seco:8};
-  document.getElementById('periodoSection').style.display='none';
+  renderPeriodoGrid();
   hasCalcResult=false;
   document.getElementById('recalcNotice').classList.remove('on');
   document.getElementById('results').classList.add('hidden');
@@ -1254,6 +1262,7 @@ function limpar(){
 // defaults
 document.getElementById('dataOS').value='01/06/2026';
 document.getElementById('prazo').value='180';
+renderPeriodoGrid();
 </script>
 </body>
 </html>
