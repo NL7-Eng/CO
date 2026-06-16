@@ -200,7 +200,7 @@
     .sc-lbl { font-size: .67rem; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); }
     .sc-val { font-family: var(--fd); font-size: 1.8rem; font-weight: 700; margin-top: 4px; line-height: 1; color: var(--text); }
     .sc-sub { font-size: .72rem; margin-top: 4px; color: var(--subtle); }
-    .sc-val-sm { font-size: 1.05rem; margin-top: 6px; }
+    .sc-val-sm { font-size: 1.35rem; margin-top: 4px; }
 
     .sc-date { border-left-color: #374151; }
     .sc-tot  { border-left-color: #9ca3af; }
@@ -446,7 +446,7 @@
 
     <!-- PERÍODO CLIMÁTICO -->
     <div class="periodo-section" id="periodoSection">
-      <div class="custom-title">Período Climático por Mês</div>
+      <div class="custom-title">Cálculo de Praticabilidade</div>
       <p class="custom-sub">Defina o percentual de praticabilidade por tipo de período e marque o tipo de cada mês. Horas praticáveis/dia = Jornada produtiva × % praticabilidade.</p>
       <div id="periodoGrid"></div>
     </div>
@@ -1312,8 +1312,8 @@ function render(res){
   const fmt1 = v => v%1===0?String(v):v.toFixed(1);
 
   document.getElementById('sumCards').innerHTML=`
-    <div class="sc sc-date"><div class="sc-lbl">Início</div><div class="sc-val sc-val-sm">${fBR(start)}</div><div class="sc-sub">${WD[dow(start)]}</div></div>
-    <div class="sc sc-date"><div class="sc-lbl">Término</div><div class="sc-val sc-val-sm">${fBR(end)}</div><div class="sc-sub">${WD[dow(end)]}</div></div>
+    <div class="sc sc-date"><div class="sc-lbl">Início</div><div class="sc-val sc-val-sm">${fBR(start).slice(0,6)+fBR(start).slice(8)}</div><div class="sc-sub">${WD[dow(start)]}</div></div>
+    <div class="sc sc-date"><div class="sc-lbl">Término</div><div class="sc-val sc-val-sm">${fBR(end).slice(0,6)+fBR(end).slice(8)}</div><div class="sc-sub">${WD[dow(end)]}</div></div>
     <div class="sc sc-hrs"><div class="sc-lbl">Horas Produtivas</div><div class="sc-val">${fmt1(tHprodCard)}</div><div class="sc-sub">h no período</div></div>
     <div class="sc sc-prat"><div class="sc-lbl">Horas Praticáveis</div><div class="sc-val">${fmt1(tHpratCard)}</div><div class="sc-sub">h no período</div></div>
     <div class="sc sc-pct"><div class="sc-lbl">Praticabilidade Média</div><div class="sc-val">${pctMedio}%</div><div class="sc-sub">ponderada por dias úteis</div></div>
