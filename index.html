@@ -6,7 +6,6 @@
   <title>Calendário de Obras</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -314,6 +313,18 @@
       .sum-grid { grid-template-columns: repeat(2,1fr); }
       .cal-grid { grid-template-columns: 1fr; }
     }
+    @media print {
+      /* Hide everything except the results section */
+      .form-card, .alerts-wrap, header p { display: none !important; }
+      header { padding: 16px 24px; }
+      header h1 { font-size: 1.2rem; }
+      .wrap { padding: 0 8px 20px; }
+      .card { box-shadow: none; border: 1px solid #d1d5db; margin-top: 12px; break-inside: avoid; }
+      .btn-row, #btnCalc, .btn-ghost, .btn-export { display: none !important; }
+      .cal-grid { grid-template-columns: repeat(3,1fr); gap: 8px; }
+      .hol-dual { grid-template-columns: 1fr 1fr; }
+      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
   </style>
 </head>
 <body>
@@ -328,7 +339,7 @@
 <div class="wrap">
 
   <!-- FORM -->
-  <div class="card">
+  <div class="card form-card">
     <div class="section-title">Dados do Contrato</div>
     <div class="form-grid">
       <div class="fg">
@@ -388,6 +399,13 @@
             <option value="folga">Folga / Outro</option>
           </select>
         </div>
+        <div class="fg" style="flex:0 0 auto;justify-content:flex-end;">
+          <label style="visibility:hidden;">.</label>
+          <label class="chk-lbl" style="white-space:nowrap;">
+            <input type="checkbox" id="cusRepeat" />
+            Repetir todo ano
+          </label>
+        </div>
         <button class="btn btn-add" onclick="addCustomHol()">Adicionar</button>
       </div>
       <div class="custom-list" id="customList">
@@ -445,7 +463,7 @@
       <div class="section-title">Projeção de Horas por Mês</div>
       <div class="t-wrap"><table class="mt" id="moTable"></table></div>
       <div class="btn-row" style="margin-top:16px;">
-        <button class="btn btn-export" onclick="exportarExcel()">Exportar para Excel (.xlsx)</button>
+        <button class="btn btn-export" onclick="imprimirRelatorio()">Imprimir / Gerar PDF</button>
       </div>
     </div>
 
@@ -863,13 +881,18 @@ function addCustomHol(){
   const dateStr=document.getElementById('cusDate').value.trim();
   const name=document.getElementById('cusName').value.trim();
   const type=document.getElementById('cusType').value;
+  const repeat=document.getElementById('cusRepeat').checked;
   if(!dateStr||!name){ showAlert('err','Preencha a data e a descrição.'); return; }
   const dt=parseBR(dateStr);
   if(!dt){ showAlert('err','Data inválida. Use DD/MM/AAAA.'); return; }
   clearAlerts();
   const key=YMD(dt);
-  if(customHols.find(h=>h.key===key)){ showAlert('err','Esta data já foi adicionada.'); return; }
-  customHols.push({key,name,dt,type});
+  // For repeating, key is MM-DD so duplicates are per day-month
+  const dupKey=repeat?`repeat-${p2(dt.getUTCMonth()+1)}-${p2(dt.getUTCDate())}`:key;
+  if(customHols.find(h=>(h.repeat?`repeat-${p2(h.dt.getUTCMonth()+1)}-${p2(h.dt.getUTCDate())}`:h.key)===dupKey)){
+    showAlert('err','Esta data já foi adicionada.'); return;
+  }
+  customHols.push({key,name,dt,type,repeat});
   customHols.sort((a,b)=>a.dt-b.dt);
   document.getElementById('cusDate').value='';
   document.getElementById('cusName').value='';
@@ -892,8 +915,9 @@ function renderCustomList(){
   el.innerHTML=customHols.map(h=>
     `<div class="custom-item">
        <span class="custom-item-info">
-         <span class="custom-item-date">${fBR(h.dt)}</span>
+         <span class="custom-item-date">${h.repeat?`${p2(h.dt.getUTCDate())}/${p2(h.dt.getUTCMonth()+1)} (todo ano)`:fBR(h.dt)}</span>
          <span class="custom-badge ${typeClass[h.type]||'badge-mun'}">${typeLabel[h.type]||h.type}</span>
+         ${h.repeat?'<span class="custom-badge" style="background:#f0fdf4;color:#166534;border:1px solid #bbf7d0;">Anual</span>':''}
          ${h.name}
        </span>
        <button class="remove-btn" onclick="removeCustomHol('${h.key}')">Remover</button>
@@ -1080,10 +1104,15 @@ async function calcular(){
 
   // Custom holidays — applied after recSet is built
   for(const h of customHols){
-    if(h.type==='recess'){
-      recSet.add(h.key);
-    } else if(!allHols[h.key]){
-      allHols[h.key]={name:h.name,type:h.type==='folga'?'folga':'municipal'};
+    const keysToApply = h.repeat
+      ? [...years].map(yr => YMD(D(yr, h.dt.getUTCMonth(), h.dt.getUTCDate())))
+      : [h.key];
+    for(const k of keysToApply){
+      if(h.type==='recess'){
+        recSet.add(k);
+      } else if(!allHols[k]){
+        allHols[k]={name:h.name,type:h.type==='folga'?'folga':'municipal'};
+      }
     }
   }
 
@@ -1301,52 +1330,11 @@ function render(res){
 }
 
 /* ====================================================================
-   EXPORT
+   IMPRIMIR / PDF
    ==================================================================== */
-function exportarExcel(){
-  if(!lastResult){showAlert('err','Calcule antes de exportar.');return;}
-  const{city,start,end,totals,monthData}=lastResult;
-  const{nC,nU,nW,nH,nHm,nB,nR,nF}=totals;
-  const wb=XLSX.utils.book_new();
-  const ws1=XLSX.utils.aoa_to_sheet([
-    ['Campo','Valor'],
-    ['Cidade',`${city.nome}${city.uf?', '+city.uf:''}`],
-    ['Início',fBR(start)],['Término',fBR(end)],
-    ['Dias corridos',nC],['Dias úteis',nU],['Fins de semana',nW],
-    ['Feriados nacionais',nH],['Feriados municipais',nHm],
-    ['Compensações',nB],['Recesso',nR],['Folgas',nF||0],
-  ]);
-  ws1['!cols']=[{wch:24},{wch:20}];
-  XLSX.utils.book_append_sheet(wb,ws1,'Resumo');
-
-  const rows2=[['Data','Dia da Semana','Descrição','Tipo']];
-  document.querySelectorAll('#holBody1 tr, #holBody2 tr').forEach(tr=>{
-    const tds=[...tr.querySelectorAll('td')];
-    if(tds.length===4) rows2.push(tds.map(td=>td.textContent.trim()));
-  });
-  const ws2=XLSX.utils.aoa_to_sheet(rows2);
-  ws2['!cols']=[{wch:13},{wch:13},{wch:46},{wch:28}];
-  XLSX.utils.book_append_sheet(wb,ws2,'Feriados');
-
-  const mos=Object.keys(monthData).sort();
-  const periodoOPT_FULL={umido:'Período Úmido',transicao:'Período de Transição',seco:'Período Seco'};
-  const jpX=jornadaProdutiva();
-  const getPerX=mk=>{ const m=parseInt(mk.split('-')[1],10); const tipo=periodoMes[m]||'seco'; const perc=(periodoPerc[tipo]??100)/100; return {tipo,horas:+(jpX*perc).toFixed(2)}; };
-  const ws3=XLSX.utils.aoa_to_sheet([
-    ['Métrica',...mos.map(mk=>monthData[mk].lbl),'TOTAL'],
-    ['Dias no período',...mos.map(mk=>monthData[mk].c),mos.reduce((s,mk)=>s+monthData[mk].c,0)],
-    ['Dias úteis',     ...mos.map(mk=>monthData[mk].u),mos.reduce((s,mk)=>s+monthData[mk].u,0)],
-    ['Período climático',...mos.map(mk=>periodoOPT_FULL[getPerX(mk).tipo]||'Período Seco'),'—'],
-    ['Jornada útil (h/dia)', jornadaUtil(),'—'],
-    ['Jornada produtiva (h/dia)', jpX,'—'],
-    ['Horas praticáveis/dia',...mos.map(mk=>getPerX(mk).horas),'—'],
-    ['Horas praticáveis totais',...mos.map(mk=>+(monthData[mk].u*getPerX(mk).horas).toFixed(1)),
-      +mos.reduce((s,mk)=>s+monthData[mk].u*getPerX(mk).horas,0).toFixed(1)],
-  ]);
-  ws3['!cols']=[{wch:18},...mos.map(()=>({wch:9})),{wch:9}];
-  XLSX.utils.book_append_sheet(wb,ws3,'Dias Úteis');
-
-  XLSX.writeFile(wb,`Calendario_${city.nome.replace(/\s+/g,'_')}.xlsx`);
+function imprimirRelatorio(){
+  if(!lastResult){showAlert('err','Calcule antes de imprimir.');return;}
+  window.print();
 }
 
 /* ====================================================================
