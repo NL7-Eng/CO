@@ -99,20 +99,22 @@
 
     /* período climático */
     .periodo-section { margin-top: 22px; border-top: 1px solid var(--border-l); padding-top: 16px; }
-    .pc-table { width:100%; border-collapse:collapse; margin-top:10px; font-size:.78rem; }
-    .pc-table th { font-weight:600; color:var(--muted); text-align:center; padding:3px 2px; font-size:.72rem; text-transform:uppercase; letter-spacing:.4px; }
-    .pc-table td { text-align:center; padding:3px 2px; }
-    .pc-tipo { display:flex; flex-direction:column; gap:3px; align-items:center; }
+    .pc-wrap { overflow-x: auto; }
+    .pc-table { border-collapse:collapse; font-size:.78rem; white-space:nowrap; }
+    .pc-table th { font-weight:600; color:var(--muted); text-align:center; padding:3px 6px; font-size:.71rem; text-transform:uppercase; letter-spacing:.4px; }
+    .pc-table td { text-align:center; padding:3px 4px; }
+    .pc-type-lbl { text-align:left !important; padding-right:10px !important; font-weight:600; font-size:.8rem; color:var(--text); }
+    .pc-hrs-cell { padding-right:14px !important; }
     .pc-radio { display:none; }
-    .pc-lbl { display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px;
-      border-radius:4px; border:1.5px solid #d1d5db; font-size:.68rem; font-weight:700; cursor:pointer;
+    .pc-lbl { display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px;
+      border-radius:4px; border:1.5px solid #d1d5db; font-size:.7rem; font-weight:700; cursor:pointer;
       color:#9ca3af; transition:background .1s,color .1s,border-color .1s; user-select:none; }
     .pc-radio:checked + .pc-lbl { border-color:transparent; }
-    .pc-radio[value="umido"]:checked    + .pc-lbl { background:#bfdbfe; color:#1e3a8a; }
-    .pc-radio[value="transicao"]:checked + .pc-lbl { background:#d1fae5; color:#065f46; }
-    .pc-radio[value="seco"]:checked    + .pc-lbl { background:#fef9c3; color:#713f12; }
-    .pc-hrs { width:36px; border:1px solid var(--border); border-radius:4px; padding:3px 4px;
-      font-size:.75rem; font-family:var(--fb); text-align:center; color:var(--text);
+    .pc-radio.r-u:checked + .pc-lbl { background:#bfdbfe; color:#1e3a8a; }
+    .pc-radio.r-t:checked + .pc-lbl { background:#d1fae5; color:#065f46; }
+    .pc-radio.r-s:checked + .pc-lbl { background:#fef9c3; color:#713f12; }
+    .pc-hrs { width:42px; border:1px solid var(--border); border-radius:4px; padding:4px 5px;
+      font-size:.78rem; font-family:var(--fb); text-align:center; color:var(--text);
       background:#fff; outline:none; }
     .pc-hrs:focus { border-color:#6b7280; }
     .periodo-tag { display:inline-block; font-size:.72rem; font-weight:700; border-radius:3px; padding:2px 7px; }
@@ -216,7 +218,8 @@
     .ld-o   { background: var(--c-out); border: 1px solid #e5e7eb; }
 
     /* ── CALENDAR ── */
-    .cal-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(275px,1fr)); gap: 14px; }
+    .cal-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
+    @media(max-width:900px){ .cal-grid { grid-template-columns: repeat(2,1fr); } }
     .month-cal { border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; }
     .mo-hdr { background: #1f2937; color: #fff; text-align: center; padding: 9px 8px; font-family: var(--fd); font-weight: 700; font-size: .86rem; letter-spacing: .4px; }
     .cal-wdr { display: grid; grid-template-columns: repeat(7,1fr); background: #f3f4f6; border-bottom: 1px solid var(--border-l); }
@@ -336,12 +339,6 @@
     </div>
 
     <!-- PERÍODO CLIMÁTICO -->
-    <div class="periodo-section" id="periodoSection" style="display:none">
-      <div class="custom-title">Período Climático por Mês</div>
-      <p class="custom-sub">Marque o tipo de cada mês e informe as horas produtivas por dia útil. Válido para todos os anos do período calculado.</p>
-      <div id="periodoGrid"></div>
-    </div>
-
     <!-- DATAS ESPECIAIS -->
     <div class="custom-section" id="customSection">
       <div class="custom-title">Datas Especiais da Obra</div>
@@ -374,6 +371,13 @@
       <div class="recalc-notice" id="recalcNotice">
         Datas especiais modificadas — clique em Calcular para atualizar o calendário.
       </div>
+    </div>
+
+    <!-- PERÍODO CLIMÁTICO -->
+    <div class="periodo-section" id="periodoSection" style="display:none">
+      <div class="custom-title">Período Climático por Mês</div>
+      <p class="custom-sub">Defina as horas produtivas por tipo de período e marque qual é o tipo de cada mês. Válido para todos os anos do período calculado.</p>
+      <div id="periodoGrid"></div>
     </div>
 
     <div class="btn-row">
@@ -697,48 +701,54 @@ document.addEventListener('click',e=>{ if(!e.target.closest('.ac-wrap')) closeAC
 /* ====================================================================
    PERÍODO CLIMÁTICO
    ==================================================================== */
-// periodoData: keyed by month number 1-12 (same setting for all years)
-let periodoData = {};
+// periodoMes[m] = 'umido'|'transicao'|'seco'  (m = 1..12)
+// periodoHoras  = {umido:8, transicao:8, seco:8}
+let periodoMes   = {};
+let periodoHoras = {umido:8, transicao:8, seco:8};
+
+// legacy alias kept so render() helper still works
+let periodoData = {};  // not used for input anymore; rebuilt in getPer()
 
 function renderPeriodoGrid(){
   const MO_ABR=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-  const tipos=[{v:'U',k:'umido'},{v:'T',k:'transicao'},{v:'S',k:'seco'}];
+  const tipos=[
+    {k:'umido',    lbl:'Período Úmido',   rc:'r-u'},
+    {k:'transicao',lbl:'Transição',        rc:'r-t'},
+    {k:'seco',     lbl:'Período Seco',     rc:'r-s'},
+  ];
   const grid = document.getElementById('periodoGrid');
 
-  // header row
-  let thd=MO_ABR.map(m=>`<th>${m}</th>`).join('');
-  // tipo row
-  let ttr=Array.from({length:12},(_,i)=>{
-    const m=i+1;
-    const cur=(periodoData[m]||{tipo:'seco'}).tipo;
-    const chips=tipos.map(t=>`
-      <input class="pc-radio" type="radio" name="pt${m}" id="pt${m}${t.k}" value="${t.k}"${cur===t.k?' checked':''}
-        onchange="savePeriodo(${m})">
-      <label class="pc-lbl" for="pt${m}${t.k}">${t.v}</label>`).join('');
-    return `<td><div class="pc-tipo">${chips}</div></td>`;
-  }).join('');
-  // horas row
-  let thr=Array.from({length:12},(_,i)=>{
-    const m=i+1;
-    const h=(periodoData[m]||{horas:8}).horas;
-    return `<td><input class="pc-hrs" type="number" min="1" max="24" step="0.5" value="${h}"
-      id="phrs${m}" onchange="savePeriodo(${m})"></td>`;
+  const thd=MO_ABR.map(m=>`<th>${m}</th>`).join('');
+
+  const rows=tipos.map(t=>{
+    const h=periodoHoras[t.k]||8;
+    const tds=Array.from({length:12},(_,i)=>{
+      const m=i+1;
+      const cur=periodoMes[m]||'seco';
+      const chk=cur===t.k?' checked':'';
+      return `<td><input class="pc-radio ${t.rc}" type="radio" name="pm${m}" id="pm${m}${t.k}" value="${t.k}"${chk}
+        onchange="savePeriodoMes(${m})"><label class="pc-lbl" for="pm${m}${t.k}">✓</label></td>`;
+    }).join('');
+    return `<tr>
+      <td class="pc-type-lbl">${t.lbl}</td>
+      <td class="pc-hrs-cell"><input class="pc-hrs" type="number" min="1" max="24" step="0.5"
+        value="${h}" id="phrs-${t.k}" onchange="savePeriodoHoras('${t.k}')"> h/dia</td>
+      ${tds}
+    </tr>`;
   }).join('');
 
-  grid.innerHTML=`<table class="pc-table">
-    <thead><tr><th style="text-align:left;padding-left:2px;"></th>${thd}</tr></thead>
-    <tbody>
-      <tr><td style="font-size:.7rem;color:var(--muted);white-space:nowrap;text-align:right;padding-right:6px;">Período</td>${ttr}</tr>
-      <tr><td style="font-size:.7rem;color:var(--muted);white-space:nowrap;text-align:right;padding-right:6px;">Horas/dia</td>${thr}</tr>
-    </tbody>
-  </table>`;
+  grid.innerHTML=`<div class="pc-wrap"><table class="pc-table">
+    <thead><tr><th></th><th></th>${thd}</tr></thead>
+    <tbody>${rows}</tbody>
+  </table></div>`;
 }
 
-function savePeriodo(m){
-  const checked=document.querySelector(`input[name="pt${m}"]:checked`);
-  const tipo=checked?checked.value:'seco';
-  const horas=parseFloat(document.getElementById('phrs'+m)?.value)||8;
-  periodoData[m]={tipo,horas};
+function savePeriodoMes(m){
+  const checked=document.querySelector(`input[name="pm${m}"]:checked`);
+  if(checked) periodoMes[m]=checked.value;
+}
+function savePeriodoHoras(tipo){
+  periodoHoras[tipo]=parseFloat(document.getElementById('phrs-'+tipo)?.value)||8;
 }
 
 /* ====================================================================
@@ -1128,7 +1138,12 @@ function render(res){
   renderPeriodoGrid();
 
   // Helper: get periodo for a YYYY-MM key (by month number)
-  const getPer = mk => periodoData[parseInt(mk.split('-')[1],10)] || {tipo:'seco',horas:8};
+  const getPer = mk => {
+    const m=parseInt(mk.split('-')[1],10);
+    const tipo=periodoMes[m]||'seco';
+    const horas=periodoHoras[tipo]||8;
+    return {tipo,horas};
+  };
   const TAG_CLS = {umido:'tag-umido',transicao:'tag-transicao',seco:'tag-seco'};
   const TAG_LBL = {umido:'Úmido',transicao:'Transição',seco:'Seco'};
 
@@ -1193,7 +1208,7 @@ function exportarExcel(){
 
   const mos=Object.keys(monthData).sort();
   const periodoOPT_FULL={umido:'Período Úmido',transicao:'Período de Transição',seco:'Período Seco'};
-  const getPerX=mk=>periodoData[parseInt(mk.split('-')[1],10)]||{tipo:'seco',horas:8};
+  const getPerX=mk=>{ const m=parseInt(mk.split('-')[1],10); const tipo=periodoMes[m]||'seco'; return {tipo,horas:periodoHoras[tipo]||8}; };
   const ws3=XLSX.utils.aoa_to_sheet([
     ['Métrica',...mos.map(mk=>monthData[mk].lbl),'TOTAL'],
     ['Dias no período',...mos.map(mk=>monthData[mk].c),mos.reduce((s,mk)=>s+monthData[mk].c,0)],
@@ -1228,7 +1243,7 @@ function limpar(){
   document.getElementById('chkPontes').checked=true;
   document.getElementById('chkRecesso').checked=true;
   customHols=[]; renderCustomList();
-  periodoData={};
+  periodoMes={}; periodoHoras={umido:8,transicao:8,seco:8};
   document.getElementById('periodoSection').style.display='none';
   hasCalcResult=false;
   document.getElementById('recalcNotice').classList.remove('on');
