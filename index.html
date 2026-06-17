@@ -141,24 +141,17 @@
 
     /* praticabilidade summary cards */
     .prat-cards { display:flex; gap:14px; flex-wrap:wrap; }
-    .prat-card { flex:1; min-width:180px; border-radius:8px; border:1.5px solid #e5e7eb; padding:14px 16px; background:#fff; }
-    .prat-card-title { font-family:var(--fd); font-size:.82rem; font-weight:700; text-transform:uppercase; letter-spacing:.5px; margin-bottom:10px; }
-    .prat-card-meses { font-size:.75rem; color:var(--muted); margin-bottom:10px; line-height:1.5; }
+    .prat-card { flex:1; min-width:180px; border-radius:8px; border:1.5px solid var(--border); padding:14px 16px; background:#fff; }
+    .prat-card-title { font-family:var(--fd); font-size:.82rem; font-weight:700; text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px; color:var(--text); }
+    .prat-card-meses { font-size:.78rem; color:var(--muted); margin-bottom:10px; line-height:1.5; }
     .prat-chain { display:flex; flex-direction:column; gap:5px; }
     .prat-step { display:flex; justify-content:space-between; align-items:baseline; font-size:.82rem; }
-    .prat-step-lbl { color:var(--muted); }
+    .prat-step-lbl { color:var(--text); }
     .prat-step-val { font-weight:600; color:var(--text); }
-    .prat-step-arrow { text-align:center; color:#d1d5db; font-size:.7rem; margin:1px 0; }
-    .prat-result { margin-top:8px; padding-top:8px; border-top:1.5px solid #e5e7eb; display:flex; justify-content:space-between; align-items:baseline; }
-    .prat-result-lbl { font-size:.82rem; font-weight:700; color:var(--text); }
-    .prat-result-val { font-size:1.05rem; font-weight:700; color:#15803d; }
-    .prat-card.umido-card { border-color:#93c5fd; background:#f0f7ff; }
-    .prat-card.umido-card .prat-card-title { color:#1d4ed8; }
-    .prat-card.transicao-card { border-color:#6ee7b7; background:#f0fdf8; }
-    .prat-card.transicao-card .prat-card-title { color:#065f46; }
-    .prat-card.seco-card { border-color:#fde68a; background:#fefdf0; }
-    .prat-card.seco-card .prat-card-title { color:#92400e; }
-    .prat-no-data { font-size:.82rem; color:var(--muted); font-style:italic; margin-top:6px; }
+    .prat-step-arrow { font-size:.75rem; color:var(--muted); margin:2px 0 2px 8px; }
+    .prat-result { margin-top:10px; padding-top:10px; border-top:1.5px solid var(--border); display:flex; justify-content:space-between; align-items:baseline; }
+    .prat-result-lbl { font-size:.82rem; font-weight:600; color:var(--text); }
+    .prat-result-val { font-size:1rem; font-weight:700; color:var(--text); }
 
     /* datas especiais */
     .custom-section { margin-top: 22px; border-top: 1px solid var(--border-l); padding-top: 18px; }
@@ -980,38 +973,38 @@ function renderPeriodoCards(){
   ];
   const MO_ABR=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 
+  const fmtH=v=>{ const h=Math.floor(v),mn=Math.round((v-h)*60); const hm=mn>0?`${h}h ${mn}min`:`${h}h`; const dec=String(+v.toFixed(2)).replace('.',','); return `${hm} (${dec}h)`; };
+
   const cards=CARD_CFG.map(c=>{
     const meses=Array.from({length:12},(_,i)=>i+1).filter(m=>(periodoMes[m]||'seco')===c.k);
-    const mesNomes=meses.map(m=>MO_ABR[m-1]).join(', ')||'Nenhum mês marcado';
+    const mesNomes=meses.map(m=>MO_ABR[m-1]).join(', ')||'—';
     const hasData=imprat[c.k]!==null;
-    const pImprat=hasData?imprat[c.k]:c.fallback;
+
+    if(!hasData){
+      return `<div class="prat-card ${c.cls}">
+        <div class="prat-card-title">${c.lbl}</div>
+        <div class="prat-card-meses">${mesNomes}</div>
+        <div style="font-size:.82rem;color:var(--muted);font-style:italic;margin-top:4px;">Preencha dias de impacto na tabela para calcular.</div>
+      </div>`;
+    }
+
+    const pImprat=imprat[c.k];
     const pPratic=+(100-pImprat).toFixed(1);
     const hImprat=+(jp*(pImprat/100)).toFixed(2);
     const hPratic=+(jp*(pPratic/100)).toFixed(2);
 
-    const fmtH=v=>{ const h=Math.floor(v),mn=Math.round((v-h)*60); const hm=mn>0?`${h}h ${mn}min`:`${h}h`; const dec=String(+v.toFixed(2)).replace('.',','); return `${hm} (${dec}h)`; };
-
-    const badge=hasData
-      ? `<span style="font-size:.7rem;background:#dcfce7;color:#166534;border-radius:3px;padding:1px 5px;margin-left:6px;">calculado</span>`
-      : `<span style="font-size:.7rem;background:#f3f4f6;color:var(--muted);border-radius:3px;padding:1px 5px;margin-left:6px;">manual</span>`;
-
-    const manualInput=!hasData?`<div style="margin-top:8px;padding-top:8px;border-top:1px dashed #e5e7eb;font-size:.78rem;color:var(--muted);">`+
-      `Sem dias de impacto — % manual: <input class="pc-hrs" type="number" min="0" max="100" step="1" style="width:42px;" `+
-      `value="${c.fallback}" id="pperc-${c.k}" onchange="savePeriodoPercManual('${c.k}')">%</div>`:'' ;
-
     return `<div class="prat-card ${c.cls}">
-      <div class="prat-card-title">${c.lbl}${badge}</div>
+      <div class="prat-card-title">${c.lbl}</div>
       <div class="prat-card-meses">${mesNomes}</div>
       <div class="prat-chain">
         <div class="prat-step"><span class="prat-step-lbl">Jornada produtiva</span><span class="prat-step-val">${fmtH(jp)}</span></div>
-        <div class="prat-step-arrow">↓ × ${pImprat.toFixed(0)}% impraticabilidade</div>
-        <div class="prat-step"><span class="prat-step-lbl">Horas impraticáveis/dia</span><span class="prat-step-val" style="color:#c2410c;">−${fmtH(hImprat)}</span></div>
+        <div class="prat-step-arrow">↓ ${pImprat.toFixed(0)}% de impraticabilidade média</div>
+        <div class="prat-step"><span class="prat-step-lbl">Horas impraticáveis/dia</span><span class="prat-step-val">− ${fmtH(hImprat)}</span></div>
       </div>
       <div class="prat-result">
         <span class="prat-result-lbl">Horas praticáveis/dia</span>
         <span class="prat-result-val">${fmtH(hPratic)}</span>
       </div>
-      ${manualInput}
     </div>`;
   }).join('');
 
