@@ -863,6 +863,9 @@ function renderImprodList(){
 // periodoPerc    = {umido:100, transicao:80, seco:60}  — % praticabilidade
 let periodoMes  = {};
 let periodoPerc = {umido:100, transicao:80, seco:60};
+let pluvioMes   = {};  // mm por mês (referência)
+let impactoMes  = {};  // dias de impacto por mês → sobrescreve % praticabilidade
+const DIAS_MES_PAD = [31,28,31,30,31,30,31,31,30,31,30,31];
 
 function renderPeriodoGrid(){
   const MO_ABR=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
@@ -892,15 +895,56 @@ function renderPeriodoGrid(){
       ${tds}
     </tr>`;
   }).join('');
+  const pluvRow = `<tr>
+    <td class="pc-type-lbl" style="white-space:nowrap;">Pluviometria</td>
+    <td class="pc-hrs-cell" style="color:var(--muted);font-size:.75rem;">mm</td>
+    <td class="pc-hrs-cell"></td>
+    ${Array.from({length:12},(_,i)=>{const m=i+1;return `<td><input type="number" min="0" step="1" style="width:38px;font-size:.78rem;padding:2px 3px;border:1px solid #d1d5db;border-radius:3px;text-align:center;" value="${pluvioMes[m]??''}" id="pluv-${m}" onchange="savePluvio(${m})"></td>`;}).join('')}
+  </tr>`;
+  const impactRow = `<tr>
+    <td class="pc-type-lbl" style="white-space:nowrap;">Dias impacto</td>
+    <td class="pc-hrs-cell" style="color:var(--muted);font-size:.75rem;">dias</td>
+    <td class="pc-hrs-cell"></td>
+    ${Array.from({length:12},(_,i)=>{const m=i+1;return `<td><input type="number" min="0" step="1" style="width:38px;font-size:.78rem;padding:2px 3px;border:1px solid #d1d5db;border-radius:3px;text-align:center;" value="${impactoMes[m]??''}" id="dimp-${m}" onchange="saveImpacto(${m})"></td>`;}).join('')}
+  </tr>`;
+  const calcPctRow = `<tr style="background:#f8fafc;">
+    <td class="pc-type-lbl" style="white-space:nowrap;color:var(--muted);font-size:.78rem;">% Calc.</td>
+    <td class="pc-hrs-cell"></td>
+    <td class="pc-hrs-cell"></td>
+    ${Array.from({length:12},(_,i)=>{
+      const m=i+1;
+      let txt='—';
+      if(impactoMes[m]!=null && impactoMes[m]!==''){
+        const pct=Math.max(0,Math.min(100,(DIAS_MES_PAD[m-1]-Number(impactoMes[m]))/DIAS_MES_PAD[m-1]*100));
+        txt=pct.toFixed(0)+'%';
+      }
+      return `<td id="ppct-${m}" style="text-align:center;font-size:.78rem;font-weight:600;color:var(--text);">${txt}</td>`;
+    }).join('')}
+  </tr>`;
   grid.innerHTML=`<div class="pc-wrap"><table class="pc-table">
     <thead><tr><th style="text-align:left;">Período</th><th style="text-align:left;">% Praticab.</th><th style="text-align:left;">Horas prat./dia</th>${thd}</tr></thead>
-    <tbody>${rows}</tbody>
+    <tbody>${rows}${pluvRow}${impactRow}${calcPctRow}</tbody>
   </table></div>`;
 }
 
 function savePeriodoMes(m){
   const checked=document.querySelector(`input[name="pm${m}"]:checked`);
   if(checked) periodoMes[m]=checked.value;
+}
+function savePluvio(m){
+  pluvioMes[m]=document.getElementById('pluv-'+m)?.value??'';
+}
+function saveImpacto(m){
+  const val=document.getElementById('dimp-'+m)?.value??'';
+  impactoMes[m]=val===''?'':Number(val);
+  const cell=document.getElementById('ppct-'+m);
+  if(cell){
+    if(val===''){ cell.textContent='—'; }
+    else{
+      const pct=Math.max(0,Math.min(100,(DIAS_MES_PAD[m-1]-Number(val))/DIAS_MES_PAD[m-1]*100));
+      cell.textContent=pct.toFixed(0)+'%';
+    }
+  }
 }
 function savePeriodoPerc(tipo){
   periodoPerc[tipo]=parseFloat(document.getElementById('pperc-'+tipo)?.value)??100;
@@ -1298,9 +1342,14 @@ function render(res){
   const getPer = mk => {
     const m=parseInt(mk.split('-')[1],10);
     const tipo=periodoMes[m]||'seco';
-    const perc=(periodoPerc[tipo]??100)/100;
-    const horas=+(jp*perc).toFixed(2);
-    return {tipo,horas,perc:periodoPerc[tipo]??100};
+    let perc;
+    if(impactoMes[m]!=null && impactoMes[m]!==''){
+      perc=Math.max(0,Math.min(100,(DIAS_MES_PAD[m-1]-Number(impactoMes[m]))/DIAS_MES_PAD[m-1]*100));
+    } else {
+      perc=periodoPerc[tipo]??100;
+    }
+    const horas=+(jp*(perc/100)).toFixed(2);
+    return {tipo,horas,perc};
   };
   const TAG_CLS = {umido:'tag-umido',transicao:'tag-transicao',seco:'tag-seco'};
   const TAG_LBL = {umido:'Úmido',transicao:'Transição',seco:'Seco'};
@@ -1399,7 +1448,7 @@ function limpar(){
   document.getElementById('chkPontes').checked=true;
   document.getElementById('chkRecesso').checked=true;
   customHols=[]; renderCustomList();
-  periodoMes={}; periodoPerc={umido:100,transicao:80,seco:60};
+  periodoMes={}; periodoPerc={umido:100,transicao:80,seco:60}; pluvioMes={}; impactoMes={};
   improdList=[]; _improdId=0; renderImprodList(); calcJornada();
   renderPeriodoGrid();
   hasCalcResult=false;
