@@ -867,6 +867,66 @@ let pluvioMes   = {};  // mm por mês (referência)
 let impactoMes  = {};  // dias de impacto por mês → sobrescreve % praticabilidade
 const DIAS_MES_PAD = [31,28,31,30,31,30,31,31,30,31,30,31];
 
+/* Calcula o % médio de praticabilidade por tipo climático
+   a partir dos dias de impacto preenchidos nos meses daquele tipo. */
+function calcPercMedio(){
+  const result={umido:null,transicao:null,seco:null};
+  ['umido','transicao','seco'].forEach(tipo=>{
+    const meses=Array.from({length:12},(_,i)=>i+1).filter(m=>(periodoMes[m]||'seco')===tipo);
+    const comDados=meses.filter(m=>impactoMes[m]!=null&&impactoMes[m]!=='');
+    if(!comDados.length) return;
+    const soma=comDados.reduce((s,m)=>
+      s+Math.max(0,Math.min(100,(DIAS_MES_PAD[m-1]-Number(impactoMes[m]))/DIAS_MES_PAD[m-1]*100)),0);
+    result[tipo]=+(soma/comDados.length).toFixed(1);
+  });
+  return result;
+}
+
+/* Atualiza as células de % e horas prat./dia das linhas de tipo após
+   qualquer mudança em marcação de mês ou dias de impacto. */
+function updatePercMedio(){
+  const medio=calcPercMedio();
+  const jp=jornadaProdutiva();
+  ['umido','transicao','seco'].forEach(tipo=>{
+    const percCell=document.getElementById('pperc-cell-'+tipo);
+    const hcell=document.getElementById('phprat-'+tipo);
+    if(percCell){
+      if(medio[tipo]!==null){
+        periodoPerc[tipo]=medio[tipo];
+        percCell.innerHTML=`<span style="font-weight:700;color:#1d4ed8;">${medio[tipo].toFixed(0)}%</span>`+
+          `<span style="font-size:.7rem;color:var(--muted);margin-left:3px;">auto</span>`;
+      } else {
+        percCell.innerHTML=`<input class="pc-hrs" type="number" min="0" max="100" step="1"`+
+          ` value="${periodoPerc[tipo]}" id="pperc-${tipo}" onchange="savePeriodoPercManual('${tipo}')">%`;
+      }
+    }
+    if(hcell){
+      const effPerc=medio[tipo]!=null?medio[tipo]:(periodoPerc[tipo]??100);
+      const hprat=+(jp*(effPerc/100)).toFixed(2);
+      hcell.textContent=(hprat%1===0?hprat+'h':hprat.toFixed(2).replace('.',',')+'h')+'/dia';
+    }
+  });
+  // Linha "% Médio" — cada mês mostra o % médio do seu tipo
+  for(let m=1;m<=12;m++){
+    const cell=document.getElementById('pmed-'+m);
+    if(cell){
+      const tipo=periodoMes[m]||'seco';
+      const v=medio[tipo];
+      cell.textContent=v!=null?v.toFixed(0)+'%':'—';
+      cell.style.fontWeight=v!=null?'700':'400';
+      cell.style.color=v!=null?'var(--text)':'var(--muted)';
+    }
+  }
+  // Linha "% Calc." — por mês
+  for(let m=1;m<=12;m++){
+    const cell=document.getElementById('ppct-'+m);
+    if(cell&&impactoMes[m]!=null&&impactoMes[m]!==''){
+      const pct=Math.max(0,Math.min(100,(DIAS_MES_PAD[m-1]-Number(impactoMes[m]))/DIAS_MES_PAD[m-1]*100));
+      cell.textContent=pct.toFixed(0)+'%';
+    }
+  }
+}
+
 function renderPeriodoGrid(){
   const MO_ABR=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
   const tipos=[
@@ -874,62 +934,103 @@ function renderPeriodoGrid(){
     {k:'transicao',lbl:'Transição', rc:'r-t'},
     {k:'seco',     lbl:'Seco',      rc:'r-s'},
   ];
-  const grid = document.getElementById('periodoGrid');
-  const thd=MO_ABR.map(m=>`<th>${m}</th>`).join('');
+  const grid=document.getElementById('periodoGrid');
+  const medio=calcPercMedio();
+  const jp=jornadaProdutiva();
+  const thd=MO_ABR.map(m=>`<th style="min-width:36px;text-align:center;">${m}</th>`).join('');
+
   const rows=tipos.map(t=>{
-    const p=periodoPerc[t.k]??100;
-    const hprat=+(jornadaProdutiva()*(p/100)).toFixed(2);
-    const hpratFmt = hprat%1===0 ? hprat+'h' : hprat.toFixed(2).replace('.',',')+'h';
+    const effPerc=medio[t.k]!=null?medio[t.k]:(periodoPerc[t.k]??100);
+    const hprat=+(jp*(effPerc/100)).toFixed(2);
+    const hpratFmt=hprat%1===0?hprat+'h':hprat.toFixed(2).replace('.',',')+'h';
+    let percCellHtml;
+    if(medio[t.k]!==null){
+      percCellHtml=`<span style="font-weight:700;color:#1d4ed8;">${medio[t.k].toFixed(0)}%</span>`+
+        `<span style="font-size:.7rem;color:var(--muted);margin-left:3px;">auto</span>`;
+    } else {
+      percCellHtml=`<input class="pc-hrs" type="number" min="0" max="100" step="1"`+
+        ` value="${periodoPerc[t.k]}" id="pperc-${t.k}" onchange="savePeriodoPercManual('${t.k}')">%`;
+    }
     const tds=Array.from({length:12},(_,i)=>{
       const m=i+1;
       const cur=periodoMes[m]||'seco';
       const chk=cur===t.k?' checked':'';
-      return `<td><input class="pc-radio ${t.rc}" type="radio" name="pm${m}" id="pm${m}${t.k}" value="${t.k}"${chk}
-        onchange="savePeriodoMes(${m})"><label class="pc-lbl" for="pm${m}${t.k}">✓</label></td>`;
+      return `<td style="text-align:center;"><input class="pc-radio ${t.rc}" type="radio" name="pm${m}" id="pm${m}${t.k}" value="${t.k}"${chk}`+
+        ` onchange="savePeriodoMes(${m})"><label class="pc-lbl" for="pm${m}${t.k}">✓</label></td>`;
     }).join('');
     return `<tr>
       <td class="pc-type-lbl">${t.lbl}</td>
-      <td class="pc-hrs-cell"><input class="pc-hrs" type="number" min="0" max="100" step="1"
-        value="${p}" id="pperc-${t.k}" onchange="savePeriodoPerc('${t.k}')">%</td>
+      <td class="pc-hrs-cell" id="pperc-cell-${t.k}">${percCellHtml}</td>
       <td class="pc-hrs-cell" id="phprat-${t.k}" style="color:var(--text);font-weight:600;">${hpratFmt}/dia</td>
       ${tds}
     </tr>`;
   }).join('');
-  const pluvRow = `<tr>
+
+  const sepRow=`<tr><td colspan="15" style="padding:0;"><hr style="margin:4px 0;border:none;border-top:1.5px dashed #e5e7eb;"></td></tr>`;
+
+  const inputStyle='width:36px;font-size:.78rem;padding:2px 3px;border:1px solid #d1d5db;border-radius:3px;text-align:center;';
+  const pluvRow=`<tr>
     <td class="pc-type-lbl" style="white-space:nowrap;">Pluviometria</td>
     <td class="pc-hrs-cell" style="color:var(--muted);font-size:.75rem;">mm</td>
     <td class="pc-hrs-cell"></td>
-    ${Array.from({length:12},(_,i)=>{const m=i+1;return `<td><input type="number" min="0" step="1" style="width:38px;font-size:.78rem;padding:2px 3px;border:1px solid #d1d5db;border-radius:3px;text-align:center;" value="${pluvioMes[m]??''}" id="pluv-${m}" onchange="savePluvio(${m})"></td>`;}).join('')}
+    ${Array.from({length:12},(_,i)=>{const m=i+1;
+      return `<td style="text-align:center;"><input type="number" min="0" step="1" style="${inputStyle}" value="${pluvioMes[m]??''}" id="pluv-${m}" onchange="savePluvio(${m})"></td>`;
+    }).join('')}
   </tr>`;
-  const impactRow = `<tr>
+
+  const impactRow=`<tr>
     <td class="pc-type-lbl" style="white-space:nowrap;">Dias impacto</td>
     <td class="pc-hrs-cell" style="color:var(--muted);font-size:.75rem;">dias</td>
     <td class="pc-hrs-cell"></td>
-    ${Array.from({length:12},(_,i)=>{const m=i+1;return `<td><input type="number" min="0" step="1" style="width:38px;font-size:.78rem;padding:2px 3px;border:1px solid #d1d5db;border-radius:3px;text-align:center;" value="${impactoMes[m]??''}" id="dimp-${m}" onchange="saveImpacto(${m})"></td>`;}).join('')}
+    ${Array.from({length:12},(_,i)=>{const m=i+1;
+      return `<td style="text-align:center;"><input type="number" min="0" step="1" style="${inputStyle}" value="${impactoMes[m]??''}" id="dimp-${m}" onchange="saveImpacto(${m})"></td>`;
+    }).join('')}
   </tr>`;
-  const calcPctRow = `<tr style="background:#f8fafc;">
-    <td class="pc-type-lbl" style="white-space:nowrap;color:var(--muted);font-size:.78rem;">% Calc.</td>
+
+  const calcPctRow=`<tr style="background:#f8fafc;">
+    <td style="font-size:.78rem;color:var(--muted);padding-left:2px;white-space:nowrap;">% Praticab. calc.</td>
     <td class="pc-hrs-cell"></td>
     <td class="pc-hrs-cell"></td>
-    ${Array.from({length:12},(_,i)=>{
-      const m=i+1;
+    ${Array.from({length:12},(_,i)=>{const m=i+1;
       let txt='—';
-      if(impactoMes[m]!=null && impactoMes[m]!==''){
+      if(impactoMes[m]!=null&&impactoMes[m]!==''){
         const pct=Math.max(0,Math.min(100,(DIAS_MES_PAD[m-1]-Number(impactoMes[m]))/DIAS_MES_PAD[m-1]*100));
         txt=pct.toFixed(0)+'%';
       }
       return `<td id="ppct-${m}" style="text-align:center;font-size:.78rem;font-weight:600;color:var(--text);">${txt}</td>`;
     }).join('')}
   </tr>`;
+
+  // % Médio por tipo: cada mês exibe a média do seu grupo climático
+  const medRow=`<tr style="background:#eff6ff;">
+    <td style="font-size:.78rem;font-weight:700;color:#1d4ed8;white-space:nowrap;">% Médio por tipo</td>
+    <td class="pc-hrs-cell" style="font-size:.72rem;color:var(--muted);">aplicado</td>
+    <td class="pc-hrs-cell"></td>
+    ${Array.from({length:12},(_,i)=>{const m=i+1;
+      const tipo=periodoMes[m]||'seco';
+      const v=medio[tipo];
+      const txt=v!=null?v.toFixed(0)+'%':'—';
+      const fw=v!=null?'700':'400';
+      const col=v!=null?'var(--text)':'var(--muted)';
+      return `<td id="pmed-${m}" style="text-align:center;font-size:.78rem;font-weight:${fw};color:${col};">${txt}</td>`;
+    }).join('')}
+  </tr>`;
+
   grid.innerHTML=`<div class="pc-wrap"><table class="pc-table">
-    <thead><tr><th style="text-align:left;">Período</th><th style="text-align:left;">% Praticab.</th><th style="text-align:left;">Horas prat./dia</th>${thd}</tr></thead>
-    <tbody>${rows}${pluvRow}${impactRow}${calcPctRow}</tbody>
+    <thead><tr>
+      <th style="text-align:left;min-width:90px;">Período</th>
+      <th style="text-align:left;min-width:80px;">% Praticab.</th>
+      <th style="text-align:left;min-width:90px;">Horas prat./dia</th>
+      ${thd}
+    </tr></thead>
+    <tbody>${rows}${sepRow}${pluvRow}${impactRow}${calcPctRow}${medRow}</tbody>
   </table></div>`;
 }
 
 function savePeriodoMes(m){
   const checked=document.querySelector(`input[name="pm${m}"]:checked`);
   if(checked) periodoMes[m]=checked.value;
+  updatePercMedio();
 }
 function savePluvio(m){
   pluvioMes[m]=document.getElementById('pluv-'+m)?.value??'';
@@ -937,24 +1038,18 @@ function savePluvio(m){
 function saveImpacto(m){
   const val=document.getElementById('dimp-'+m)?.value??'';
   impactoMes[m]=val===''?'':Number(val);
-  const cell=document.getElementById('ppct-'+m);
-  if(cell){
-    if(val===''){ cell.textContent='—'; }
-    else{
-      const pct=Math.max(0,Math.min(100,(DIAS_MES_PAD[m-1]-Number(val))/DIAS_MES_PAD[m-1]*100));
-      cell.textContent=pct.toFixed(0)+'%';
-    }
-  }
+  updatePercMedio();
 }
-function savePeriodoPerc(tipo){
+function savePeriodoPercManual(tipo){
   periodoPerc[tipo]=parseFloat(document.getElementById('pperc-'+tipo)?.value)??100;
-  // Update the result cell without full re-render
   const jp=jornadaProdutiva();
   const hprat=+(jp*(periodoPerc[tipo]/100)).toFixed(2);
   const hpratFmt=hprat%1===0?hprat+'h':hprat.toFixed(2).replace('.',',')+'h';
   const cell=document.getElementById('phprat-'+tipo);
   if(cell) cell.textContent=hpratFmt+'/dia';
 }
+// Keep old name as alias so calcJornada() still works
+function savePeriodoPerc(tipo){ savePeriodoPercManual(tipo); }
 
 /* ====================================================================
    CUSTOM HOLIDAYS
@@ -1339,12 +1434,14 @@ function render(res){
 
   // Helper: get periodo for a YYYY-MM key (by month number)
   const jp = jornadaProdutiva();
+  const medioPerc = calcPercMedio();
   const getPer = mk => {
     const m=parseInt(mk.split('-')[1],10);
     const tipo=periodoMes[m]||'seco';
     let perc;
-    if(impactoMes[m]!=null && impactoMes[m]!==''){
-      perc=Math.max(0,Math.min(100,(DIAS_MES_PAD[m-1]-Number(impactoMes[m]))/DIAS_MES_PAD[m-1]*100));
+    // Priority: type average (from dias impacto) → manual periodoPerc
+    if(medioPerc[tipo]!=null){
+      perc=medioPerc[tipo];
     } else {
       perc=periodoPerc[tipo]??100;
     }
