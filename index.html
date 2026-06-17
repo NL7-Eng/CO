@@ -449,7 +449,7 @@
         <div class="jornada-row">
           <div class="fg" style="max-width:200px;">
             <label for="jornadaUtil">Jornada útil (h/dia)</label>
-            <input type="text" id="jornadaUtil" placeholder="8 ou 8:30" value="8" oninput="calcJornada()" style="max-width:110px;" />
+            <input type="text" id="jornadaUtil" placeholder="8 ou 8:30" value="8,8" oninput="calcJornada()" style="max-width:110px;" />
           </div>
         </div>
         <div class="jornada-improd-hdr">
@@ -925,31 +925,28 @@ function renderPeriodoGrid(){
       return `<td style="text-align:center;"><input class="pc-radio ${t.rc}" type="radio" name="pm${m}" id="pm${m}${t.k}" value="${t.k}"${chk}`+
         ` onchange="savePeriodoMes(${m})"><label class="pc-lbl" for="pm${m}${t.k}">✓</label></td>`;
     }).join('');
-    return `<tr><td class="pc-type-lbl">${t.lbl}</td><td></td>${tds}</tr>`;
+    return `<tr><td class="pc-type-lbl">${t.lbl}</td>${tds}</tr>`;
   }).join('');
 
-  const inputStyle='width:36px;font-size:.78rem;padding:2px 3px;border:1px solid #d1d5db;border-radius:3px;text-align:center;';
-  const sepRow=`<tr><td colspan="14" style="padding:0;"><hr style="margin:4px 0;border:none;border-top:1.5px dashed #e5e7eb;"></td></tr>`;
+  const inputStyle='width:46px;font-size:.82rem;padding:3px 4px;border:1px solid #d1d5db;border-radius:3px;text-align:center;';
+  const sepRow=`<tr><td colspan="13" style="padding:0;"><hr style="margin:4px 0;border:none;border-top:1.5px dashed #e5e7eb;"></td></tr>`;
 
   const pluvRow=`<tr>
-    <td class="pc-type-lbl" style="white-space:nowrap;font-weight:400;color:var(--muted);">Pluviometria</td>
-    <td class="pc-hrs-cell" style="font-size:.75rem;color:var(--muted);">mm</td>
+    <td class="pc-type-lbl" style="white-space:nowrap;font-weight:400;color:var(--muted);">Pluviometria (mm)</td>
     ${Array.from({length:12},(_,i)=>{const m=i+1;
       return `<td style="text-align:center;"><input type="number" min="0" step="1" style="${inputStyle}" value="${pluvioMes[m]??''}" id="pluv-${m}" onchange="savePluvio(${m})"></td>`;
     }).join('')}
   </tr>`;
 
   const impactRow=`<tr>
-    <td class="pc-type-lbl" style="white-space:nowrap;">Dias de impacto</td>
-    <td class="pc-hrs-cell" style="font-size:.75rem;color:var(--muted);">dias</td>
+    <td class="pc-type-lbl" style="white-space:nowrap;">Dias de impacto (dias)</td>
     ${Array.from({length:12},(_,i)=>{const m=i+1;
       return `<td style="text-align:center;"><input type="number" min="0" step="1" style="${inputStyle}" value="${impactoMes[m]??''}" id="dimp-${m}" onchange="saveImpacto(${m})"></td>`;
     }).join('')}
   </tr>`;
 
   const impratRow=`<tr style="background:#fff7ed;">
-    <td style="font-size:.78rem;font-weight:600;color:#c2410c;white-space:nowrap;">% Impraticabilidade</td>
-    <td class="pc-hrs-cell" style="font-size:.72rem;color:var(--muted);">por mês</td>
+    <td style="font-size:.78rem;font-weight:600;color:#c2410c;white-space:nowrap;">% Impraticabilidade (%)</td>
     ${Array.from({length:12},(_,i)=>{const m=i+1;
       let txt='—'; let fw='400'; let col='var(--muted)';
       if(impactoMes[m]!=null&&impactoMes[m]!==''){
@@ -962,8 +959,7 @@ function renderPeriodoGrid(){
 
   grid.innerHTML=`<div class="pc-wrap"><table class="pc-table">
     <thead><tr>
-      <th style="text-align:left;min-width:110px;">Período</th>
-      <th style="min-width:36px;"></th>
+      <th style="text-align:left;min-width:160px;">Período</th>
       ${thd}
     </tr></thead>
     <tbody>${tipoRow}${sepRow}${pluvRow}${impactRow}${impratRow}</tbody>
@@ -993,7 +989,7 @@ function renderPeriodoCards(){
     const hImprat=+(jp*(pImprat/100)).toFixed(2);
     const hPratic=+(jp*(pPratic/100)).toFixed(2);
 
-    const fmtH=v=>{ const h=Math.floor(v),m=Math.round((v-h)*60); return m>0?`${h}h ${m}min`:`${h}h`; };
+    const fmtH=v=>{ const h=Math.floor(v),mn=Math.round((v-h)*60); const hm=mn>0?`${h}h ${mn}min`:`${h}h`; const dec=String(+v.toFixed(2)).replace('.',','); return `${hm} (${dec}h)`; };
 
     const badge=hasData
       ? `<span style="font-size:.7rem;background:#dcfce7;color:#166534;border-radius:3px;padding:1px 5px;margin-left:6px;">calculado</span>`
