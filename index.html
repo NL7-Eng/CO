@@ -148,7 +148,7 @@
     .prat-step { display:flex; justify-content:space-between; align-items:baseline; font-size:.82rem; }
     .prat-step-lbl { color:var(--text); }
     .prat-step-val { font-weight:600; color:var(--text); }
-    .prat-step-arrow { font-size:.75rem; color:var(--muted); margin:2px 0 2px 8px; }
+    .prat-step-arrow { font-size:.78rem; color:var(--muted); margin:2px 0; text-align:left; }
     .prat-result { margin-top:10px; padding-top:10px; border-top:1.5px solid var(--border); display:flex; justify-content:space-between; align-items:baseline; }
     .prat-result-lbl { font-size:.82rem; font-weight:600; color:var(--text); }
     .prat-result-val { font-size:1rem; font-weight:700; color:var(--text); }
@@ -939,7 +939,7 @@ function renderPeriodoGrid(){
   </tr>`;
 
   const impratRow=`<tr style="background:#fff7ed;">
-    <td style="font-size:.78rem;font-weight:600;color:#c2410c;white-space:nowrap;">% Impraticabilidade (%)</td>
+    <td style="font-size:.78rem;font-weight:600;color:#c2410c;white-space:nowrap;">Impraticabilidade (%)</td>
     ${Array.from({length:12},(_,i)=>{const m=i+1;
       let txt='—'; let fw='400'; let col='var(--muted)';
       if(impactoMes[m]!=null&&impactoMes[m]!==''){
