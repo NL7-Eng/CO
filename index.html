@@ -164,6 +164,24 @@
     .prat-result-lbl { font-size:.82rem; font-weight:600; color:var(--text); }
     .prat-result-val { font-size:1rem; font-weight:700; color:var(--text); }
 
+    /* fases / marcos */
+    .fases-list { display:flex; flex-direction:column; gap:6px; margin-top:10px; }
+    .fase-item { display:flex; gap:8px; align-items:center; flex-wrap:wrap; background:#f9fafb; border:1px solid var(--border-l); border-radius:6px; padding:8px 10px; }
+    .fase-num  { font-family:var(--fd); font-size:.75rem; font-weight:700; color:var(--muted); min-width:20px; }
+    .fase-nome { flex:1; min-width:140px; border:1px solid var(--border); border-radius:4px; padding:5px 8px; font-family:var(--fb); font-size:.88rem; }
+    .fase-dur  { width:64px; border:1px solid var(--border); border-radius:4px; padding:5px 6px; font-family:var(--fb); font-size:.88rem; text-align:center; }
+    .fase-tipo { border:1px solid var(--border); border-radius:4px; padding:5px 7px; font-family:var(--fb); font-size:.88rem; background:#fff; cursor:pointer; }
+    .fase-del  { background:none; border:none; color:var(--muted); cursor:pointer; font-size:1rem; padding:2px 4px; line-height:1; }
+    .fase-del:hover { color:#b91c1c; }
+
+    /* tabela de fases nos resultados */
+    .fase-table { width:100%; border-collapse:collapse; font-size:.82rem; }
+    .fase-table th { font-weight:700; font-size:.72rem; text-transform:uppercase; letter-spacing:.4px; color:var(--muted); padding:6px 10px; text-align:left; border-bottom:2px solid var(--border); }
+    .fase-table td { padding:7px 10px; border-bottom:1px solid var(--border-l); }
+    .fase-table tr:last-child td { border-bottom:none; font-weight:700; border-top:2px solid var(--border); }
+    .fase-table .tc { text-align:center; }
+    .fase-badge { display:inline-block; font-size:.7rem; font-weight:700; border-radius:3px; padding:1px 6px; background:#f3f4f6; color:var(--muted); }
+
     /* datas especiais */
     .custom-section { margin-top: 22px; border-top: 1px solid var(--border-l); padding-top: 18px; }
     .custom-title { font-family: var(--fd); font-size: .82rem; font-weight: 700; color: var(--text); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 3px; }
@@ -448,6 +466,33 @@
       </div>
     </div>
 
+    <!-- MARCOS / FASES -->
+    <div class="custom-section" id="fasesSection">
+      <div class="custom-title">Marcos e Fases do Contrato</div>
+      <p class="custom-sub">Defina as fases sequenciais do contrato. Cada fase inicia onde a anterior termina, a partir da OS. O prazo pode ser em dias corridos ou dias úteis.</p>
+      <div class="custom-row" style="margin-bottom:8px;">
+        <div class="fg" style="min-width:180px;">
+          <label>Nome da fase</label>
+          <input type="text" id="faseNome" placeholder="Ex: Mobilização" style="width:100%;" />
+        </div>
+        <div class="fg" style="max-width:100px;">
+          <label>Duração</label>
+          <input type="number" id="faseDur" min="1" step="1" placeholder="Ex: 60" style="width:100%;" />
+        </div>
+        <div class="fg" style="max-width:140px;">
+          <label>Tipo</label>
+          <select id="faseTipo">
+            <option value="corridos">Dias corridos</option>
+            <option value="uteis">Dias úteis</option>
+          </select>
+        </div>
+        <button class="btn btn-add" onclick="addFase()">Adicionar</button>
+      </div>
+      <div class="fases-list" id="fasesList">
+        <span style="color:var(--subtle);font-size:.82rem;font-style:italic;">Nenhuma fase cadastrada.</span>
+      </div>
+    </div>
+
     <!-- CÁLCULO DE JORNADA -->
     <div class="jornada-section" id="jornadaSection">
       <div class="custom-title">Cálculo de Jornada</div>
@@ -498,6 +543,11 @@
       <div class="btn-row" style="margin-top:16px;">
         <button class="btn btn-export" onclick="imprimirRelatorio()">Imprimir / Gerar PDF</button>
       </div>
+    </div>
+
+    <div class="card" id="fasesCard" style="display:none;">
+      <div class="section-title">Fases do Contrato</div>
+      <div class="t-wrap"><table class="fase-table" id="faseTable"></table></div>
     </div>
 
     <div class="card">
@@ -1063,6 +1113,51 @@ function savePeriodoPerc(tipo){ savePeriodoPercManual(tipo); }
    CUSTOM HOLIDAYS
    ==================================================================== */
 let customHols=[];
+
+/* ====================================================================
+   FASES / MARCOS
+   ==================================================================== */
+let fases=[];
+let _faseId=0;
+
+function addFase(){
+  const nome=document.getElementById('faseNome').value.trim();
+  const dur=parseInt(document.getElementById('faseDur').value)||0;
+  const tipo=document.getElementById('faseTipo').value;
+  if(!nome||dur<1){showAlert('warn','Informe nome e duração da fase.');return;}
+  fases.push({id:++_faseId,nome,dur,tipo});
+  document.getElementById('faseNome').value='';
+  document.getElementById('faseDur').value='';
+  renderFasesList();
+  saveState();
+  if(hasCalcResult&&lastResult) render(lastResult);
+}
+
+function removeFase(id){
+  fases=fases.filter(f=>f.id!==id);
+  renderFasesList();
+  saveState();
+  if(hasCalcResult&&lastResult) render(lastResult);
+}
+
+function renderFasesList(){
+  const el=document.getElementById('fasesList');
+  if(!fases.length){
+    el.innerHTML='<span style="color:var(--subtle);font-size:.82rem;font-style:italic;">Nenhuma fase cadastrada.</span>';
+    return;
+  }
+  el.innerHTML=fases.map((f,i)=>`
+    <div class="fase-item">
+      <span class="fase-num">${i+1}</span>
+      <input class="fase-nome" value="${f.nome}" onchange="fases[${i}].nome=this.value;saveState();if(hasCalcResult&&lastResult)render(lastResult);">
+      <input class="fase-dur" type="number" min="1" value="${f.dur}" onchange="fases[${i}].dur=parseInt(this.value)||0;saveState();if(hasCalcResult&&lastResult)render(lastResult);">
+      <select class="fase-tipo" onchange="fases[${i}].tipo=this.value;saveState();if(hasCalcResult&&lastResult)render(lastResult);">
+        <option value="corridos"${f.tipo==='corridos'?' selected':''}>Corridos</option>
+        <option value="uteis"${f.tipo==='uteis'?' selected':''}>Úteis</option>
+      </select>
+      <button class="fase-del" onclick="removeFase(${f.id})" title="Remover">×</button>
+    </div>`).join('');
+}
 let hasCalcResult=false;
 
 function addCustomHol(){
@@ -1524,6 +1619,90 @@ function render(res){
       </tr>
     </tbody>`;
 
+  // ── FASES DO CONTRATO ────────────────────────────────────────────
+  const fasesCard=document.getElementById('fasesCard');
+  const faseTable=document.getElementById('faseTable');
+  if(fases.length&&fasesCard&&faseTable){
+    fasesCard.style.display='';
+    // Helper: advance N working days from a date
+    const advanceUteis=(from,n)=>{
+      let cur=new Date(from); let cnt=0;
+      while(cnt<n){ cur=add(cur,1); if(dayMap[YMD(cur)]==='work') cnt++; }
+      return cur;
+    };
+    // Helper: count working days and gather praticabilidade in a date range [a,b]
+    const rangeStats=(a,b)=>{
+      let nUtil=0, hProd=0, hPrat=0;
+      const moBucket={};
+      for(let dt=new Date(a);dt<=b;dt=add(dt,1)){
+        const k=YMD(dt); if(dayMap[k]!=='work') continue;
+        nUtil++;
+        hProd+=jp;
+        const mk=k.slice(0,7);
+        moBucket[mk]=(moBucket[mk]||0)+1;
+      }
+      for(const [mk,days] of Object.entries(moBucket)){
+        hPrat+=days*getPer(mk).horas;
+      }
+      return {nUtil, hProd:+hProd.toFixed(1), hPrat:+hPrat.toFixed(1),
+        pct: hProd>0?+(hPrat/hProd*100).toFixed(1):0};
+    };
+
+    let cur=new Date(start);
+    let totFU=0,totFHprod=0,totFHprat=0;
+    const faseRows=fases.map((f,i)=>{
+      const fStart=new Date(cur);
+      let fEnd;
+      if(f.tipo==='corridos'){
+        fEnd=add(cur,f.dur-1);
+        cur=add(cur,f.dur);
+      } else {
+        fEnd=advanceUteis(cur,f.dur); fEnd=new Date(Math.min(fEnd,end));
+        cur=add(fEnd,1);
+      }
+      fEnd=new Date(Math.min(fEnd,end));
+      const nCorr=Math.round((fEnd-fStart)/864e5)+1;
+      const {nUtil,hProd,hPrat,pct}=rangeStats(fStart,fEnd);
+      totFU+=nUtil; totFHprod+=hProd; totFHprat+=hPrat;
+      const tipoBadge=`<span class="fase-badge">${f.tipo==='corridos'?'corridos':'úteis'}</span>`;
+      return `<tr>
+        <td><strong>${i+1}. ${f.nome}</strong> ${tipoBadge}</td>
+        <td class="tc">${fBR(fStart)}</td>
+        <td class="tc">${fBR(fEnd)}</td>
+        <td class="tc">${nCorr}</td>
+        <td class="tc">${nUtil}</td>
+        <td class="tc">${hProd.toFixed(1)} h</td>
+        <td class="tc">${hPrat.toFixed(1)} h</td>
+        <td class="tc">${pct.toFixed(0)}%</td>
+      </tr>`;
+    }).join('');
+    const totPct=totFHprod>0?+(totFHprat/totFHprod*100).toFixed(1):0;
+    faseTable.innerHTML=`
+      <thead><tr>
+        <th>Fase</th>
+        <th class="tc">Início</th>
+        <th class="tc">Fim</th>
+        <th class="tc">Dias<br>Corridos</th>
+        <th class="tc">Dias<br>Úteis</th>
+        <th class="tc">Horas<br>Produtivas</th>
+        <th class="tc">Horas<br>Praticáveis</th>
+        <th class="tc">Praticab.<br>Média</th>
+      </tr></thead>
+      <tbody>
+        ${faseRows}
+        <tr>
+          <td>Total das fases</td>
+          <td class="tc" colspan="3">—</td>
+          <td class="tc">${totFU}</td>
+          <td class="tc">${totFHprod.toFixed(1)} h</td>
+          <td class="tc">${totFHprat.toFixed(1)} h</td>
+          <td class="tc">${totPct.toFixed(0)}%</td>
+        </tr>
+      </tbody>`;
+  } else if(fasesCard){
+    fasesCard.style.display='none';
+  }
+
   document.getElementById('results').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
@@ -1555,6 +1734,7 @@ function limpar(){
   document.getElementById('chkPontes').checked=true;
   document.getElementById('chkRecesso').checked=true;
   customHols=[]; renderCustomList();
+  fases=[]; _faseId=0; renderFasesList();
   periodoMes={}; periodoPerc={umido:100,transicao:80,seco:60}; pluvioMes={}; impactoMes={};
   improdList=[]; _improdId=0; renderImprodList(); calcJornada();
   renderPeriodoGrid();
@@ -1579,6 +1759,7 @@ function saveState(){
       chkRecesso:document.getElementById('chkRecesso')?.checked,
       selectedCity,
       customHols: customHols.map(h=>({...h,dt:h.dt.toISOString(),key:h.key})),
+      fases, _faseId,
       periodoMes, periodoPerc, pluvioMes, impactoMes,
       improdList,
     };
@@ -1606,8 +1787,10 @@ function loadState(){
     if(s.pluvioMes)   pluvioMes=s.pluvioMes;
     if(s.impactoMes)  impactoMes=s.impactoMes;
     if(s.improdList){ improdList=s.improdList; _improdId=improdList.reduce((mx,i)=>Math.max(mx,i.id),0); }
+    if(s.fases){ fases=s.fases; _faseId=s._faseId||fases.reduce((mx,f)=>Math.max(mx,f.id),0); }
     renderCustomList();
     renderImprodList();
+    renderFasesList();
     calcJornada();
     renderPeriodoGrid();
     return true;
