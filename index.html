@@ -185,6 +185,10 @@
     .fase-table td { padding:7px 10px; border-bottom:1px solid var(--border-l); }
     .fase-table tr:last-child td { border-bottom:none; font-weight:700; border-top:2px solid var(--border); }
     .fase-table .tc { text-align:center; }
+    .fase-table .fase-clima-row td { padding-top:0; border-bottom:1px solid var(--border-l); background:#fafafa; }
+    .fase-trunc td { background:#fff7ed; }
+    .fase-trunc-badge { display:inline-block; margin-left:8px; font-size:.7rem; font-weight:700; background:#fef3c7; color:#92400e; border:1px solid #fde68a; border-radius:4px; padding:1px 6px; vertical-align:middle; }
+    .alert-fase-overflow { background:#fff7ed; border:1px solid #fed7aa; border-left:4px solid #f97316; border-radius:6px; padding:12px 16px; font-size:.85rem; color:#7c2d12; line-height:1.6; }
 
     /* datas especiais */
     .custom-section { margin-top: 22px; border-top: 1px solid var(--border-l); padding-top: 18px; }
@@ -570,6 +574,7 @@
 
     <div class="card" id="fasesCard" style="display:none;">
       <div class="section-title">Fases do Contrato</div>
+      <div id="faseAlert" style="display:none;margin-bottom:12px;"></div>
       <div class="t-wrap"><table class="fase-table" id="faseTable"></table></div>
     </div>
 
@@ -578,6 +583,7 @@
       <div class="t-wrap"><table class="mt" id="moTable"></table></div>
       <div class="btn-row" style="margin-top:16px;">
         <button class="btn btn-export" onclick="imprimirRelatorio()">Imprimir / Gerar PDF</button>
+        <button class="btn btn-ghost" onclick="exportarCSV()">Exportar CSV</button>
       </div>
     </div>
 
@@ -1728,10 +1734,11 @@ function render(res){
   const faseTable=document.getElementById('faseTable');
   if(fases.length&&fasesCard&&faseTable){
     fasesCard.style.display='';
-    // Helper: count working days in [a,b] using dayMap and accumulate hours
+    // Helper: count working days in [a,b], returns totals + per-climate breakdown
     const rangeStats=(a,b)=>{
       let nUtil=0, hProd=0, hPrat=0;
       const moBucket={};
+      const byTipo={umido:{u:0,hprod:0,hprat:0},transicao:{u:0,hprod:0,hprat:0},seco:{u:0,hprod:0,hprat:0}};
       const bMs=b.getTime();
       let dt=D(a.getUTCFullYear(),a.getUTCMonth(),a.getUTCDate());
       while(dt.getTime()<=bMs){
@@ -1745,24 +1752,50 @@ function render(res){
         dt=add(dt,1);
       }
       for(const [mk,days] of Object.entries(moBucket)){
-        hPrat+=days*getPer(mk).horas;
+        const per=getPer(mk);
+        hPrat+=days*per.horas;
+        if(byTipo[per.tipo]){
+          byTipo[per.tipo].u+=days;
+          byTipo[per.tipo].hprod+=days*jp;
+          byTipo[per.tipo].hprat+=days*per.horas;
+        }
       }
       return {nUtil, hProd:+hProd.toFixed(1), hPrat:+hPrat.toFixed(1),
-        pct: hProd>0?+(hPrat/hProd*100).toFixed(1):0};
+        pct: hProd>0?+(hPrat/hProd*100).toFixed(1):0, byTipo};
     };
 
+    const faseAlertEl=document.getElementById('faseAlert');
+    const truncadas=[];
     let cur=D(start.getUTCFullYear(),start.getUTCMonth(),start.getUTCDate());
     let totFU=0,totFHprod=0,totFHprat=0;
+    const PER_COLOR={umido:'#bfdbfe',transicao:'#d1fae5',seco:'#fef9c3'};
+    const PER_TXT  ={umido:'#1e3a8a',transicao:'#065f46',seco:'#713f12'};
     const faseRows=fases.map((f,i)=>{
       const fStart=D(cur.getUTCFullYear(),cur.getUTCMonth(),cur.getUTCDate());
       const fEndRaw=add(cur,f.dur-1);
-      const fEnd=fEndRaw.getTime()>end.getTime()?D(end.getUTCFullYear(),end.getUTCMonth(),end.getUTCDate()):fEndRaw;
+      const truncada=fEndRaw.getTime()>end.getTime();
+      const fEnd=truncada?D(end.getUTCFullYear(),end.getUTCMonth(),end.getUTCDate()):fEndRaw;
+      if(truncada){
+        const diasFalta=Math.round((fEndRaw.getTime()-end.getTime())/864e5);
+        truncadas.push(`<strong>${i+1}. ${f.nome}</strong> ultrapassa o término em <strong>${diasFalta} dia${diasFalta>1?'s':''}</strong>`);
+      }
       cur=add(fEnd,1);
       const nCorr=Math.round((fEnd.getTime()-fStart.getTime())/864e5)+1;
-      const {nUtil,hProd,hPrat,pct}=rangeStats(fStart,fEnd);
+      const {nUtil,hProd,hPrat,pct,byTipo}=rangeStats(fStart,fEnd);
       totFU+=nUtil; totFHprod+=hProd; totFHprat+=hPrat;
-      return `<tr>
-        <td><strong>${i+1}. ${f.nome}</strong></td>
+
+      // climate breakdown sub-row — only show active periods
+      const perAtivos=Object.entries(byTipo).filter(([,v])=>v.u>0);
+      const climaDetail=perAtivos.map(([tipo,v])=>{
+        const lbl={umido:'Úmido',transicao:'Transição',seco:'Seco'}[tipo];
+        const pp=v.hprod>0?Math.round(v.hprat/v.hprod*100):0;
+        return `<span style="display:inline-flex;align-items:center;gap:4px;background:${PER_COLOR[tipo]};color:${PER_TXT[tipo]};border-radius:4px;padding:2px 7px;font-size:.74rem;font-weight:600;white-space:nowrap;">
+          ${lbl}: ${v.u}d · ${v.hprat.toFixed(1)}h prat. · ${pp}%
+        </span>`;
+      }).join('');
+
+      return `<tr${truncada?' class="fase-trunc"':''}>
+        <td><strong>${i+1}. ${f.nome}</strong>${truncada?'<span class="fase-trunc-badge">⚠ truncada</span>':''}</td>
         <td class="tc">${fBR(fStart)}</td>
         <td class="tc">${fBR(fEnd)}</td>
         <td class="tc">${nCorr}</td>
@@ -1770,8 +1803,21 @@ function render(res){
         <td class="tc">${hProd.toFixed(1)} h</td>
         <td class="tc">${hPrat.toFixed(1)} h</td>
         <td class="tc">${pct.toFixed(0)}%</td>
-      </tr>`;
+      </tr>
+      ${perAtivos.length?`<tr class="fase-clima-row"><td colspan="8" style="padding:4px 12px 8px;"><div style="display:flex;flex-wrap:wrap;gap:6px;">${climaDetail}</div></td></tr>`:''}`
     }).join('');
+
+    // Overflow alert
+    if(truncadas.length){
+      faseAlertEl.style.display='';
+      faseAlertEl.innerHTML=`<div class="alert-fase-overflow">
+        ⚠ ${truncadas.length===1?'Uma fase ultrapassa':'Fases ultrapassam'} o término contratual:<br>
+        <ul style="margin:6px 0 0 18px;padding:0;">${truncadas.map(t=>`<li>${t}</li>`).join('')}</ul>
+      </div>`;
+    } else {
+      faseAlertEl.style.display='none';
+    }
+
     const totPct=totFHprod>0?+(totFHprat/totFHprod*100).toFixed(1):0;
     faseTable.innerHTML=`
       <thead><tr>
@@ -1786,7 +1832,7 @@ function render(res){
       </tr></thead>
       <tbody>
         ${faseRows}
-        <tr>
+        <tr style="border-top:2px solid var(--border);font-weight:700;">
           <td>Total das fases</td>
           <td class="tc" colspan="3">—</td>
           <td class="tc">${totFU}</td>
@@ -1808,6 +1854,103 @@ function render(res){
 function imprimirRelatorio(){
   if(!lastResult){showAlert('err','Calcule antes de imprimir.');return;}
   window.print();
+}
+
+/* ====================================================================
+   EXPORTAR CSV
+   ==================================================================== */
+function exportarCSV(){
+  if(!lastResult){showAlert('err','Calcule antes de exportar.');return;}
+  const {monthData,start,end,dayMap}=lastResult;
+  const jp=jornadaProdutiva();
+  const ju=jornadaUtil();
+  const impratMedio=calcImpratMedio();
+  const getPer=mk=>{
+    const [yr,mo2]=mk.split('-').map(Number);
+    const tipo=periodoMes[mo2]||'seco';
+    let pImprat;
+    if(impratMedio[tipo]!=null) pImprat=impratMedio[tipo];
+    else pImprat=100-(periodoPerc[tipo]??100);
+    const percPratic=Math.max(0,100-pImprat);
+    return {tipo,horas:+(jp*(percPratic/100)).toFixed(2),perc:+percPratic.toFixed(1)};
+  };
+  const mos=Object.keys(monthData).sort();
+  const lines=['﻿']; // BOM for Excel UTF-8
+  // Header
+  lines.push(['Mês','Dias no Período','Dias Úteis','Período Climático','Horas Produtivas','Horas Praticáveis','% Praticabilidade'].join(';'));
+  // Monthly rows
+  const TAG_LBL2={umido:'Úmido',transicao:'Transição',seco:'Seco'};
+  mos.forEach(mk=>{
+    const per=getPer(mk);
+    const hprod=+(monthData[mk].u*jp).toFixed(1);
+    const hprat=+(monthData[mk].u*per.horas).toFixed(1);
+    const pct=hprod>0?+(hprat/hprod*100).toFixed(1):0;
+    lines.push([
+      monthData[mk].lbl,
+      monthData[mk].c,
+      monthData[mk].u,
+      TAG_LBL2[per.tipo]||per.tipo,
+      String(hprod).replace('.',','),
+      String(hprat).replace('.',','),
+      (String(pct)+'%').replace('.',',')
+    ].join(';'));
+  });
+  // Totals
+  const tC=mos.reduce((s,mk)=>s+monthData[mk].c,0);
+  const tU=mos.reduce((s,mk)=>s+monthData[mk].u,0);
+  const tHprod=+(mos.reduce((s,mk)=>s+monthData[mk].u*jp,0)).toFixed(1);
+  const tHprat=+(mos.reduce((s,mk)=>s+monthData[mk].u*getPer(mk).horas,0)).toFixed(1);
+  const tPct=tHprod>0?+(tHprat/tHprod*100).toFixed(1):0;
+  lines.push(['TOTAL',tC,tU,'—',String(tHprod).replace('.',','),String(tHprat).replace('.',','),String(tPct).replace('.',',')+' %'].join(';'));
+
+  // Fases section (if any)
+  if(fases&&fases.length){
+    lines.push('');
+    lines.push(['Fase','Início','Fim','Dias Corridos','Dias Úteis','Horas Produtivas','Horas Praticáveis','Praticab. %','Úmido - H. Prat.','Transição - H. Prat.','Seco - H. Prat.'].join(';'));
+    // Rebuild fase calcs (mirrors render logic)
+    const D2=(y,m,d)=>new Date(Date.UTC(y,m,d));
+    const add2=(d,n)=>new Date(d.getTime()+n*864e5);
+    let cur=D2(start.getUTCFullYear(),start.getUTCMonth(),start.getUTCDate());
+    fases.forEach((f,i)=>{
+      const fStart=D2(cur.getUTCFullYear(),cur.getUTCMonth(),cur.getUTCDate());
+      const fEndRaw=add2(cur,f.dur-1);
+      const fEnd=fEndRaw.getTime()>end.getTime()?D2(end.getUTCFullYear(),end.getUTCMonth(),end.getUTCDate()):fEndRaw;
+      cur=add2(fEnd,1);
+      const nCorr=Math.round((fEnd.getTime()-fStart.getTime())/864e5)+1;
+      let nUtil=0,hProd=0,hPrat=0;
+      const byT={umido:{hprat:0},transicao:{hprat:0},seco:{hprat:0}};
+      const moBucket={};
+      let dt=D2(fStart.getUTCFullYear(),fStart.getUTCMonth(),fStart.getUTCDate());
+      while(dt.getTime()<=fEnd.getTime()){
+        const k=[dt.getUTCFullYear(),String(dt.getUTCMonth()+1).padStart(2,'0'),String(dt.getUTCDate()).padStart(2,'0')].join('-');
+        if(dayMap[k]==='working'){nUtil++;hProd+=jp;const mk=k.slice(0,7);moBucket[mk]=(moBucket[mk]||0)+1;}
+        dt=add2(dt,1);
+      }
+      for(const [mk,days] of Object.entries(moBucket)){
+        const per=getPer(mk);
+        const h=days*per.horas;
+        hPrat+=h;
+        if(byT[per.tipo]) byT[per.tipo].hprat+=h;
+      }
+      const pct=hProd>0?+(hPrat/hProd*100).toFixed(1):0;
+      const fmtBR=d=>`${String(d.getUTCDate()).padStart(2,'0')}/${String(d.getUTCMonth()+1).padStart(2,'0')}/${d.getUTCFullYear()}`;
+      lines.push([
+        `${i+1}. ${f.nome}`,fmtBR(fStart),fmtBR(fEnd),nCorr,nUtil,
+        String(+hProd.toFixed(1)).replace('.',','),
+        String(+hPrat.toFixed(1)).replace('.',','),
+        String(pct).replace('.',',')+' %',
+        String(+byT.umido.hprat.toFixed(1)).replace('.',','),
+        String(+byT.transicao.hprat.toFixed(1)).replace('.',','),
+        String(+byT.seco.hprat.toFixed(1)).replace('.',',')
+      ].join(';'));
+    });
+  }
+
+  const blob=new Blob([lines.join('\r\n')],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download='projecao_horas.csv'; a.click();
+  URL.revokeObjectURL(url);
 }
 
 /* ====================================================================
