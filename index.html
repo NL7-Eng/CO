@@ -1613,16 +1613,21 @@ function render(res){
   const faseTable=document.getElementById('faseTable');
   if(fases.length&&fasesCard&&faseTable){
     fasesCard.style.display='';
-    // Helper: count working days and gather praticabilidade in a date range [a,b]
+    // Helper: count working days in [a,b] using dayMap and accumulate hours
     const rangeStats=(a,b)=>{
       let nUtil=0, hProd=0, hPrat=0;
       const moBucket={};
-      for(let dt=new Date(a);dt<=b;dt=add(dt,1)){
-        const k=YMD(dt); if(dayMap[k]!=='working') continue;
-        nUtil++;
-        hProd+=jp;
-        const mk=k.slice(0,7);
-        moBucket[mk]=(moBucket[mk]||0)+1;
+      const bMs=b.getTime();
+      let dt=D(a.getUTCFullYear(),a.getUTCMonth(),a.getUTCDate());
+      while(dt.getTime()<=bMs){
+        const k=YMD(dt);
+        if(dayMap[k]==='working'){
+          nUtil++;
+          hProd+=jp;
+          const mk=k.slice(0,7);
+          moBucket[mk]=(moBucket[mk]||0)+1;
+        }
+        dt=add(dt,1);
       }
       for(const [mk,days] of Object.entries(moBucket)){
         hPrat+=days*getPer(mk).horas;
@@ -1631,13 +1636,14 @@ function render(res){
         pct: hProd>0?+(hPrat/hProd*100).toFixed(1):0};
     };
 
-    let cur=new Date(start);
+    let cur=D(start.getUTCFullYear(),start.getUTCMonth(),start.getUTCDate());
     let totFU=0,totFHprod=0,totFHprat=0;
     const faseRows=fases.map((f,i)=>{
-      const fStart=new Date(cur);
-      const fEnd=new Date(Math.min(add(cur,f.dur-1),end));
+      const fStart=D(cur.getUTCFullYear(),cur.getUTCMonth(),cur.getUTCDate());
+      const fEndRaw=add(cur,f.dur-1);
+      const fEnd=fEndRaw.getTime()>end.getTime()?D(end.getUTCFullYear(),end.getUTCMonth(),end.getUTCDate()):fEndRaw;
       cur=add(fEnd,1);
-      const nCorr=Math.round((fEnd-fStart)/864e5)+1;
+      const nCorr=Math.round((fEnd.getTime()-fStart.getTime())/864e5)+1;
       const {nUtil,hProd,hPrat,pct}=rangeStats(fStart,fEnd);
       totFU+=nUtil; totFHprod+=hProd; totFHprat+=hPrat;
       return `<tr>
