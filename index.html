@@ -117,6 +117,14 @@
     /* período climático */
     .periodo-section { margin-top: 22px; border-top: 1px solid var(--border-l); padding-top: 16px; }
     .pc-wrap { overflow-x: auto; }
+    @media (max-width: 700px) {
+      .pc-wrap { -webkit-overflow-scrolling: touch; }
+      .pc-table { font-size: .72rem; }
+      .prat-cards { flex-direction: column; }
+      .sum-grid { grid-template-columns: repeat(2, 1fr); }
+      .hol-dual { grid-template-columns: 1fr; }
+      .cal-grid { grid-template-columns: repeat(2, 1fr); }
+    }
     .pc-table { border-collapse:collapse; font-size:.82rem; white-space:nowrap; }
     .pc-table th { font-weight:600; color:var(--muted); text-align:center; padding:4px 6px; font-size:.75rem; text-transform:uppercase; letter-spacing:.4px; }
     .pc-table td { text-align:center; padding:4px 4px; }
@@ -335,16 +343,19 @@
       .cal-grid { grid-template-columns: 1fr; }
     }
     @media print {
-      /* Hide everything except the results section */
-      .form-card, .alerts-wrap, header p { display: none !important; }
-      header { padding: 16px 24px; }
-      header h1 { font-size: 1.2rem; }
+      .form-card, .alerts-wrap, header p, .btn-row, #btnCalc, .btn-ghost,
+      .btn-export, #recalcNotice { display: none !important; }
+      header { padding: 14px 24px; background: #1f2937 !important; }
+      header h1 { font-size: 1.1rem; }
+      body { background: #fff; }
       .wrap { padding: 0 8px 20px; }
-      .card { box-shadow: none; border: 1px solid #d1d5db; margin-top: 12px; break-inside: avoid; }
-      .btn-row, #btnCalc, .btn-ghost, .btn-export { display: none !important; }
-      .cal-grid { grid-template-columns: repeat(3,1fr); gap: 8px; }
+      .card { box-shadow: none; border: 1px solid #d1d5db; margin-top: 10px; break-inside: avoid; padding: 16px 18px; }
+      .cal-grid { grid-template-columns: repeat(4,1fr); gap: 6px; }
       .hol-dual { grid-template-columns: 1fr 1fr; }
+      .sum-grid { grid-template-columns: repeat(5,1fr); }
+      .prat-cards { flex-wrap: nowrap; }
       * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      @page { margin: 15mm 12mm; }
     }
   </style>
 </head>
@@ -835,14 +846,14 @@ function calcJornada(){
 function addImprod(){
   const id = ++_improdId;
   improdList.push({id, nome:'', horas:0});
-  renderImprodList();
+  renderImprodList(); saveState();
   // focus on the newly added name input
   setTimeout(()=>document.getElementById('imp-n-'+id)?.focus(), 50);
 }
 function removeImprod(id){
   improdList = improdList.filter(i=>i.id!==id);
   renderImprodList();
-  calcJornada();
+  calcJornada(); saveState();
 }
 function updateImprod(id, field, val){
   const item = improdList.find(i=>i.id===id);
@@ -888,9 +899,12 @@ function calcImpratMedio(){
     const meses=Array.from({length:12},(_,i)=>i+1).filter(m=>(periodoMes[m]||'seco')===tipo);
     const comDados=meses.filter(m=>impactoMes[m]!=null&&impactoMes[m]!=='');
     if(!comDados.length) return;
-    const soma=comDados.reduce((s,m)=>
-      s+Math.max(0,Math.min(100,Number(impactoMes[m])/DIAS_MES_PAD[m-1]*100)),0);
-    result[tipo]=+(soma/comDados.length).toFixed(1);
+    const totalDias=comDados.reduce((s,m)=>s+DIAS_MES_PAD[m-1],0);
+    const somaW=comDados.reduce((s,m)=>{
+      const pct=Math.max(0,Math.min(100,Number(impactoMes[m])/DIAS_MES_PAD[m-1]*100));
+      return s+pct*DIAS_MES_PAD[m-1];
+    },0);
+    result[tipo]=+(somaW/totalDias).toFixed(1);
   });
   return result;
 }
@@ -1017,11 +1031,12 @@ function renderPeriodoCards(){
 function savePeriodoMes(m){
   const checked=document.querySelector(`input[name="pm${m}"]:checked`);
   if(checked) periodoMes[m]=checked.value;
-  renderPeriodoCards();
+  renderPeriodoCards(); saveState();
   // update % impraticabilidade row (type classification didn't change, only grouping)
 }
 function savePluvio(m){
   pluvioMes[m]=document.getElementById('pluv-'+m)?.value??'';
+  saveState();
 }
 function saveImpacto(m){
   const val=document.getElementById('dimp-'+m)?.value??'';
@@ -1035,7 +1050,7 @@ function saveImpacto(m){
       cell.textContent=pct.toFixed(0)+'%'; cell.style.fontWeight='700'; cell.style.color='#c2410c';
     }
   }
-  renderPeriodoCards();
+  renderPeriodoCards(); saveState();
 }
 function savePeriodoPercManual(tipo){
   periodoPerc[tipo]=parseFloat(document.getElementById('pperc-'+tipo)?.value)??100;
@@ -1070,12 +1085,12 @@ function addCustomHol(){
   document.getElementById('cusDate').value='';
   document.getElementById('cusName').value='';
   document.getElementById('cusRepeat').value='nao';
-  renderCustomList();
+  renderCustomList(); saveState();
   if(hasCalcResult) document.getElementById('recalcNotice').classList.add('on');
 }
 function removeCustomHol(key){
   customHols=customHols.filter(h=>h.key!==key);
-  renderCustomList();
+  renderCustomList(); saveState();
   if(hasCalcResult) document.getElementById('recalcNotice').classList.add('on');
 }
 function renderCustomList(){
@@ -1429,21 +1444,18 @@ function render(res){
   const jp = jornadaProdutiva();
   const impratMedio = calcImpratMedio();
   const getPer = mk => {
-    const m=parseInt(mk.split('-')[1],10);
-    const tipo=periodoMes[m]||'seco';
-    // % impraticabilidade → % praticabilidade
+    const [yr,mo2]=mk.split('-').map(Number);
+    const tipo=periodoMes[mo2]||'seco';
+    const daysActual=new Date(yr,mo2,0).getDate();
     let pImprat;
     if(impratMedio[tipo]!=null){
       pImprat=impratMedio[tipo];
     } else {
-      // fallback: use periodoPerc as % impraticabilidade (inverted from old usage)
-      // periodoPerc was stored as % praticabilidade, keep backward compat:
-      // treat missing impacto data as 0% impraticabilidade override via manual
       pImprat=100-(periodoPerc[tipo]??100);
     }
     const percPratic=Math.max(0,100-pImprat);
     const horas=+(jp*(percPratic/100)).toFixed(2);
-    return {tipo,horas,perc:+percPratic.toFixed(1)};
+    return {tipo,horas,perc:+percPratic.toFixed(1),daysActual};
   };
   const TAG_CLS = {umido:'tag-umido',transicao:'tag-transicao',seco:'tag-seco'};
   const TAG_LBL = {umido:'Úmido',transicao:'Transição',seco:'Seco'};
@@ -1535,6 +1547,7 @@ function clearAlerts(){
   ['aErr','aWarn','aInfo'].forEach(id=>{const el=document.getElementById(id);if(el){el.textContent='';el.classList.remove('on');}});
 }
 function limpar(){
+  localStorage.removeItem(LS_KEY);
   clearAlerts();
   elCidade.value=''; resetCity();
   document.getElementById('dataOS').value='';
@@ -1551,11 +1564,67 @@ function limpar(){
   lastResult=null;
 }
 
-// defaults
-document.getElementById('dataOS').value='01/06/2026';
-document.getElementById('prazo').value='180';
-renderPeriodoGrid();
-calcJornada();
+/* ====================================================================
+   PERSISTÊNCIA (localStorage)
+   ==================================================================== */
+const LS_KEY='co_state_v1';
+
+function saveState(){
+  try{
+    const state={
+      dataOS:document.getElementById('dataOS')?.value,
+      prazo:document.getElementById('prazo')?.value,
+      jornadaUtil:document.getElementById('jornadaUtil')?.value,
+      chkPontes:document.getElementById('chkPontes')?.checked,
+      chkRecesso:document.getElementById('chkRecesso')?.checked,
+      selectedCity,
+      customHols: customHols.map(h=>({...h,dt:h.dt.toISOString(),key:h.key})),
+      periodoMes, periodoPerc, pluvioMes, impactoMes,
+      improdList,
+    };
+    localStorage.setItem(LS_KEY,JSON.stringify(state));
+  }catch(e){}
+}
+
+function loadState(){
+  try{
+    const raw=localStorage.getItem(LS_KEY);
+    if(!raw) return false;
+    const s=JSON.parse(raw);
+    if(s.dataOS) document.getElementById('dataOS').value=s.dataOS;
+    if(s.prazo)  document.getElementById('prazo').value=s.prazo;
+    if(s.jornadaUtil) document.getElementById('jornadaUtil').value=s.jornadaUtil;
+    if(s.chkPontes!=null)  document.getElementById('chkPontes').checked=s.chkPontes;
+    if(s.chkRecesso!=null) document.getElementById('chkRecesso').checked=s.chkRecesso;
+    if(s.selectedCity?.id){
+      selectedCity=s.selectedCity;
+      elCidade.value=selectedCity.nome+(selectedCity.uf?` – ${selectedCity.uf}`:'');
+    }
+    if(s.customHols) customHols=s.customHols.map(h=>({...h,dt:new Date(h.dt)}));
+    if(s.periodoMes)  periodoMes=s.periodoMes;
+    if(s.periodoPerc) periodoPerc=s.periodoPerc;
+    if(s.pluvioMes)   pluvioMes=s.pluvioMes;
+    if(s.impactoMes)  impactoMes=s.impactoMes;
+    if(s.improdList){ improdList=s.improdList; _improdId=improdList.reduce((mx,i)=>Math.max(mx,i.id),0); }
+    renderCustomList();
+    renderImprodList();
+    calcJornada();
+    renderPeriodoGrid();
+    return true;
+  }catch(e){ return false; }
+}
+
+// Attach saveState to all relevant inputs
+document.querySelectorAll('#dataOS,#prazo,#jornadaUtil,#chkPontes,#chkRecesso')
+  .forEach(el=>el.addEventListener('change',saveState));
+
+// defaults (only when no saved state)
+if(!loadState()){
+  document.getElementById('dataOS').value='01/06/2026';
+  document.getElementById('prazo').value='180';
+  renderPeriodoGrid();
+  calcJornada();
+}
 </script>
 </body>
 </html>
