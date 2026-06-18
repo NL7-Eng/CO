@@ -230,30 +230,55 @@
     .alert-warn { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
     .alert-info { background: #f9fafb; color: var(--muted); border: 1px solid var(--border); }
 
-    /* ── SUMMARY CARDS ── */
-    .sum-grid     { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px,1fr)); gap: 10px; }
-    .sum-divider  { border: none; border-top: 1px solid var(--border-l); margin: 14px 0 10px; }
-    .sc-hrs { border-left-color: #1d4ed8; }
-    .sc-prat{ border-left-color: #0369a1; }
-    .sc-pct { border-left-color: #0e7490; }
-    .sc {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: var(--r); padding: 14px 13px; text-align: center;
-      border-left-width: 3px; border-left-style: solid;
-    }
-    .sc-lbl { font-size: .67rem; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); }
-    .sc-val { font-family: var(--fd); font-size: 1.8rem; font-weight: 700; margin-top: 4px; line-height: 1; color: var(--text); }
-    .sc-sub { font-size: .72rem; margin-top: 4px; color: var(--subtle); }
-    .sc-val-sm { font-size: 1.35rem; margin-top: 4px; }
+    /* ── SUMMARY REDESIGN ── */
+    .sum-grid { display:flex; flex-direction:column; gap:14px; }
 
-    .sc-date { border-left-color: #374151; }
-    .sc-tot  { border-left-color: #9ca3af; }
-    .sc-ute  { border-left-color: #1f2937; }
-    .sc-fds  { border-left-color: #d1d5db; }
-    .sc-nat  { border-left-color: #c2410c; }
-    .sc-bri  { border-left-color: #f59e0b; }
-    .sc-rec  { border-left-color: #fbbf24; }
-    .sc-fol  { border-left-color: #a78bfa; }
+    /* date row */
+    .sum-dates { display:flex; gap:10px; }
+    .sc {
+      background:var(--surface); border:1px solid var(--border); border-radius:var(--r);
+      padding:14px 13px; text-align:center; border-left-width:3px; border-left-style:solid;
+    }
+    .sc-lbl { font-size:.67rem; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:var(--muted); }
+    .sc-val { font-family:var(--fd); font-size:1.8rem; font-weight:700; margin-top:4px; line-height:1; color:var(--text); }
+    .sc-val-sm { font-size:1.35rem; }
+    .sc-sub { font-size:.72rem; margin-top:4px; color:var(--subtle); }
+    .sc-date { border-left-color:#374151; }
+
+    /* hours bar card */
+    .vis-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:18px 20px; }
+    .vis-title { font-family:var(--fd); font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:var(--muted); margin-bottom:14px; }
+    .bar-row { display:grid; grid-template-columns:110px 1fr 130px; align-items:center; gap:12px; margin-bottom:10px; }
+    .bar-row:last-child { margin-bottom:0; }
+    .bar-lbl { font-size:.82rem; color:var(--muted); text-align:right; }
+    .bar-track { background:#f3f4f6; border-radius:4px; height:18px; overflow:hidden; position:relative; }
+    .bar-fill { height:100%; border-radius:4px; transition:width .4s; display:flex; align-items:center; justify-content:flex-end; padding-right:6px; }
+    .bar-prod { background:#1d4ed8; }
+    .bar-prat { background:#0e7490; }
+    .bar-val  { font-size:.88rem; font-weight:600; color:var(--text); white-space:nowrap; }
+    .bar-sep  { border:none; border-top:1px solid var(--border-l); margin:12px 0; }
+
+    /* days bar card */
+    .days-bar-wrap { margin-bottom:12px; }
+    .days-stacked { display:flex; height:28px; border-radius:6px; overflow:hidden; width:100%; }
+    .days-seg { display:flex; align-items:center; justify-content:center; font-size:.72rem; font-weight:700; color:#fff; transition:flex .4s; overflow:hidden; white-space:nowrap; }
+    .days-seg-util { background:#1d4ed8; }
+    .days-seg-lost { background:#e5e7eb; cursor:default; }
+    .days-chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+    .day-chip { display:inline-flex; align-items:center; gap:5px; font-size:.75rem; padding:3px 8px; border-radius:20px; background:#f9fafb; border:1px solid var(--border-l); }
+    .day-chip-dot { width:9px; height:9px; border-radius:2px; flex-shrink:0; }
+    .days-total-lbl { font-size:.82rem; color:var(--muted); margin-bottom:8px; }
+    .days-total-lbl strong { color:var(--text); }
+
+    /* period breakdown row */
+    .sum-periods { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+    .per-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:14px 16px; border-left-width:4px; border-left-style:solid; }
+    .per-card-title { font-family:var(--fd); font-size:.78rem; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--text); margin-bottom:10px; }
+    .per-stat-row { display:flex; justify-content:space-between; align-items:baseline; font-size:.82rem; margin-bottom:5px; }
+    .per-stat-lbl { color:var(--muted); }
+    .per-stat-val { font-weight:600; color:var(--text); }
+    .per-mini-bar { height:6px; border-radius:3px; background:#f3f4f6; margin-top:10px; overflow:hidden; }
+    .per-mini-fill { height:100%; border-radius:3px; background:#0e7490; }
 
     /* ── TIMELINE ── */
     .tl-wrap { margin-top: 18px; background: #f9fafb; border: 1px solid var(--border); border-radius: var(--r); padding: 13px 15px; overflow-x: auto; }
@@ -1463,12 +1488,7 @@ function render(res){
     {p:(nF||0)/total,c:'s-f',l:`${nF} folgas`}
   ].filter(s=>s.p>0);
   const mos=Object.keys(monthData).sort();
-  document.getElementById('tlSection').innerHTML=`
-    <div class="tl-wrap">
-      <div class="tl-lbl">Distribuição do período</div>
-      <div class="tl-bar">${segs.map(s=>`<div class="tl-seg ${s.c}" style="flex:${(s.p*100).toFixed(2)}" title="${s.l}">${s.p>.07?s.l:''}</div>`).join('')}</div>
-      <div class="tl-mos">${mos.map(mk=>`<div class="tl-mo" style="flex:${(monthData[mk].c/total*100).toFixed(2)}">${monthData[mk].lbl}</div>`).join('')}</div>
-    </div>`;
+  document.getElementById('tlSection').innerHTML='';
 
   // Calendars — while loop
   const cg=document.getElementById('calGrid'); cg.innerHTML='';
@@ -1556,63 +1576,98 @@ function render(res){
   // Cards — now after mos/jp/getPer are defined
   const tHprodCard = +(mos.reduce((s,mk)=>s+monthData[mk].u*jp,0)).toFixed(1);
   const tHpratCard = +(mos.reduce((s,mk)=>s+monthData[mk].u*getPer(mk).horas,0)).toFixed(1);
-  const pctMedio   = nU>0 ? +(mos.reduce((s,mk)=>s+monthData[mk].u*(getPer(mk).perc??100),0)/nU).toFixed(1) : 0;
+  const pctMedio   = tHprodCard>0 ? +(tHpratCard/tHprodCard*100).toFixed(1) : 0;
   const fmt1 = v => v%1===0?String(v):v.toFixed(1);
 
-  // Breakdown de dias úteis e horas por período climático
-  const byPer = {umido:{u:0,hprod:0,hprat:0}, transicao:{u:0,hprod:0,hprat:0}, seco:{u:0,hprod:0,hprat:0}};
-  mos.forEach(mk=>{
-    const {tipo,horas}=getPer(mk);
-    const u=monthData[mk].u;
-    if(byPer[tipo]){ byPer[tipo].u+=u; byPer[tipo].hprod+=u*jp; byPer[tipo].hprat+=u*horas; }
-  });
+  // Breakdown por período climático
+  const byPer={umido:{u:0,hprod:0,hprat:0},transicao:{u:0,hprod:0,hprat:0},seco:{u:0,hprod:0,hprat:0}};
+  mos.forEach(mk=>{ const{tipo,horas}=getPer(mk); const u=monthData[mk].u;
+    if(byPer[tipo]){byPer[tipo].u+=u;byPer[tipo].hprod+=u*jp;byPer[tipo].hprat+=u*horas;} });
   const PER_CFG=[
     {k:'umido',    lbl:'Úmido',    border:'#93c5fd'},
     {k:'transicao',lbl:'Transição', border:'#6ee7b7'},
     {k:'seco',     lbl:'Seco',      border:'#fde68a'},
   ];
-  const perBreakdown = PER_CFG.map(p=>{
+
+  // Hours bars (% relative to produtivas)
+  const pratW=tHprodCard>0?+(tHpratCard/tHprodCard*100).toFixed(1):0;
+  const hoursCard=`<div class="vis-card">
+    <div class="vis-title">Horas no período</div>
+    <div class="bar-row">
+      <span class="bar-lbl">Produtivas</span>
+      <div class="bar-track"><div class="bar-fill bar-prod" style="width:100%;"></div></div>
+      <span class="bar-val">${fmt1(tHprodCard)} h</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-lbl">Praticáveis</span>
+      <div class="bar-track"><div class="bar-fill bar-prat" style="width:${pratW}%;"></div></div>
+      <span class="bar-val">${fmt1(tHpratCard)} h &nbsp;·&nbsp; <strong>${pctMedio}%</strong></span>
+    </div>
+  </div>`;
+
+  // Days stacked bar
+  const perdidos=nC-nU;
+  const utilsPct=nC>0?+(nU/nC*100).toFixed(1):0;
+  const chipData=[
+    {label:'Fins de semana',n:nW,color:'#d1d5db'},
+    {label:'Feriados nac.',n:nH,color:'#c2410c'},
+    {label:'Feriados mun.',n:nHm,color:'#ea7c39'},
+    {label:'Compensações',n:nB,color:'#fbbf24'},
+    {label:'Recesso',n:nR,color:'#fef9c3',border:'#fde68a',dark:true},
+    {label:'Folgas',n:nF,color:'#a78bfa'},
+  ].filter(c=>c.n>0);
+  const chips=chipData.map(c=>`<span class="day-chip">
+    <span class="day-chip-dot" style="background:${c.color};${c.border?`border:1px solid ${c.border};`:''}"></span>
+    <span style="${c.dark?'color:var(--text)':''}">${c.label}: <strong>${c.n}</strong></span>
+  </span>`).join('');
+  const daysCard=`<div class="vis-card">
+    <div class="vis-title">Composição dos dias</div>
+    <div class="days-total-lbl"><strong>${nC}</strong> dias corridos no período</div>
+    <div class="days-bar-wrap">
+      <div class="days-stacked">
+        <div class="days-seg days-seg-util" style="flex:${nU}" title="${nU} dias úteis">
+          ${utilsPct>=15?`${nU} úteis`:''}
+        </div>
+        <div class="days-seg days-seg-lost" style="flex:${perdidos};color:var(--muted);" title="${perdidos} dias não úteis">
+          ${utilsPct<=85?`${perdidos} não úteis`:''}
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:.75rem;color:var(--muted);margin-top:4px;">
+        <span>${nU} dias úteis (${utilsPct}%)</span>
+        <span>${perdidos} perdidos (${+(100-utilsPct).toFixed(1)}%)</span>
+      </div>
+    </div>
+    <div class="days-chips">${chips}</div>
+  </div>`;
+
+  // Period cards
+  const periodCards=PER_CFG.map(p=>{
     const d=byPer[p.k];
     const pctU=nU>0?Math.round(d.u/nU*100):0;
     const hprod=+d.hprod.toFixed(1);
     const hprat=+d.hprat.toFixed(1);
     const pratPct=hprod>0?Math.round(hprat/hprod*100):0;
-    return `<div class="sc" style="border-left-color:${p.border};">
-      <div class="sc-lbl">${p.lbl}</div>
-      <div class="sc-val" style="font-size:1.35rem;">${d.u}<span style="font-size:.75rem;font-weight:400;color:var(--muted);margin-left:4px;">dias</span></div>
-      <div class="sc-sub">${pctU}% dos dias úteis</div>
-      <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border-l);display:flex;flex-direction:column;gap:3px;">
-        <div style="display:flex;justify-content:space-between;font-size:.78rem;">
-          <span style="color:var(--muted);">H. produtivas</span><strong>${fmt1(hprod)}h</strong>
-        </div>
-        <div style="display:flex;justify-content:space-between;font-size:.78rem;">
-          <span style="color:var(--muted);">H. praticáveis</span><strong>${fmt1(hprat)}h</strong>
-        </div>
-        <div style="display:flex;justify-content:space-between;font-size:.78rem;">
-          <span style="color:var(--muted);">Praticabilidade</span><strong>${pratPct}%</strong>
-        </div>
-      </div>
+    return `<div class="per-card" style="border-left-color:${p.border};">
+      <div class="per-card-title">${p.lbl}</div>
+      <div class="per-stat-row"><span class="per-stat-lbl">Dias úteis</span><span class="per-stat-val">${d.u} <span style="font-weight:400;color:var(--muted);font-size:.78rem;">(${pctU}% do total)</span></span></div>
+      <div class="per-stat-row"><span class="per-stat-lbl">H. produtivas</span><span class="per-stat-val">${fmt1(hprod)} h</span></div>
+      <div class="per-stat-row"><span class="per-stat-lbl">H. praticáveis</span><span class="per-stat-val">${fmt1(hprat)} h</span></div>
+      <div class="per-mini-bar"><div class="per-mini-fill" style="width:${pratPct}%;"></div></div>
+      <div style="font-size:.72rem;color:var(--muted);margin-top:4px;text-align:right;">${pratPct}% praticabilidade</div>
     </div>`;
   }).join('');
 
-  document.getElementById('sumCards').innerHTML=`
+  // Date cards
+  const dateCards=`<div class="sum-dates">
     <div class="sc sc-date"><div class="sc-lbl">Início</div><div class="sc-val sc-val-sm">${fBR(start).slice(0,6)+fBR(start).slice(8)}</div><div class="sc-sub">${WD[dow(start)]}</div></div>
     <div class="sc sc-date"><div class="sc-lbl">Término</div><div class="sc-val sc-val-sm">${fBR(end).slice(0,6)+fBR(end).slice(8)}</div><div class="sc-sub">${WD[dow(end)]}</div></div>
-    <div class="sc sc-hrs"><div class="sc-lbl">Horas Produtivas</div><div class="sc-val">${fmt1(tHprodCard)}</div><div class="sc-sub">h no período</div></div>
-    <div class="sc sc-prat"><div class="sc-lbl">Horas Praticáveis</div><div class="sc-val">${fmt1(tHpratCard)}</div><div class="sc-sub">h no período</div></div>
-    <div class="sc sc-pct"><div class="sc-lbl">Praticabilidade Média</div><div class="sc-val">${pctMedio}%</div><div class="sc-sub">ponderada por dias úteis</div></div>
-    <hr class="sum-divider" style="grid-column:1/-1">
-    <div class="sc sc-tot"><div class="sc-lbl">Dias Corridos</div><div class="sc-val">${nC}</div></div>
-    <div class="sc sc-ute"><div class="sc-lbl">Dias Úteis</div><div class="sc-val">${nU}</div></div>
-    <div class="sc sc-fds"><div class="sc-lbl">Fins de Semana</div><div class="sc-val">${nW}</div></div>
-    <div class="sc sc-nat"><div class="sc-lbl">Feriados Nac.</div><div class="sc-val">${nH}</div></div>
-    <div class="sc sc-nat" style="border-left-color:#ea7c39"><div class="sc-lbl">Feriados Mun.</div><div class="sc-val">${nHm}</div></div>
-    <div class="sc sc-bri"><div class="sc-lbl">Compensações</div><div class="sc-val">${nB}</div></div>
-    <div class="sc sc-rec"><div class="sc-lbl">Recesso</div><div class="sc-val">${nR}</div></div>
-    ${nF>0?`<div class="sc sc-fol"><div class="sc-lbl">Folgas</div><div class="sc-val">${nF}</div></div>`:''}
-    <hr class="sum-divider" style="grid-column:1/-1">
-    <div style="grid-column:1/-1;font-family:var(--fd);font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);padding:2px 0 6px;">Dias úteis por período climático</div>
-    ${perBreakdown}
+  </div>`;
+
+  document.getElementById('sumCards').innerHTML=`
+    ${dateCards}
+    ${hoursCard}
+    ${daysCard}
+    <div class="sum-periods">${periodCards}</div>
   `;
 
   // Monthly summary table — TRANSPOSED: months as rows, metrics as columns
