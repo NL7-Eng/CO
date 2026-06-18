@@ -1618,7 +1618,7 @@ function render(res){
       let nUtil=0, hProd=0, hPrat=0;
       const moBucket={};
       for(let dt=new Date(a);dt<=b;dt=add(dt,1)){
-        const k=YMD(dt); if(dayMap[k]!=='work') continue;
+        const k=YMD(dt); if(dayMap[k]!=='working') continue;
         nUtil++;
         hProd+=jp;
         const mk=k.slice(0,7);
