@@ -469,22 +469,15 @@
     <!-- MARCOS / FASES -->
     <div class="custom-section" id="fasesSection">
       <div class="custom-title">Marcos e Fases do Contrato</div>
-      <p class="custom-sub">Defina as fases sequenciais do contrato. Cada fase inicia onde a anterior termina, a partir da OS. O prazo pode ser em dias corridos ou dias úteis.</p>
+      <p class="custom-sub">Defina as fases sequenciais do contrato em dias corridos, conforme o contrato. Cada fase inicia onde a anterior termina, a partir da OS. O sistema converte para dias úteis automaticamente.</p>
       <div class="custom-row" style="margin-bottom:8px;">
         <div class="fg" style="min-width:180px;">
           <label>Nome da fase</label>
           <input type="text" id="faseNome" placeholder="Ex: Mobilização" style="width:100%;" />
         </div>
-        <div class="fg" style="max-width:100px;">
-          <label>Duração</label>
+        <div class="fg" style="max-width:130px;">
+          <label>Duração (dias corridos)</label>
           <input type="number" id="faseDur" min="1" step="1" placeholder="Ex: 60" style="width:100%;" />
-        </div>
-        <div class="fg" style="max-width:140px;">
-          <label>Tipo</label>
-          <select id="faseTipo">
-            <option value="corridos">Dias corridos</option>
-            <option value="uteis">Dias úteis</option>
-          </select>
         </div>
         <button class="btn btn-add" onclick="addFase()">Adicionar</button>
       </div>
@@ -1123,9 +1116,8 @@ let _faseId=0;
 function addFase(){
   const nome=document.getElementById('faseNome').value.trim();
   const dur=parseInt(document.getElementById('faseDur').value)||0;
-  const tipo=document.getElementById('faseTipo').value;
   if(!nome||dur<1){showAlert('warn','Informe nome e duração da fase.');return;}
-  fases.push({id:++_faseId,nome,dur,tipo});
+  fases.push({id:++_faseId,nome,dur});
   document.getElementById('faseNome').value='';
   document.getElementById('faseDur').value='';
   renderFasesList();
@@ -1151,10 +1143,7 @@ function renderFasesList(){
       <span class="fase-num">${i+1}</span>
       <input class="fase-nome" value="${f.nome}" onchange="fases[${i}].nome=this.value;saveState();if(hasCalcResult&&lastResult)render(lastResult);">
       <input class="fase-dur" type="number" min="1" value="${f.dur}" onchange="fases[${i}].dur=parseInt(this.value)||0;saveState();if(hasCalcResult&&lastResult)render(lastResult);">
-      <select class="fase-tipo" onchange="fases[${i}].tipo=this.value;saveState();if(hasCalcResult&&lastResult)render(lastResult);">
-        <option value="corridos"${f.tipo==='corridos'?' selected':''}>Corridos</option>
-        <option value="uteis"${f.tipo==='uteis'?' selected':''}>Úteis</option>
-      </select>
+      <span style="font-size:.78rem;color:var(--muted);">dias corridos</span>
       <button class="fase-del" onclick="removeFase(${f.id})" title="Remover">×</button>
     </div>`).join('');
 }
@@ -1624,12 +1613,6 @@ function render(res){
   const faseTable=document.getElementById('faseTable');
   if(fases.length&&fasesCard&&faseTable){
     fasesCard.style.display='';
-    // Helper: advance N working days from a date
-    const advanceUteis=(from,n)=>{
-      let cur=new Date(from); let cnt=0;
-      while(cnt<n){ cur=add(cur,1); if(dayMap[YMD(cur)]==='work') cnt++; }
-      return cur;
-    };
     // Helper: count working days and gather praticabilidade in a date range [a,b]
     const rangeStats=(a,b)=>{
       let nUtil=0, hProd=0, hPrat=0;
@@ -1652,21 +1635,13 @@ function render(res){
     let totFU=0,totFHprod=0,totFHprat=0;
     const faseRows=fases.map((f,i)=>{
       const fStart=new Date(cur);
-      let fEnd;
-      if(f.tipo==='corridos'){
-        fEnd=add(cur,f.dur-1);
-        cur=add(cur,f.dur);
-      } else {
-        fEnd=advanceUteis(cur,f.dur); fEnd=new Date(Math.min(fEnd,end));
-        cur=add(fEnd,1);
-      }
-      fEnd=new Date(Math.min(fEnd,end));
+      const fEnd=new Date(Math.min(add(cur,f.dur-1),end));
+      cur=add(fEnd,1);
       const nCorr=Math.round((fEnd-fStart)/864e5)+1;
       const {nUtil,hProd,hPrat,pct}=rangeStats(fStart,fEnd);
       totFU+=nUtil; totFHprod+=hProd; totFHprat+=hPrat;
-      const tipoBadge=`<span class="fase-badge">${f.tipo==='corridos'?'corridos':'úteis'}</span>`;
       return `<tr>
-        <td><strong>${i+1}. ${f.nome}</strong> ${tipoBadge}</td>
+        <td><strong>${i+1}. ${f.nome}</strong></td>
         <td class="tc">${fBR(fStart)}</td>
         <td class="tc">${fBR(fEnd)}</td>
         <td class="tc">${nCorr}</td>
