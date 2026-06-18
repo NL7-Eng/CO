@@ -290,6 +290,28 @@
     .per-mini-bar { height:6px; border-radius:3px; background:#f3f4f6; margin-top:10px; overflow:hidden; }
     .per-mini-fill { height:100%; border-radius:3px; background:#0000ff; }
 
+    /* ── CPU WATERFALL ── */
+    .cpu-table { width:100%; border-collapse:collapse; font-size:.88rem; }
+    .cpu-table td { padding:9px 12px; }
+    .cpu-table tr { border-bottom:1px solid var(--border-l); }
+    .cpu-table tr:last-child { border-bottom:none; }
+    .cpu-row-total   { background:#f9fafb; }
+    .cpu-row-loss    { background:#fff; }
+    .cpu-row-subtot  { background:#f3f4f6; }
+    .cpu-row-result  { background:#0000ff; color:#fff; }
+    .cpu-row-result td { padding:13px 12px; }
+    .cpu-lbl  { font-weight:600; }
+    .cpu-sub  { font-size:.78rem; color:var(--muted); margin-top:2px; }
+    .cpu-row-result .cpu-sub { color:rgba(255,255,255,.75); }
+    .cpu-hrs  { text-align:right; font-weight:700; white-space:nowrap; font-size:.95rem; }
+    .cpu-loss-hrs { text-align:right; white-space:nowrap; color:#b91c1c; font-weight:600; }
+    .cpu-pct  { text-align:right; white-space:nowrap; width:90px; font-weight:700; }
+    .cpu-pct-bar-wrap { width:160px; padding-right:12px; }
+    .cpu-pct-bar-track { background:#e5e7eb; border-radius:3px; height:8px; overflow:hidden; }
+    .cpu-pct-bar-fill  { height:100%; border-radius:3px; background:#0000ff; transition:width .4s; }
+    .cpu-arrow { color:var(--muted); font-size:.8rem; width:24px; text-align:center; }
+    .cpu-indent { padding-left:28px !important; }
+
     /* ── TIMELINE ── */
     .tl-wrap { margin-top: 18px; background: #f9fafb; border: 1px solid var(--border); border-radius: var(--r); padding: 13px 15px; overflow-x: auto; }
     .tl-lbl  { font-size: .7rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 7px; }
@@ -570,6 +592,11 @@
       <div class="section-title">Resumo do Contrato</div>
       <div class="sum-grid" id="sumCards"></div>
       <div id="tlSection"></div>
+    </div>
+
+    <div class="card" id="cpuCard">
+      <div class="section-title">Índice de Aproveitamento — CPU</div>
+      <div id="cpuWaterfall"></div>
     </div>
 
     <div class="card" id="fasesCard" style="display:none;">
@@ -1687,6 +1714,79 @@ function render(res){
     <div class="sum-periods">${periodCards}</div>
     ${hoursCard}
   `;
+
+  // ── CPU WATERFALL ────────────────────────────────────────────────────
+  const ju2      = jornadaUtil();          // horas úteis/dia (ex: 8,8h)
+  const hImprod  = jp > 0 ? +(nU * (ju2 - jp)).toFixed(1) : 0; // horas improdutivas dos dias úteis
+  const hNaoUtil = +(nC * ju2 - nU * ju2).toFixed(1);           // horas perdidas por dias não úteis
+  const hTot     = +(nC * ju2).toFixed(1);                      // teto total
+  const hUtBrut  = +(nU * ju2).toFixed(1);                      // após remover dias não úteis
+  const hProd2   = +(nU * jp).toFixed(1);                       // após remover improdutividade
+  const hPrat2   = tHpratCard;                                   // após remover impraticabilidade
+  const hImprat  = +(hProd2 - hPrat2).toFixed(1);               // perdas climáticas
+  const idxCPU   = hTot > 0 ? +(hPrat2 / hTot * 100).toFixed(1) : 0;
+
+  const pctBar = (val, max, color='#0000ff') => {
+    const w = max > 0 ? Math.min(100, +(val/max*100).toFixed(1)) : 0;
+    return `<div class="cpu-pct-bar-track"><div class="cpu-pct-bar-fill" style="width:${w}%;background:${color};"></div></div>`;
+  };
+  const fmtH = h => `${fmt1(h)} h`;
+  const pctOf = (h, base) => base > 0 ? `−${+(h/base*100).toFixed(1)}%` : '—';
+
+  document.getElementById('cpuWaterfall').innerHTML=`
+  <table class="cpu-table">
+    <tbody>
+      <tr class="cpu-row-total">
+        <td class="cpu-lbl">Horas Totais do Marco<div class="cpu-sub">${nC} dias corridos × ${fmt1(ju2)} h/dia</div></td>
+        <td class="cpu-arrow"></td>
+        <td class="cpu-pct-bar-wrap">${pctBar(hTot,hTot)}</td>
+        <td class="cpu-hrs">${fmtH(hTot)}</td>
+        <td class="cpu-pct" style="color:var(--muted);">100%</td>
+      </tr>
+      <tr class="cpu-row-loss">
+        <td class="cpu-lbl cpu-indent">− Dias não úteis<div class="cpu-sub">${nC - nU} dias (FDS, feriados, recesso, folgas)</div></td>
+        <td class="cpu-arrow">↓</td>
+        <td class="cpu-pct-bar-wrap">${pctBar(hNaoUtil,hTot,'#e5e7eb')}</td>
+        <td class="cpu-loss-hrs">−${fmtH(hNaoUtil)}</td>
+        <td class="cpu-pct" style="color:#b91c1c;">${pctOf(hNaoUtil,hTot)}</td>
+      </tr>
+      <tr class="cpu-row-subtot">
+        <td class="cpu-lbl">Horas Úteis Brutas<div class="cpu-sub">${nU} dias úteis × ${fmt1(ju2)} h/dia</div></td>
+        <td class="cpu-arrow"></td>
+        <td class="cpu-pct-bar-wrap">${pctBar(hUtBrut,hTot)}</td>
+        <td class="cpu-hrs">${fmtH(hUtBrut)}</td>
+        <td class="cpu-pct" style="color:var(--muted);">${+(hUtBrut/hTot*100).toFixed(1)}%</td>
+      </tr>
+      <tr class="cpu-row-loss">
+        <td class="cpu-lbl cpu-indent">− Improdutividade<div class="cpu-sub">${nU} dias × ${fmt1(+(ju2-jp).toFixed(2))} h/dia (refeição, mobilização etc.)</div></td>
+        <td class="cpu-arrow">↓</td>
+        <td class="cpu-pct-bar-wrap">${pctBar(hImprod,hTot,'#e5e7eb')}</td>
+        <td class="cpu-loss-hrs">−${fmtH(hImprod)}</td>
+        <td class="cpu-pct" style="color:#b91c1c;">${pctOf(hImprod,hTot)}</td>
+      </tr>
+      <tr class="cpu-row-subtot">
+        <td class="cpu-lbl">Horas Produtivas<div class="cpu-sub">${nU} dias úteis × ${fmt1(jp)} h/dia</div></td>
+        <td class="cpu-arrow"></td>
+        <td class="cpu-pct-bar-wrap">${pctBar(hProd2,hTot)}</td>
+        <td class="cpu-hrs">${fmtH(hProd2)}</td>
+        <td class="cpu-pct" style="color:var(--muted);">${+(hProd2/hTot*100).toFixed(1)}%</td>
+      </tr>
+      <tr class="cpu-row-loss">
+        <td class="cpu-lbl cpu-indent">− Impraticabilidade climática<div class="cpu-sub">Fator médio ponderado por período (úmido/transição/seco)</div></td>
+        <td class="cpu-arrow">↓</td>
+        <td class="cpu-pct-bar-wrap">${pctBar(hImprat,hTot,'#e5e7eb')}</td>
+        <td class="cpu-loss-hrs">−${fmtH(hImprat)}</td>
+        <td class="cpu-pct" style="color:#b91c1c;">${pctOf(hImprat,hTot)}</td>
+      </tr>
+      <tr class="cpu-row-result">
+        <td class="cpu-lbl">Horas Praticáveis — Índice CPU<div class="cpu-sub">Base real para dimensionamento de equipes e quantidades</div></td>
+        <td class="cpu-arrow" style="color:rgba(255,255,255,.6);">✓</td>
+        <td class="cpu-pct-bar-wrap">${pctBar(hPrat2,hTot,'#fff')}</td>
+        <td class="cpu-hrs">${fmtH(hPrat2)}</td>
+        <td class="cpu-pct" style="font-size:1.1rem;">${idxCPU}%</td>
+      </tr>
+    </tbody>
+  </table>`;
 
   // Monthly summary table — TRANSPOSED: months as rows, metrics as columns
   const tC=mos.reduce((s,mk)=>s+monthData[mk].c,0);
