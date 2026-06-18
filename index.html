@@ -165,14 +165,15 @@
     .prat-result-val { font-size:1rem; font-weight:700; color:var(--text); }
 
     /* fases / marcos */
-    .fases-list { display:flex; flex-direction:column; gap:6px; margin-top:10px; }
-    .fase-item { display:flex; gap:8px; align-items:center; flex-wrap:nowrap; background:#f9fafb; border:1px solid var(--border-l); border-radius:6px; padding:6px 10px; }
-    .fase-num  { font-family:var(--fd); font-size:.75rem; font-weight:700; color:var(--muted); min-width:16px; text-align:right; flex-shrink:0; }
-    .fase-nome { flex:1; min-width:0; border:1px solid var(--border); border-radius:4px; padding:4px 8px; font-family:var(--fb); font-size:.88rem; }
-    .fase-dur  { width:56px; flex-shrink:0; border:1px solid var(--border); border-radius:4px; padding:4px 6px; font-family:var(--fb); font-size:.88rem; text-align:center; }
-    .fase-dur-lbl { font-size:.75rem; color:var(--muted); flex-shrink:0; white-space:nowrap; }
-    .fase-fim  { font-size:.82rem; color:var(--text); font-weight:600; flex-shrink:0; white-space:nowrap; min-width:90px; }
-    .fase-del  { background:none; border:none; color:var(--muted); cursor:pointer; font-size:1.1rem; padding:0 2px; line-height:1; flex-shrink:0; }
+    .fases-list { display:flex; flex-direction:column; gap:5px; margin-top:10px; }
+    .fase-item  { display:grid; grid-template-columns:22px 1fr 52px auto 100px 22px; gap:8px; align-items:center;
+                  background:#f9fafb; border:1px solid var(--border-l); border-radius:6px; padding:6px 12px; }
+    .fase-num   { font-size:.75rem; font-weight:700; color:var(--muted); text-align:center; }
+    .fase-nome  { border:1px solid var(--border); border-radius:4px; padding:4px 8px; font-family:var(--fb); font-size:.88rem; width:100%; min-width:0; }
+    .fase-dur   { width:100%; border:1px solid var(--border); border-radius:4px; padding:4px 6px; font-family:var(--fb); font-size:.88rem; text-align:center; min-width:0; }
+    .fase-dur-lbl { font-size:.75rem; color:var(--muted); white-space:nowrap; }
+    .fase-fim   { font-size:.82rem; color:var(--text); font-weight:600; white-space:nowrap; }
+    .fase-del   { background:none; border:none; color:var(--muted); cursor:pointer; font-size:1.1rem; padding:0; line-height:1; text-align:center; justify-self:end; }
     .fase-del:hover { color:#b91c1c; }
 
     /* tabela de fases nos resultados */
@@ -181,7 +182,6 @@
     .fase-table td { padding:7px 10px; border-bottom:1px solid var(--border-l); }
     .fase-table tr:last-child td { border-bottom:none; font-weight:700; border-top:2px solid var(--border); }
     .fase-table .tc { text-align:center; }
-    .fase-badge { display:inline-block; font-size:.7rem; font-weight:700; border-radius:3px; padding:1px 6px; background:#f3f4f6; color:var(--muted); }
 
     /* datas especiais */
     .custom-section { margin-top: 22px; border-top: 1px solid var(--border-l); padding-top: 18px; }
@@ -476,9 +476,9 @@
           <label>Nome da fase</label>
           <input type="text" id="faseNome" placeholder="Ex: Mobilização" style="width:100%;" />
         </div>
-        <div class="fg" style="max-width:130px;">
-          <label>Duração (dias corridos)</label>
-          <input type="number" id="faseDur" min="1" step="1" placeholder="Ex: 60" style="width:100%;" />
+        <div class="fg" style="max-width:110px;">
+          <label>Dias corridos</label>
+          <input type="number" id="faseDur" min="1" step="1" placeholder="60" style="width:100%;" />
         </div>
         <button class="btn btn-add" onclick="addFase()">Adicionar</button>
       </div>
@@ -1148,9 +1148,9 @@ function renderFasesList(){
     const fimStr=fimDt?fBR(fimDt):'—';
     return `<div class="fase-item">
       <span class="fase-num">${i+1}</span>
-      <input class="fase-nome" value="${f.nome}" onchange="fases[${i}].nome=this.value;saveState();if(hasCalcResult&&lastResult)render(lastResult);" placeholder="Nome da fase">
+      <input class="fase-nome" value="${f.nome}" onchange="fases[${i}].nome=this.value;saveState();if(hasCalcResult&&lastResult)render(lastResult);" placeholder="Nome">
       <input class="fase-dur" type="number" min="1" value="${f.dur}" onchange="fases[${i}].dur=parseInt(this.value)||0;renderFasesList();saveState();if(hasCalcResult&&lastResult)render(lastResult);">
-      <span class="fase-dur-lbl">d.c.</span>
+      <span class="fase-dur-lbl">dias</span>
       <span class="fase-fim">→ ${fimStr}</span>
       <button class="fase-del" onclick="removeFase(${f.id})" title="Remover">×</button>
     </div>`;
