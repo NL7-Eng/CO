@@ -1559,6 +1559,42 @@ function render(res){
   const pctMedio   = nU>0 ? +(mos.reduce((s,mk)=>s+monthData[mk].u*(getPer(mk).perc??100),0)/nU).toFixed(1) : 0;
   const fmt1 = v => v%1===0?String(v):v.toFixed(1);
 
+  // Breakdown de dias úteis e horas por período climático
+  const byPer = {umido:{u:0,hprod:0,hprat:0}, transicao:{u:0,hprod:0,hprat:0}, seco:{u:0,hprod:0,hprat:0}};
+  mos.forEach(mk=>{
+    const {tipo,horas}=getPer(mk);
+    const u=monthData[mk].u;
+    if(byPer[tipo]){ byPer[tipo].u+=u; byPer[tipo].hprod+=u*jp; byPer[tipo].hprat+=u*horas; }
+  });
+  const PER_CFG=[
+    {k:'umido',    lbl:'Úmido',    border:'#93c5fd'},
+    {k:'transicao',lbl:'Transição', border:'#6ee7b7'},
+    {k:'seco',     lbl:'Seco',      border:'#fde68a'},
+  ];
+  const perBreakdown = PER_CFG.map(p=>{
+    const d=byPer[p.k];
+    const pctU=nU>0?Math.round(d.u/nU*100):0;
+    const hprod=+d.hprod.toFixed(1);
+    const hprat=+d.hprat.toFixed(1);
+    const pratPct=hprod>0?Math.round(hprat/hprod*100):0;
+    return `<div class="sc" style="border-left-color:${p.border};">
+      <div class="sc-lbl">${p.lbl}</div>
+      <div class="sc-val" style="font-size:1.35rem;">${d.u}<span style="font-size:.75rem;font-weight:400;color:var(--muted);margin-left:4px;">dias</span></div>
+      <div class="sc-sub">${pctU}% dos dias úteis</div>
+      <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border-l);display:flex;flex-direction:column;gap:3px;">
+        <div style="display:flex;justify-content:space-between;font-size:.78rem;">
+          <span style="color:var(--muted);">H. produtivas</span><strong>${fmt1(hprod)}h</strong>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:.78rem;">
+          <span style="color:var(--muted);">H. praticáveis</span><strong>${fmt1(hprat)}h</strong>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:.78rem;">
+          <span style="color:var(--muted);">Praticabilidade</span><strong>${pratPct}%</strong>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
   document.getElementById('sumCards').innerHTML=`
     <div class="sc sc-date"><div class="sc-lbl">Início</div><div class="sc-val sc-val-sm">${fBR(start).slice(0,6)+fBR(start).slice(8)}</div><div class="sc-sub">${WD[dow(start)]}</div></div>
     <div class="sc sc-date"><div class="sc-lbl">Término</div><div class="sc-val sc-val-sm">${fBR(end).slice(0,6)+fBR(end).slice(8)}</div><div class="sc-sub">${WD[dow(end)]}</div></div>
@@ -1574,6 +1610,9 @@ function render(res){
     <div class="sc sc-bri"><div class="sc-lbl">Compensações</div><div class="sc-val">${nB}</div></div>
     <div class="sc sc-rec"><div class="sc-lbl">Recesso</div><div class="sc-val">${nR}</div></div>
     ${nF>0?`<div class="sc sc-fol"><div class="sc-lbl">Folgas</div><div class="sc-val">${nF}</div></div>`:''}
+    <hr class="sum-divider" style="grid-column:1/-1">
+    <div style="grid-column:1/-1;font-family:var(--fd);font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);padding:2px 0 6px;">Dias úteis por período climático</div>
+    ${perBreakdown}
   `;
 
   // Monthly summary table — TRANSPOSED: months as rows, metrics as columns
