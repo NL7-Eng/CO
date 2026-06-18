@@ -122,8 +122,9 @@
       .pc-table { font-size: .72rem; }
       .prat-cards { flex-direction: column; }
       .sum-grid { grid-template-columns: repeat(2, 1fr); }
-      .sum-top-row { flex-direction: column; }
-      .sum-dates { flex-direction: row; }
+      .sum-top-row { flex-wrap: wrap; }
+      .sum-top-row > .sc { flex:1; min-width:100px; }
+      .sum-top-row > .vis-card { flex-basis:100%; }
       .hol-dual { grid-template-columns: 1fr; }
       .cal-grid { grid-template-columns: repeat(2, 1fr); }
     }
@@ -235,10 +236,10 @@
     /* ── SUMMARY REDESIGN ── */
     .sum-grid { display:flex; flex-direction:column; gap:14px; }
 
-    /* top row: dates + hours side by side */
+    /* top row: Início | Término | Composição dos dias */
     .sum-top-row { display:flex; gap:14px; align-items:stretch; }
-    .sum-dates { display:flex; flex-direction:column; gap:10px; flex-shrink:0; }
-    .sum-top-row .vis-card { flex:1; min-width:0; }
+    .sum-top-row > .sc { flex-shrink:0; min-width:110px; }
+    .sum-top-row > .vis-card { flex:1; min-width:0; }
     .sc {
       background:var(--surface); border:1px solid var(--border); border-radius:var(--r);
       padding:14px 13px; text-align:center; border-left-width:3px; border-left-style:solid;
@@ -562,6 +563,12 @@
   <!-- RESULTS -->
   <div id="results" class="hidden">
     <div class="card">
+      <div class="section-title">Resumo do Contrato</div>
+      <div class="sum-grid" id="sumCards"></div>
+      <div id="tlSection"></div>
+    </div>
+
+    <div class="card">
       <div class="section-title">Projeção de Horas por Mês</div>
       <div class="t-wrap"><table class="mt" id="moTable"></table></div>
       <div class="btn-row" style="margin-top:16px;">
@@ -572,12 +579,6 @@
     <div class="card" id="fasesCard" style="display:none;">
       <div class="section-title">Fases do Contrato</div>
       <div class="t-wrap"><table class="fase-table" id="faseTable"></table></div>
-    </div>
-
-    <div class="card">
-      <div class="section-title">Resumo do Contrato</div>
-      <div class="sum-grid" id="sumCards"></div>
-      <div id="tlSection"></div>
     </div>
 
     <div class="card">
@@ -1671,16 +1672,14 @@ function render(res){
     </div>`;
   }).join('');
 
-  // Date cards
-  const dateCards=`<div class="sum-dates">
-    <div class="sc sc-date"><div class="sc-lbl">Início</div><div class="sc-val sc-val-sm">${fBR(start).slice(0,6)+fBR(start).slice(8)}</div><div class="sc-sub">${WD[dow(start)]}</div></div>
-    <div class="sc sc-date"><div class="sc-lbl">Término</div><div class="sc-val sc-val-sm">${fBR(end).slice(0,6)+fBR(end).slice(8)}</div><div class="sc-sub">${WD[dow(end)]}</div></div>
-  </div>`;
+  // Date cards (individual cards, not wrapped — sit inline in top row)
+  const scInicio=`<div class="sc sc-date"><div class="sc-lbl">Início</div><div class="sc-val sc-val-sm">${fBR(start).slice(0,6)+fBR(start).slice(8)}</div><div class="sc-sub">${WD[dow(start)]}</div></div>`;
+  const scTermino=`<div class="sc sc-date"><div class="sc-lbl">Término</div><div class="sc-val sc-val-sm">${fBR(end).slice(0,6)+fBR(end).slice(8)}</div><div class="sc-sub">${WD[dow(end)]}</div></div>`;
 
   document.getElementById('sumCards').innerHTML=`
-    <div class="sum-top-row">${dateCards}${hoursCard}</div>
-    ${daysCard}
+    <div class="sum-top-row">${scInicio}${scTermino}${daysCard}</div>
     <div class="sum-periods">${periodCards}</div>
+    ${hoursCard}
   `;
 
   // Monthly summary table — TRANSPOSED: months as rows, metrics as columns
