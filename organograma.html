@@ -350,16 +350,17 @@ const SW_HEX=PAL.map(p=>p.border);
 
 /* ══════════════ DEFAULTS ══════════════ */
 const DEF_FUNC=[
-  'GERENTE DE CONTRATOS','ENGENHEIRO DE OBRAS','ENGENHEIRO DE PLANEJAMENTO',
-  'TECNICO DE PLANEJAMENTO','TECNICO DE MEDIÇÃO','TOPOGRAFO','AUXILIAR DE TOPOGRAFIA',
-  'ANALISTA DE ENGENHARIA','LABORATORISTA','AUXILIAR DE LABORATORISTA',
-  'GERENTE ADMINISTRATIVO','ENCARREGADO ADMINISTRATIVO','AUXILIAR ADMINISTRATIVO',
-  'ENGENHEIRO SEG DO TRABALHO','TECNICO SEG DO TRABALHO','MEDICO DO TRABALHO',
-  'TECNICO ENF DO TRABALHO','ANALISTA DE MEIO AMBIENTE','TECNICO DE MEIO AMBIENTE',
-  'ASSISTENTE ADM. MEIO AMBIENTE','ENGENHEIRO TRAINEE','SUPERVISOR DE OBRAS',
-  'MESTRE DE OBRA','ENCARREGADO DE OBRAS','MOTORISTA DE COMBOIO','MECANICO',
-  'ALMOXARIFE','AUXILIAR DE ALMOXARIFADO','VIGIA','ELETRICISTA','MOTORISTA DE MUNCK',
-  'AUXILIAR DE SERVIÇOS GERAIS','MOTORISTA VEICULOS LEVES','MOTORISTA DE ONIBUS','MARINHEIRO',
+  'Almoxarife','Analista de engenharia','Analista de meio ambiente',
+  'Assistente adm. meio ambiente','Auxiliar administrativo','Auxiliar de almoxarifado',
+  'Auxiliar de laboratorista','Auxiliar de serviços gerais','Auxiliar de topografia',
+  'Eletricista','Encarregado administrativo','Encarregado de obras',
+  'Engenheiro de obras','Engenheiro de planejamento','Engenheiro seg do trabalho',
+  'Engenheiro trainee','Gerente administrativo','Gerente de contratos',
+  'Laboratorista','Marinheiro','Mecânico','Médico do trabalho',
+  'Mestre de obra','Motorista de ônibus','Motorista de comboio',
+  'Motorista de munck','Motorista veículos leves','Supervisor de obras',
+  'Técnico de medição','Técnico de meio ambiente','Técnico de planejamento',
+  'Técnico enf do trabalho','Técnico seg do trabalho','Topógrafo','Vigia',
 ];
 const DEF_GRUPOS=[
   {nome:'Gestão Contratual',palIdx:0},{nome:'Engenharia',palIdx:1},
@@ -406,10 +407,10 @@ function fillSupSel(selId,nivelSelId,excludeId=null,curSup=''){
   const nivel=Number(document.getElementById(nivelSelId)?.value||1);
   const s=document.getElementById(selId); if(!s) return;
   if(nivel<=1){ s.innerHTML='<option value="">— Sem superior (topo) —</option>'; return; }
-  const lvlAbove=nivel-1;
-  const opts=people.filter(p=>p.id!==excludeId&&getNivel(p.id)===lvlAbove);
+  // any person at a level strictly above (nivel < this person's nivel)
+  const opts=people.filter(p=>p.id!==excludeId&&getNivel(p.id)<nivel);
   s.innerHTML='<option value="">— Selecione —</option>'+
-    opts.map(p=>`<option value="${p.id}"${String(p.id)===String(curSup)?' selected':''}>${esc(p.nome)} · ${esc(p.cargo)}</option>`).join('');
+    opts.map(p=>`<option value="${p.id}"${String(p.id)===String(curSup)?' selected':''}>${esc(p.nome)} · N${getNivel(p.id)}</option>`).join('');
 }
 function getCargoVal(selId,custId){
   const v=document.getElementById(selId)?.value;
@@ -474,12 +475,12 @@ function openInlineEdit(id){
 
   const lvl=getNivel(id);
 
-  // build superior options
+  // build superior options — any person at a level strictly above
   function supOpts(nivel){
     if(nivel<=1) return '<option value="">— Sem superior (topo) —</option>';
-    const above=people.filter(x=>x.id!==id&&getNivel(x.id)===nivel-1);
+    const above=people.filter(x=>x.id!==id&&getNivel(x.id)<nivel);
     return '<option value="">— Selecione —</option>'+
-      above.map(x=>`<option value="${x.id}"${String(x.id)===String(p.superiorId)?' selected':''}>${esc(x.nome)}</option>`).join('');
+      above.map(x=>`<option value="${x.id}"${String(x.id)===String(p.superiorId)?' selected':''}>${esc(x.nome)} · N${getNivel(x.id)}</option>`).join('');
   }
 
   const cargoOpts=funcoes.map(f=>`<option value="${esc(f)}"${p.cargo===f?' selected':''}>${esc(f)}</option>`).join('')+
@@ -514,9 +515,9 @@ function onIENivelChange(){
   const nivel=Number(document.getElementById('ie_nivel')?.value||1);
   const sel=document.getElementById('ie_superior'); if(!sel) return;
   if(nivel<=1){ sel.innerHTML='<option value="">— Sem superior (topo) —</option>'; return; }
-  const above=people.filter(x=>x.id!==_inlineEditId&&getNivel(x.id)===nivel-1);
+  const above=people.filter(x=>x.id!==_inlineEditId&&getNivel(x.id)<nivel);
   sel.innerHTML='<option value="">— Selecione —</option>'+
-    above.map(x=>`<option value="${x.id}">${esc(x.nome)}</option>`).join('');
+    above.map(x=>`<option value="${x.id}">${esc(x.nome)} · N${getNivel(x.id)}</option>`).join('');
 }
 
 function saveInlineEdit(id){
@@ -562,13 +563,16 @@ function fixCircular(id){
 }
 
 /* ══════════════ FUNCOES CRUD ══════════════ */
+function toTitleCase(s){ return s.charAt(0).toUpperCase()+s.slice(1).toLowerCase(); }
+function sortFuncoes(){ funcoes.sort((a,b)=>a.localeCompare(b,'pt',{sensitivity:'base'})); }
 function addFuncao(){
-  const v=document.getElementById('newFunc').value.trim().toUpperCase();
+  const raw=document.getElementById('newFunc').value.trim();
+  const v=raw.charAt(0).toUpperCase()+raw.slice(1);
   const err=document.getElementById('aFuncErr');
   if(!v){showErr(err,'Informe a função.');return;}
-  if(funcoes.includes(v)){showErr(err,'Já existe.');return;}
+  if(funcoes.some(f=>f.toLowerCase()===v.toLowerCase())){showErr(err,'Já existe.');return;}
   err.classList.remove('on');
-  funcoes.push(v); funcoes.sort();
+  funcoes.push(v); sortFuncoes();
   document.getElementById('newFunc').value='';
   renderCadastro(); saveLocal();
 }
@@ -811,6 +815,7 @@ function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').rep
 /* ══════════════ INIT ══════════════ */
 loadLocal();
 if(!funcoes.length) funcoes=[...DEF_FUNC];
+sortFuncoes();
 if(!grupos.length) DEF_GRUPOS.forEach(g=>grupos.push({id:_gid++,nome:g.nome,palIdx:g.palIdx}));
 initSwatches();
 renderAll();
