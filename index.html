@@ -170,6 +170,14 @@
     .prat-result { margin-top:10px; padding-top:10px; border-top:1.5px solid var(--border); display:flex; justify-content:space-between; align-items:baseline; }
     .prat-result-lbl { font-size:.82rem; font-weight:600; color:var(--text); }
     .prat-result-val { font-size:1rem; font-weight:700; color:var(--text); }
+    .prat-manual-row { margin-top:10px; padding-top:8px; border-top:1px dashed var(--border-l); display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .prat-manual-lbl { font-size:.75rem; color:var(--muted); white-space:nowrap; }
+    .prat-manual-input { width:64px; border:1px solid var(--border); border-radius:4px; padding:4px 6px; font-size:.85rem; font-family:var(--fb); text-align:center; }
+    .prat-manual-input:focus { outline:none; border-color:#6b7280; box-shadow:0 0 0 2px rgba(107,114,128,.15); }
+    .prat-src-badge { font-size:.65rem; font-weight:700; padding:2px 6px; border-radius:3px; display:inline-flex; align-items:center; gap:4px; }
+    .prat-src-calc   { background:#d1fae5; color:#065f46; }
+    .prat-src-manual { background:#dbeafe; color:#1e3a8a; }
+    .prat-clear-btn  { background:none; border:none; cursor:pointer; font-size:.8rem; color:#1e3a8a; padding:0; line-height:1; font-weight:700; }
 
     /* fases / marcos */
     .fases-list { display:flex; flex-direction:column; gap:5px; margin-top:10px; }
@@ -1025,6 +1033,7 @@ let periodoMes  = {};
 let periodoPerc = {umido:100, transicao:80, seco:60};
 let pluvioMes   = {};  // mm por mês (referência)
 let impactoMes  = {};  // dias de impacto por mês → sobrescreve % praticabilidade
+let impratManual= {umido:null, transicao:null, seco:null}; // override manual por tipo
 const DIAS_MES_PAD = [31,28,31,30,31,30,31,31,30,31,30,31];
 
 const MO_ABR_FULL=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
@@ -1133,37 +1142,63 @@ function renderPeriodoCards(){
   const cards=CARD_CFG.map(c=>{
     const meses=Array.from({length:12},(_,i)=>i+1).filter(m=>(periodoMes[m]||'seco')===c.k);
     const mesNomes=meses.map(m=>MO_ABR[m-1]).join(', ')||'—';
-    const hasData=imprat[c.k]!==null;
+    const isManual = impratManual[c.k]!=null;
+    const pImprat  = isManual ? impratManual[c.k] : (imprat[c.k]??null);
+    const hasValue = pImprat!==null;
+    const srcLabel = isManual
+      ? `<span class="prat-src-badge prat-src-manual">Manual <button class="prat-clear-btn" onclick="clearImpratManual('${c.k}')" title="Limpar">×</button></span>`
+      : (imprat[c.k]!=null ? `<span class="prat-src-badge prat-src-calc">Calculado</span>` : '');
 
-    if(!hasData){
+    const manualRow=`<div class="prat-manual-row">
+      <label class="prat-manual-lbl">Impraticabilidade manual (%):</label>
+      <input type="number" id="imprat-manual-${c.k}" class="prat-manual-input"
+        min="0" max="100" step="0.1" placeholder="—"
+        value="${isManual?impratManual[c.k]:''}"
+        onchange="setImpratManual('${c.k}')" />
+    </div>`;
+
+    if(!hasValue){
       return `<div class="prat-card ${c.cls}">
         <div class="prat-card-title">${c.lbl}</div>
         <div class="prat-card-meses">${mesNomes}</div>
-        <div style="font-size:.82rem;color:var(--muted);font-style:italic;margin-top:4px;">Preencha dias de impacto na tabela para calcular.</div>
+        <div style="font-size:.78rem;color:var(--muted);font-style:italic;margin:6px 0 10px;">Sem dados de impacto na tabela.</div>
+        ${manualRow}
       </div>`;
     }
 
-    const pImprat=imprat[c.k];
     const pPratic=+(100-pImprat).toFixed(1);
     const hImprat=+(jp*(pImprat/100)).toFixed(2);
     const hPratic=+(jp*(pPratic/100)).toFixed(2);
 
     return `<div class="prat-card ${c.cls}">
-      <div class="prat-card-title">${c.lbl}</div>
+      <div class="prat-card-title" style="display:flex;justify-content:space-between;align-items:center;">${c.lbl}${srcLabel}</div>
       <div class="prat-card-meses">${mesNomes}</div>
       <div class="prat-chain">
         <div class="prat-step"><span class="prat-step-lbl">Jornada produtiva</span><span class="prat-step-val">${fmtH(jp)}</span></div>
-        <div class="prat-step-arrow">↓ ${pImprat.toFixed(0)}% de impraticabilidade média</div>
+        <div class="prat-step-arrow">↓ ${pImprat.toFixed(1)}% de impraticabilidade</div>
         <div class="prat-step"><span class="prat-step-lbl">Horas impraticáveis/dia</span><span class="prat-step-val">− ${fmtH(hImprat)}</span></div>
       </div>
       <div class="prat-result">
         <span class="prat-result-lbl">Horas praticáveis/dia</span>
         <span class="prat-result-val">${fmtH(hPratic)}</span>
       </div>
+      ${manualRow}
     </div>`;
   }).join('');
 
   cardsEl.innerHTML=`<div class="prat-cards">${cards}</div>`;
+}
+
+function setImpratManual(tipo){
+  const v=parseFloat(document.getElementById('imprat-manual-'+tipo)?.value?.replace(',','.'));
+  impratManual[tipo]=(isNaN(v)||v<0||v>100)?null:+v.toFixed(1);
+  renderPeriodoCards(); saveState();
+  if(hasCalcResult&&lastResult) render(lastResult);
+}
+function clearImpratManual(tipo){
+  impratManual[tipo]=null;
+  renderPeriodoCards(); saveState();
+  if(hasCalcResult&&lastResult) render(lastResult);
 }
 
 function savePeriodoMes(m){
@@ -1673,10 +1708,12 @@ function render(res){
     const tipo=periodoMes[mo2]||'seco';
     const daysActual=new Date(yr,mo2,0).getDate();
     let pImprat;
-    if(impratMedio[tipo]!=null){
-      pImprat=impratMedio[tipo];
+    if(impratManual[tipo]!=null){
+      pImprat=impratManual[tipo];          // 1. override manual
+    } else if(impratMedio[tipo]!=null){
+      pImprat=impratMedio[tipo];           // 2. calculado da tabela
     } else {
-      pImprat=100-(periodoPerc[tipo]??100);
+      pImprat=100-(periodoPerc[tipo]??100); // 3. fallback
     }
     const percPratic=Math.max(0,100-pImprat);
     const horas=+(jp*(percPratic/100)).toFixed(2);
@@ -1972,7 +2009,8 @@ function exportarCSV(){
     const [yr,mo2]=mk.split('-').map(Number);
     const tipo=periodoMes[mo2]||'seco';
     let pImprat;
-    if(impratMedio[tipo]!=null) pImprat=impratMedio[tipo];
+    if(impratManual[tipo]!=null) pImprat=impratManual[tipo];
+    else if(impratMedio[tipo]!=null) pImprat=impratMedio[tipo];
     else pImprat=100-(periodoPerc[tipo]??100);
     const percPratic=Math.max(0,100-pImprat);
     return {tipo,horas:+(jp*(percPratic/100)).toFixed(2),perc:+percPratic.toFixed(1)};
@@ -2075,7 +2113,7 @@ function limpar(){
   document.getElementById('chkRecesso').checked=true;
   customHols=[]; renderCustomList();
   fases=[]; _faseId=0; renderFasesList();
-  periodoMes={}; periodoPerc={umido:100,transicao:80,seco:60}; pluvioMes={}; impactoMes={};
+  periodoMes={}; periodoPerc={umido:100,transicao:80,seco:60}; pluvioMes={}; impactoMes={}; impratManual={umido:null,transicao:null,seco:null};
   improdList=[{id:1,nome:'DDS e Doc. Segurança',modo:'total',horas:0.25},{id:2,nome:'Deslocamentos',modo:'qtd',qtd:4,unitH:0.125}]; _improdId=2; renderImprodList(); calcJornada();
   renderPeriodoGrid();
   hasCalcResult=false;
@@ -2100,7 +2138,7 @@ function saveState(){
       selectedCity,
       customHols: customHols.map(h=>({...h,dt:h.dt.toISOString(),key:h.key})),
       fases, _faseId,
-      periodoMes, periodoPerc, pluvioMes, impactoMes,
+      periodoMes, periodoPerc, pluvioMes, impactoMes, impratManual,
       improdList,
     };
     localStorage.setItem(LS_KEY,JSON.stringify(state));
@@ -2125,7 +2163,8 @@ function loadState(){
     if(s.periodoMes)  periodoMes=s.periodoMes;
     if(s.periodoPerc) periodoPerc=s.periodoPerc;
     if(s.pluvioMes)   pluvioMes=s.pluvioMes;
-    if(s.impactoMes)  impactoMes=s.impactoMes;
+    if(s.impactoMes)   impactoMes=s.impactoMes;
+    if(s.impratManual) impratManual={...impratManual,...s.impratManual};
     if(s.improdList){ improdList=s.improdList; _improdId=improdList.reduce((mx,i)=>Math.max(mx,i.id),0); }
     if(s.fases){ fases=s.fases; _faseId=s._faseId||fases.reduce((mx,f)=>Math.max(mx,f.id),0); }
     renderCustomList();
