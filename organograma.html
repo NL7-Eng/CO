@@ -24,85 +24,101 @@
     }
     body { font-family: var(--fb); background: var(--bg); color: var(--text); min-height: 100vh; }
     header { background: var(--hdr); padding: 32px 24px 28px; }
-    .hdr { max-width: 1300px; margin: 0 auto; display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+    .hdr { max-width: 1400px; margin: 0 auto; display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
     header h1 { font-family: var(--fd); font-size: 1.6rem; font-weight: 700; color: #fff; letter-spacing: -.3px; }
     header p  { margin-top: 6px; color: #9ca3af; font-size: .88rem; }
     .hdr-link { font-family: var(--fd); font-size: .8rem; color: #9ca3af; text-decoration: none; border: 1px solid #374151; border-radius: var(--r); padding: 6px 14px; transition: background .15s; }
     .hdr-link:hover { background: #374151; color: #fff; }
 
-    .wrap { max-width: 1300px; margin: 0 auto; padding: 0 16px 64px; }
-    .card { background: var(--surface); border-radius: var(--r); box-shadow: var(--sh); border: 1px solid var(--border); padding: 26px 28px; margin-top: 20px; }
-    .section-title { font-family: var(--fd); font-size: .82rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .7px; margin-bottom: 18px; padding-bottom: 10px; border-bottom: 1px solid var(--border-l); }
+    .wrap { max-width: 1400px; margin: 0 auto; padding: 0 16px 64px; }
+    .card { background: var(--surface); border-radius: var(--r); box-shadow: var(--sh); border: 1px solid var(--border); padding: 22px 24px; margin-top: 20px; }
+    .section-title { font-family: var(--fd); font-size: .78rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .7px; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border-l); }
 
-    /* LAYOUT */
-    .main-layout { display: grid; grid-template-columns: 360px 1fr; gap: 20px; align-items: start; margin-top: 20px; }
-    @media(max-width: 900px) { .main-layout { grid-template-columns: 1fr; } }
+    .main-layout { display: grid; grid-template-columns: 340px 1fr; gap: 20px; align-items: start; margin-top: 20px; }
+    @media(max-width: 960px) { .main-layout { grid-template-columns: 1fr; } }
 
     /* FORM */
-    .fg { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
-    .fg label { font-size: .75rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+    .fg { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+    .fg label { font-size: .72rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
     input[type="text"], select {
       border: 1px solid var(--border); border-radius: var(--r);
-      padding: 9px 12px; font-family: var(--fb); font-size: .92rem; color: var(--text);
+      padding: 8px 11px; font-family: var(--fb); font-size: .9rem; color: var(--text);
       outline: none; transition: border-color .15s, box-shadow .15s; background: #fff; width: 100%;
     }
     input:focus, select:focus { border-color: #6b7280; box-shadow: 0 0 0 3px rgba(107,114,128,.12); }
-    .color-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 2px; }
-    .color-opt { width: 28px; height: 28px; border-radius: 6px; cursor: pointer; border: 2px solid transparent; transition: border-color .15s, transform .1s; }
-    .color-opt:hover { transform: scale(1.1); }
-    .color-opt.selected { border-color: #1f2937; }
 
-    .btn { font-family: var(--fd); font-size: .85rem; font-weight: 600; padding: 9px 22px; border-radius: var(--r); border: none; cursor: pointer; transition: opacity .15s; }
+    .btn { font-family: var(--fd); font-size: .82rem; font-weight: 600; padding: 8px 18px; border-radius: var(--r); border: none; cursor: pointer; transition: opacity .15s; }
     .btn:hover { opacity: .85; }
     .btn-primary { background: #1f2937; color: #fff; }
     .btn-ghost   { background: #fff; color: var(--muted); border: 1px solid var(--border); }
     .btn-danger  { background: #fff; color: #b91c1c; border: 1px solid #fecaca; }
     .btn-danger:hover { background: #fef2f2; }
-    .btn-sm { padding: 5px 12px; font-size: .78rem; }
+    .btn-sm { padding: 5px 12px; font-size: .76rem; }
     .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
 
     /* PEOPLE LIST */
-    .people-list { display: flex; flex-direction: column; gap: 6px; margin-top: 16px; max-height: 320px; overflow-y: auto; }
-    .person-item { display: flex; align-items: center; gap: 10px; background: #f9fafb; border: 1px solid var(--border-l); border-radius: 6px; padding: 8px 12px; cursor: pointer; transition: background .15s; }
+    .people-list { display: flex; flex-direction: column; gap: 5px; max-height: 280px; overflow-y: auto; }
+    .person-item { display: flex; align-items: center; gap: 8px; background: #f9fafb; border: 1px solid var(--border-l); border-radius: 6px; padding: 7px 10px; transition: background .15s; }
     .person-item:hover { background: #f3f4f6; }
-    .person-item.selected-item { background: #dbeafe; border-color: #93c5fd; }
-    .person-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+    .person-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
     .person-info { flex: 1; min-width: 0; }
-    .person-name { font-weight: 600; font-size: .88rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .person-role { font-size: .75rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .person-actions { display: flex; gap: 4px; flex-shrink: 0; }
-    .icon-btn { background: none; border: none; cursor: pointer; color: var(--muted); padding: 3px 6px; border-radius: 4px; font-size: .82rem; transition: background .12s; }
+    .person-name { font-weight: 600; font-size: .85rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .person-role { font-size: .72rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .person-actions { display: flex; gap: 3px; flex-shrink: 0; }
+    .icon-btn { background: none; border: none; cursor: pointer; color: var(--muted); padding: 3px 5px; border-radius: 4px; font-size: .78rem; transition: background .12s; }
     .icon-btn:hover { background: #e5e7eb; color: var(--text); }
     .icon-btn.del:hover { background: #fee2e2; color: #b91c1c; }
 
-    /* CHART AREA */
-    .chart-card { overflow: auto; min-height: 300px; }
+    /* SECTORS */
+    .sector-list { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
+    .sector-item { display: flex; align-items: center; gap: 8px; background: #f9fafb; border: 1px solid var(--border-l); border-radius: 6px; padding: 6px 10px; }
+    .sector-swatch { width: 18px; height: 18px; border-radius: 4px; flex-shrink: 0; border: 1px solid rgba(0,0,0,.08); }
+    .sector-name { flex: 1; font-size: .85rem; font-weight: 600; color: var(--text); }
+    .sector-count { font-size: .72rem; color: var(--subtle); white-space: nowrap; }
+    .sector-add-row { display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap; }
+    .sector-add-row .fg { margin-bottom: 0; flex: 1; min-width: 120px; }
+
+    /* CHART */
+    .chart-card { overflow: auto; min-height: 320px; }
     #orgCanvas { display: block; }
     .chart-empty { text-align: center; padding: 60px 20px; color: var(--subtle); font-size: .92rem; font-style: italic; }
-    .chart-toolbar { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
-    .chart-toolbar span { font-size: .82rem; color: var(--muted); margin-right: 4px; }
-    .zoom-btn { background: #f3f4f6; border: 1px solid var(--border); border-radius: 6px; padding: 5px 12px; font-size: .88rem; cursor: pointer; font-family: var(--fd); font-weight: 600; color: var(--text); }
+    .chart-toolbar { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
+    .chart-toolbar span { font-size: .8rem; color: var(--muted); margin-right: 2px; }
+    .zoom-btn { background: #f3f4f6; border: 1px solid var(--border); border-radius: 6px; padding: 4px 11px; font-size: .85rem; cursor: pointer; font-family: var(--fd); font-weight: 600; color: var(--text); }
     .zoom-btn:hover { background: #e5e7eb; }
-    #exportBtn { margin-left: auto; }
 
     /* LEGEND */
-    .legend-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border-l); }
-    .leg-i { display: flex; align-items: center; gap: 6px; font-size: .78rem; color: var(--muted); }
-    .leg-d { width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; }
+    .legend-section { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border-l); }
+    .legend-title { font-family: var(--fd); font-size: .72rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 10px; }
+    .legend-grid { display: flex; flex-wrap: wrap; gap: 8px 18px; }
+    .leg-i { display: flex; align-items: center; gap: 7px; font-size: .78rem; color: var(--text); }
+    .leg-bar { width: 4px; height: 20px; border-radius: 2px; flex-shrink: 0; }
+    .leg-info { display: flex; flex-direction: column; gap: 1px; }
+    .leg-cargo { font-weight: 600; font-size: .78rem; color: var(--text); }
+    .leg-names { font-size: .7rem; color: var(--muted); }
 
-    .alert { border-radius: var(--r); padding: 10px 14px; font-size: .86rem; margin-top: 12px; display: none; }
+    .leg-sector-grid { display: flex; flex-wrap: wrap; gap: 8px 18px; }
+    .leg-si { display: flex; align-items: center; gap: 6px; font-size: .78rem; color: var(--text); }
+    .leg-swatch { width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; border: 1px solid rgba(0,0,0,.10); }
+
+    .alert { border-radius: var(--r); padding: 9px 13px; font-size: .84rem; margin-top: 10px; display: none; }
     .alert.on { display: block; }
-    .alert-err  { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
-    .alert-info { background: #f9fafb; color: var(--muted); border: 1px solid var(--border); }
+    .alert-err { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
 
     .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 1000; align-items: center; justify-content: center; }
     .modal-bg.open { display: flex; }
-    .modal { background: #fff; border-radius: var(--r); box-shadow: 0 8px 32px rgba(0,0,0,.18); padding: 28px 28px 24px; width: 100%; max-width: 420px; }
-    .modal h3 { font-family: var(--fd); font-size: 1rem; font-weight: 700; margin-bottom: 18px; }
-    .modal .btn-row { margin-top: 18px; justify-content: flex-end; }
+    .modal { background: #fff; border-radius: var(--r); box-shadow: 0 8px 32px rgba(0,0,0,.18); padding: 26px 26px 22px; width: 100%; max-width: 440px; max-height: 90vh; overflow-y: auto; }
+    .modal h3 { font-family: var(--fd); font-size: 1rem; font-weight: 700; margin-bottom: 16px; }
+    .modal .btn-row { margin-top: 16px; justify-content: flex-end; }
+
+    /* color swatch picker for sector */
+    .swatch-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+    .sw { width: 26px; height: 26px; border-radius: 5px; cursor: pointer; border: 2px solid transparent; transition: border-color .12s, transform .1s; }
+    .sw:hover { transform: scale(1.12); }
+    .sw.sel { border-color: #1f2937; }
 
     @media print {
-      header p, .main-layout > .card:first-child, .chart-toolbar, .hdr-link { display: none !important; }
+      header p, .main-layout > div:first-child, .chart-toolbar, .hdr-link, .legend-section { display: none !important; }
       .main-layout { display: block; }
       body { background: #fff; }
       .card { box-shadow: none; border: none; padding: 0; }
@@ -125,12 +141,32 @@
 <div class="wrap">
   <div class="main-layout">
 
-    <!-- LEFT: FORM + LIST -->
+    <!-- LEFT PANEL -->
     <div>
-      <div class="card">
-        <div class="section-title" id="formTitle">Adicionar Pessoa</div>
 
-        <input type="hidden" id="editId" />
+      <!-- SETORES -->
+      <div class="card">
+        <div class="section-title">Setores / Quadros</div>
+        <div class="sector-list" id="sectorList">
+          <span style="color:var(--subtle);font-size:.82rem;font-style:italic;">Nenhum setor cadastrado.</span>
+        </div>
+        <div class="sector-add-row">
+          <div class="fg">
+            <label for="sNome">Nome do setor</label>
+            <input type="text" id="sNome" placeholder="Ex: Produção" />
+          </div>
+          <div class="fg" style="max-width:90px;">
+            <label>Cor</label>
+            <div class="swatch-row" id="sectorSwatches"></div>
+          </div>
+          <button class="btn btn-primary btn-sm" style="align-self:flex-end;margin-bottom:1px;" onclick="addSector()">+ Setor</button>
+        </div>
+        <div class="alert alert-err" id="aSErr"></div>
+      </div>
+
+      <!-- ADICIONAR PESSOA -->
+      <div class="card" style="margin-top:14px;">
+        <div class="section-title">Adicionar Pessoa</div>
 
         <div class="fg">
           <label for="pNome">Nome completo</label>
@@ -141,8 +177,10 @@
           <input type="text" id="pCargo" placeholder="Ex: Engenheira Responsável" />
         </div>
         <div class="fg">
-          <label for="pDepto">Departamento / Área <span style="font-weight:400;color:var(--muted)">(opcional)</span></label>
-          <input type="text" id="pDepto" placeholder="Ex: Obras" />
+          <label for="pSetor">Setor</label>
+          <select id="pSetor">
+            <option value="">— Sem setor —</option>
+          </select>
         </div>
         <div class="fg">
           <label for="pSuperior">Superior hierárquico</label>
@@ -150,24 +188,20 @@
             <option value="">— Raiz (topo da hierarquia) —</option>
           </select>
         </div>
-        <div class="fg">
-          <label>Cor do cartão</label>
-          <div class="color-row" id="colorPicker"></div>
-        </div>
 
         <div class="alert alert-err" id="aErr"></div>
         <div class="btn-row">
-          <button class="btn btn-primary" id="btnSave" onclick="savePerson()">Adicionar</button>
-          <button class="btn btn-ghost" id="btnCancel" onclick="cancelEdit()" style="display:none">Cancelar</button>
+          <button class="btn btn-primary" onclick="savePerson()">Adicionar</button>
         </div>
       </div>
 
-      <div class="card" style="margin-top:16px;">
-        <div class="section-title">Equipe cadastrada <span id="countBadge" style="font-weight:400;color:var(--muted);font-size:.78rem;"></span></div>
+      <!-- LISTA -->
+      <div class="card" style="margin-top:14px;">
+        <div class="section-title">Equipe <span id="countBadge" style="font-weight:400;color:var(--muted);font-size:.76rem;"></span></div>
         <div class="people-list" id="peopleList">
-          <span style="color:var(--subtle);font-size:.82rem;font-style:italic;">Nenhuma pessoa cadastrada ainda.</span>
+          <span style="color:var(--subtle);font-size:.82rem;font-style:italic;">Nenhuma pessoa cadastrada.</span>
         </div>
-        <div class="btn-row" style="margin-top:16px;">
+        <div class="btn-row" style="margin-top:12px;">
           <button class="btn btn-ghost btn-sm" onclick="loadExample()">Carregar exemplo</button>
           <button class="btn btn-danger btn-sm" onclick="clearAll()">Limpar tudo</button>
         </div>
@@ -177,27 +211,38 @@
     <!-- RIGHT: CHART -->
     <div class="card chart-card">
       <div class="section-title">Organograma</div>
+
       <div class="chart-toolbar" id="chartToolbar" style="display:none;">
         <span>Zoom:</span>
         <button class="zoom-btn" onclick="zoom(-0.15)">−</button>
-        <button class="zoom-btn" onclick="zoom(0.15)">+</button>
+        <button class="zoom-btn" onclick="zoom(+0.15)">+</button>
         <button class="zoom-btn" onclick="resetZoom()">Ajustar</button>
-        <button class="btn btn-ghost btn-sm" id="exportBtn" onclick="exportPNG()">Exportar PNG</button>
+        <button class="btn btn-ghost btn-sm" style="margin-left:auto;" onclick="exportPNG()">Exportar PNG</button>
         <button class="btn btn-ghost btn-sm" onclick="window.print()">Imprimir</button>
       </div>
-      <div id="chartWrap">
-        <div class="chart-empty" id="chartEmpty">Adicione ao menos uma pessoa para gerar o organograma.</div>
-        <canvas id="orgCanvas" style="display:none;"></canvas>
+
+      <div class="chart-empty" id="chartEmpty">Adicione setores e pessoas para gerar o organograma.</div>
+      <canvas id="orgCanvas" style="display:none;"></canvas>
+
+      <!-- LEGENDA FUNÇÕES -->
+      <div class="legend-section" id="legFuncoes" style="display:none;">
+        <div class="legend-title">Funções / Cargos</div>
+        <div class="legend-grid" id="legFuncoesGrid"></div>
       </div>
-      <div class="legend-row" id="legendRow" style="display:none;"></div>
+
+      <!-- LEGENDA SETORES -->
+      <div class="legend-section" id="legSetores" style="display:none;">
+        <div class="legend-title">Setores</div>
+        <div class="leg-sector-grid" id="legSetoresGrid"></div>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- Edit modal -->
+<!-- EDIT PERSON MODAL -->
 <div class="modal-bg" id="editModal">
   <div class="modal">
-    <h3 id="modalTitle">Editar Pessoa</h3>
+    <h3>Editar Pessoa</h3>
     <div class="fg">
       <label for="mNome">Nome completo</label>
       <input type="text" id="mNome" />
@@ -207,16 +252,12 @@
       <input type="text" id="mCargo" />
     </div>
     <div class="fg">
-      <label for="mDepto">Departamento / Área</label>
-      <input type="text" id="mDepto" />
+      <label for="mSetor">Setor</label>
+      <select id="mSetor"></select>
     </div>
     <div class="fg">
       <label for="mSuperior">Superior hierárquico</label>
       <select id="mSuperior"></select>
-    </div>
-    <div class="fg">
-      <label>Cor do cartão</label>
-      <div class="color-row" id="mColorPicker"></div>
     </div>
     <div class="alert alert-err" id="mErr"></div>
     <div class="btn-row">
@@ -227,48 +268,176 @@
 </div>
 
 <script>
-/* ─── DATA ─────────────────────────────────────────────────────────────────── */
-const COLORS = [
-  '#1f2937','#1d4ed8','#0369a1','#0f766e','#166534',
-  '#6d28d9','#be185d','#b45309','#9f1239','#374151',
+/* ─── SECTOR COLORS ─────────────────────────────────────────────────────────── */
+const SECTOR_PALETTE = [
+  { fill: 'rgba(219,234,254,.55)', border: '#93c5fd', label: '#1e40af' }, // azul
+  { fill: 'rgba(220,252,231,.55)', border: '#86efac', label: '#166534' }, // verde
+  { fill: 'rgba(254,243,199,.55)', border: '#fcd34d', label: '#92400e' }, // amarelo
+  { fill: 'rgba(243,232,255,.55)', border: '#d8b4fe', label: '#6b21a8' }, // roxo
+  { fill: 'rgba(255,228,230,.55)', border: '#fda4af', label: '#9f1239' }, // rosa
+  { fill: 'rgba(204,251,241,.55)', border: '#5eead4', label: '#0f766e' }, // teal
+  { fill: 'rgba(255,237,213,.55)', border: '#fdba74', label: '#9a3412' }, // laranja
+  { fill: 'rgba(241,245,249,.70)', border: '#94a3b8', label: '#334155' }, // cinza
 ];
-const COLORS_LIGHT = [
-  '#f3f4f6','#dbeafe','#e0f2fe','#ccfbf1','#dcfce7',
-  '#ede9fe','#fce7f3','#fef3c7','#ffe4e6','#f9fafb',
-];
+// hex swatches for the picker (matching palette above)
+const SWATCH_HEX = ['#93c5fd','#86efac','#fcd34d','#d8b4fe','#fda4af','#5eead4','#fdba74','#94a3b8'];
 
-let people = [];   // { id, nome, cargo, depto, superiorId, color }
-let _nextId = 1;
+/* ─── STATE ─────────────────────────────────────────────────────────────────── */
+let sectors = [];  // { id, nome, palIdx }
+let people  = [];  // { id, nome, cargo, setorId, superiorId }
+let _sid = 1, _pid = 1;
 let _zoom = 1;
 let _editId = null;
+let _sectorColor = 0; // index into SWATCH_HEX
 
-/* ─── COLOR PICKER ──────────────────────────────────────────────────────────── */
-function renderColorPicker(containerId, selected, onSelect) {
+/* ─── SECTOR SWATCH PICKER ──────────────────────────────────────────────────── */
+function renderSwatchPicker(containerId, selIdx, onPick) {
   const el = document.getElementById(containerId);
-  el.innerHTML = COLORS.map((c, i) =>
-    `<div class="color-opt${selected===c?' selected':''}" style="background:${c};"
-      title="${c}" onclick="(${onSelect.toString()})(this,'${c}')"></div>`
+  el.innerHTML = SWATCH_HEX.map((c, i) =>
+    `<div class="sw${selIdx===i?' sel':''}" style="background:${c};" title="${c}"
+      onclick="(${onPick.toString()})(${i})"></div>`
   ).join('');
 }
-
-let _formColor = COLORS[0];
-function initFormPicker() {
-  renderColorPicker('colorPicker', _formColor, function(el, c) {
-    _formColor = c;
-    document.querySelectorAll('#colorPicker .color-opt').forEach(e => e.classList.remove('selected'));
-    el.classList.add('selected');
+function initSectorSwatches() {
+  renderSwatchPicker('sectorSwatches', _sectorColor, function(i) {
+    _sectorColor = i;
+    document.querySelectorAll('#sectorSwatches .sw').forEach((e,j) => e.classList.toggle('sel', j===i));
   });
 }
 
-let _modalColor = COLORS[0];
-function initModalPicker(current) {
-  _modalColor = current || COLORS[0];
-  renderColorPicker('mColorPicker', _modalColor, function(el, c) {
-    _modalColor = c;
-    document.querySelectorAll('#mColorPicker .color-opt').forEach(e => e.classList.remove('selected'));
-    el.classList.add('selected');
+/* ─── SECTOR CRUD ───────────────────────────────────────────────────────────── */
+function addSector() {
+  const nome = document.getElementById('sNome').value.trim();
+  const err  = document.getElementById('aSErr');
+  if (!nome) { showErr(err, 'Informe o nome do setor.'); return; }
+  if (sectors.find(s => s.nome.toLowerCase() === nome.toLowerCase())) { showErr(err, 'Já existe um setor com esse nome.'); return; }
+  err.classList.remove('on');
+  sectors.push({ id: _sid++, nome, palIdx: _sectorColor });
+  document.getElementById('sNome').value = '';
+  renderAll(); saveLocal();
+}
+
+function deleteSector(id) {
+  if (!confirm('Remover setor? As pessoas deste setor ficarão sem setor.')) return;
+  people.filter(p => p.setorId === id).forEach(p => p.setorId = null);
+  sectors = sectors.filter(s => s.id !== id);
+  renderAll(); saveLocal();
+}
+
+function renderSectorList() {
+  const el = document.getElementById('sectorList');
+  if (!sectors.length) {
+    el.innerHTML = '<span style="color:var(--subtle);font-size:.82rem;font-style:italic;">Nenhum setor cadastrado.</span>';
+    return;
+  }
+  el.innerHTML = sectors.map(s => {
+    const pal = SECTOR_PALETTE[s.palIdx % SECTOR_PALETTE.length];
+    const count = people.filter(p => p.setorId === s.id).length;
+    return `<div class="sector-item">
+      <div class="sector-swatch" style="background:${pal.fill};border-color:${pal.border};"></div>
+      <span class="sector-name">${esc(s.nome)}</span>
+      <span class="sector-count">${count} pessoa${count!==1?'s':''}</span>
+      <button class="icon-btn del" onclick="deleteSector(${s.id})" title="Remover setor">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function populateSetorSelect(selId, currentVal = '') {
+  const sel = document.getElementById(selId);
+  sel.innerHTML = '<option value="">— Sem setor —</option>';
+  sectors.forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s.id;
+    opt.textContent = s.nome;
+    if (String(s.id) === String(currentVal)) opt.selected = true;
+    sel.appendChild(opt);
   });
 }
+
+/* ─── PERSON CRUD ───────────────────────────────────────────────────────────── */
+function savePerson() {
+  const nome    = document.getElementById('pNome').value.trim();
+  const cargo   = document.getElementById('pCargo').value.trim();
+  const setorId = document.getElementById('pSetor').value || null;
+  const supId   = document.getElementById('pSuperior').value || null;
+  const err     = document.getElementById('aErr');
+
+  if (!nome)  { showErr(err, 'Informe o nome.'); return; }
+  if (!cargo) { showErr(err, 'Informe o cargo/função.'); return; }
+  err.classList.remove('on');
+
+  people.push({
+    id: _pid++, nome, cargo,
+    setorId:   setorId ? Number(setorId) : null,
+    superiorId: supId  ? Number(supId)   : null,
+  });
+  document.getElementById('pNome').value  = '';
+  document.getElementById('pCargo').value = '';
+  document.getElementById('pSetor').value = '';
+  document.getElementById('pSuperior').value = '';
+  renderAll(); saveLocal();
+}
+
+function openEdit(id) {
+  const p = people.find(x => x.id === id);
+  if (!p) return;
+  _editId = id;
+  document.getElementById('mNome').value  = p.nome;
+  document.getElementById('mCargo').value = p.cargo;
+  populateSetorSelect('mSetor', p.setorId);
+  populateSupSelect('mSuperior', id, p.superiorId);
+  document.getElementById('mErr').classList.remove('on');
+  document.getElementById('editModal').classList.add('open');
+}
+
+function saveModal() {
+  const nome    = document.getElementById('mNome').value.trim();
+  const cargo   = document.getElementById('mCargo').value.trim();
+  const setorId = document.getElementById('mSetor').value || null;
+  const supId   = document.getElementById('mSuperior').value || null;
+  const err     = document.getElementById('mErr');
+
+  if (!nome)  { showErr(err, 'Informe o nome.'); return; }
+  if (!cargo) { showErr(err, 'Informe o cargo/função.'); return; }
+
+  const p = people.find(x => x.id === _editId);
+  if (!p) return;
+  p.nome = nome; p.cargo = cargo;
+  p.setorId   = setorId ? Number(setorId) : null;
+  p.superiorId = supId  ? Number(supId)   : null;
+  fixCircular(_editId);
+  closeModal(); renderAll(); saveLocal();
+}
+
+function closeModal() {
+  document.getElementById('editModal').classList.remove('open');
+  _editId = null;
+}
+
+function deletePerson(id) {
+  if (!confirm('Remover esta pessoa?')) return;
+  const p = people.find(x => x.id === id);
+  people.filter(x => x.superiorId === id).forEach(x => x.superiorId = p ? p.superiorId : null);
+  people = people.filter(x => x.id !== id);
+  renderAll(); saveLocal();
+}
+
+function clearAll() {
+  if (!confirm('Limpar todo o organograma (pessoas e setores)?')) return;
+  people = []; sectors = []; _sid = 1; _pid = 1;
+  renderAll(); saveLocal();
+}
+
+function fixCircular(id) {
+  function descendants(pid) {
+    const ch = people.filter(p => p.superiorId === pid).map(p => p.id);
+    return ch.concat(ch.flatMap(c => descendants(c)));
+  }
+  const self = people.find(p => p.id === id);
+  if (self && descendants(id).includes(self.superiorId)) self.superiorId = null;
+}
+
+function showErr(el, msg) { el.textContent = msg; el.classList.add('on'); }
 
 /* ─── SUPERIOR SELECT ───────────────────────────────────────────────────────── */
 function populateSupSelect(selId, excludeId = null, currentVal = '') {
@@ -283,131 +452,34 @@ function populateSupSelect(selId, excludeId = null, currentVal = '') {
   });
 }
 
-/* ─── CRUD ──────────────────────────────────────────────────────────────────── */
-function savePerson() {
-  const nome  = document.getElementById('pNome').value.trim();
-  const cargo = document.getElementById('pCargo').value.trim();
-  const depto = document.getElementById('pDepto').value.trim();
-  const supId = document.getElementById('pSuperior').value || null;
-  const err   = document.getElementById('aErr');
-
-  if (!nome)  { showErr(err, 'Informe o nome.'); return; }
-  if (!cargo) { showErr(err, 'Informe o cargo/função.'); return; }
-  err.classList.remove('on');
-
-  people.push({ id: _nextId++, nome, cargo, depto, superiorId: supId ? Number(supId) : null, color: _formColor });
-  clearForm();
-  renderAll();
-  saveLocal();
-}
-
-function clearForm() {
-  document.getElementById('pNome').value = '';
-  document.getElementById('pCargo').value = '';
-  document.getElementById('pDepto').value = '';
-  document.getElementById('pSuperior').value = '';
-  document.getElementById('aErr').classList.remove('on');
-}
-
-function cancelEdit() {
-  clearForm();
-  document.getElementById('formTitle').textContent = 'Adicionar Pessoa';
-  document.getElementById('btnSave').textContent = 'Adicionar';
-  document.getElementById('btnCancel').style.display = 'none';
-  _editId = null;
-}
-
-function openEdit(id) {
-  const p = people.find(x => x.id === id);
-  if (!p) return;
-  _editId = id;
-  document.getElementById('mNome').value  = p.nome;
-  document.getElementById('mCargo').value = p.cargo;
-  document.getElementById('mDepto').value = p.depto || '';
-  populateSupSelect('mSuperior', id, p.superiorId);
-  initModalPicker(p.color);
-  document.getElementById('mErr').classList.remove('on');
-  document.getElementById('editModal').classList.add('open');
-}
-
-function saveModal() {
-  const nome  = document.getElementById('mNome').value.trim();
-  const cargo = document.getElementById('mCargo').value.trim();
-  const depto = document.getElementById('mDepto').value.trim();
-  const supId = document.getElementById('mSuperior').value || null;
-  const err   = document.getElementById('mErr');
-
-  if (!nome)  { showErr(err, 'Informe o nome.'); return; }
-  if (!cargo) { showErr(err, 'Informe o cargo/função.'); return; }
-
-  const p = people.find(x => x.id === _editId);
-  if (!p) return;
-  p.nome = nome; p.cargo = cargo; p.depto = depto;
-  p.superiorId = supId ? Number(supId) : null;
-  p.color = _modalColor;
-
-  // fix circular references
-  fixCircular(_editId);
-  closeModal();
-  renderAll();
-  saveLocal();
-}
-
-function fixCircular(id) {
-  // if someone sets their superior to one of their own descendants → set to null
-  function descendants(pid) {
-    const ch = people.filter(p => p.superiorId === pid).map(p => p.id);
-    return ch.concat(ch.flatMap(c => descendants(c)));
-  }
-  const desc = descendants(id);
-  const self = people.find(p => p.id === id);
-  if (self && desc.includes(self.superiorId)) self.superiorId = null;
-}
-
-function closeModal() {
-  document.getElementById('editModal').classList.remove('open');
-  _editId = null;
-}
-
-function deletePerson(id) {
-  if (!confirm('Remover esta pessoa do organograma?')) return;
-  // reassign children to grandparent
-  const p = people.find(x => x.id === id);
-  people.filter(x => x.superiorId === id).forEach(x => x.superiorId = p ? p.superiorId : null);
-  people = people.filter(x => x.id !== id);
-  renderAll();
-  saveLocal();
-}
-
-function clearAll() {
-  if (!confirm('Limpar todo o organograma?')) return;
-  people = []; _nextId = 1;
-  renderAll(); saveLocal();
-}
-
-function showErr(el, msg) {
-  el.textContent = msg;
-  el.classList.add('on');
-}
-
 /* ─── EXAMPLE DATA ──────────────────────────────────────────────────────────── */
 function loadExample() {
-  if (people.length && !confirm('Isso substituirá os dados atuais. Continuar?')) return;
-  people = [];
-  _nextId = 1;
-  const add = (nome, cargo, depto, supId, color) =>
-    people.push({ id: _nextId++, nome, cargo, depto, superiorId: supId, color });
+  if ((people.length || sectors.length) && !confirm('Isso substituirá os dados atuais. Continuar?')) return;
+  sectors = []; people = []; _sid = 1; _pid = 1;
 
-  add('Carlos Andrade',   'Diretor de Obras',          'Diretoria',        null, COLORS[0]);
-  add('Mariana Costa',    'Gerente de Projetos',        'Engenharia',       1,    COLORS[1]);
-  add('Felipe Souza',     'Gerente Administrativo',     'Administração',    1,    COLORS[2]);
-  add('Ana Lima',         'Engenheira Civil Sr.',       'Engenharia',       2,    COLORS[3]);
-  add('Pedro Carvalho',   'Engenheiro de Segurança',   'Segurança',        2,    COLORS[4]);
-  add('Luisa Ferreira',   'Coordenadora Financeira',   'Administração',    3,    COLORS[5]);
-  add('Roberto Dias',     'Analista de Contratos',     'Administração',    3,    COLORS[6]);
-  add('Camila Torres',    'Engenheira de Campo',       'Engenharia',       4,    COLORS[7]);
-  add('João Mendes',      'Técnico em Edificações',    'Engenharia',       4,    COLORS[8]);
-  add('Sandra Oliveira',  'Técnica de Segurança',      'Segurança',        5,    COLORS[9]);
+  const addS = (nome, palIdx) => { sectors.push({ id: _sid++, nome, palIdx }); return _sid-1; };
+  const addP = (nome, cargo, setorId, supId) => { people.push({ id: _pid++, nome, cargo, setorId, superiorId: supId }); return _pid-1; };
+
+  const sDiretoria    = addS('Diretoria',    7);
+  const sProducao     = addS('Produção',     0);
+  const sPlanejamento = addS('Planejamento', 1);
+  const sSSMA         = addS('SSMA',         4);
+  const sQualidade    = addS('Qualidade',    2);
+  const sAdmin        = addS('Administrativo', 5);
+
+  const dir  = addP('Carlos Andrade',   'Diretor de Obras',           sDiretoria,    null);
+  const gp   = addP('Mariana Costa',    'Gerente de Produção',        sProducao,     dir);
+  const gpl  = addP('Felipe Souza',     'Gerente de Planejamento',    sPlanejamento, dir);
+  const gssma= addP('Paula Nunes',      'Gerente de SSMA',            sSSMA,         dir);
+  const gq   = addP('Renata Alves',     'Gerente de Qualidade',       sQualidade,    dir);
+  const adm  = addP('Roberto Dias',     'Analista Administrativo',    sAdmin,        dir);
+         addP('Ana Lima',         'Engenheira Civil Sr.',        sProducao,     gp);
+         addP('Camila Torres',    'Engenheira de Campo',         sProducao,     gp);
+         addP('João Mendes',      'Técnico em Edificações',      sProducao,     gp);
+         addP('Lucas Barbosa',    'Analista de Planejamento',    sPlanejamento, gpl);
+         addP('Sandra Oliveira',  'Técnica de Segurança',        sSSMA,         gssma);
+         addP('Thiago Ramos',     'Técnico de Meio Ambiente',    sSSMA,         gssma);
+         addP('Isabela Freitas',  'Inspetora de Qualidade',      sQualidade,    gq);
 
   renderAll(); saveLocal();
 }
@@ -417,16 +489,18 @@ function renderList() {
   const el = document.getElementById('peopleList');
   document.getElementById('countBadge').textContent = `(${people.length})`;
   if (!people.length) {
-    el.innerHTML = '<span style="color:var(--subtle);font-size:.82rem;font-style:italic;">Nenhuma pessoa cadastrada ainda.</span>';
+    el.innerHTML = '<span style="color:var(--subtle);font-size:.82rem;font-style:italic;">Nenhuma pessoa cadastrada.</span>';
     return;
   }
   el.innerHTML = people.map(p => {
-    const supName = p.superiorId ? (people.find(x => x.id === p.superiorId)?.nome || '?') : '—';
-    return `<div class="person-item" id="pi-${p.id}">
-      <div class="person-dot" style="background:${p.color};"></div>
+    const s = sectors.find(x => x.id === p.setorId);
+    const pal = s ? SECTOR_PALETTE[s.palIdx % SECTOR_PALETTE.length] : null;
+    const dotStyle = pal ? `background:${pal.fill};border:1px solid ${pal.border};` : 'background:#e5e7eb;';
+    return `<div class="person-item">
+      <div class="person-dot" style="${dotStyle}"></div>
       <div class="person-info">
         <div class="person-name">${esc(p.nome)}</div>
-        <div class="person-role">${esc(p.cargo)}${p.depto ? ' · ' + esc(p.depto) : ''}</div>
+        <div class="person-role">${esc(p.cargo)}${s ? ' · ' + esc(s.nome) : ''}</div>
       </div>
       <div class="person-actions">
         <button class="icon-btn" title="Editar" onclick="openEdit(${p.id})">✏️</button>
@@ -437,34 +511,28 @@ function renderList() {
 }
 
 /* ─── TREE LAYOUT ───────────────────────────────────────────────────────────── */
-const NODE_W = 180;
-const NODE_H = 74;
-const H_GAP  = 24;   // horizontal gap between siblings
-const V_GAP  = 56;   // vertical gap between levels
+const NODE_W = 188;
+const NODE_H = 68;
+const H_GAP  = 28;
+const V_GAP  = 54;
+const SEC_PAD = 18; // padding inside sector box
 
 function buildTree() {
-  const roots = people.filter(p => !p.superiorId || !people.find(x => x.id === p.superiorId));
   const nodeMap = {};
   people.forEach(p => { nodeMap[p.id] = { ...p, children: [] }; });
   people.forEach(p => {
-    if (p.superiorId && nodeMap[p.superiorId]) {
-      nodeMap[p.superiorId].children.push(nodeMap[p.id]);
-    }
+    if (p.superiorId && nodeMap[p.superiorId]) nodeMap[p.superiorId].children.push(nodeMap[p.id]);
   });
-  return roots.map(r => nodeMap[r.id]);
+  return people.filter(p => !p.superiorId || !nodeMap[p.superiorId]?.id || !people.find(x=>x.id===p.superiorId))
+    .map(r => nodeMap[r.id]);
 }
 
-/* Assign x positions using a post-order subtree-width pass */
 function layoutTree(roots) {
   const nodes = [];
 
   function subtreeWidth(node) {
-    if (!node.children.length) {
-      node._w = NODE_W;
-      return NODE_W;
-    }
-    let total = node.children.reduce((s, c) => s + subtreeWidth(c), 0)
-              + H_GAP * (node.children.length - 1);
+    if (!node.children.length) { node._w = NODE_W; return NODE_W; }
+    const total = node.children.reduce((s,c) => s + subtreeWidth(c), 0) + H_GAP*(node.children.length-1);
     node._w = Math.max(NODE_W, total);
     return node._w;
   }
@@ -475,20 +543,27 @@ function layoutTree(roots) {
     nodes.push(node);
     if (!node.children.length) return;
     let cx = x;
-    node.children.forEach(c => {
-      place(c, cx, y + NODE_H + V_GAP);
-      cx += c._w + H_GAP;
-    });
+    node.children.forEach(c => { place(c, cx, y + NODE_H + V_GAP); cx += c._w + H_GAP; });
   }
 
   let x = 0;
-  roots.forEach(r => {
-    subtreeWidth(r);
-    place(r, x, 0);
-    x += r._w + H_GAP * 2;
-  });
-
+  roots.forEach(r => { subtreeWidth(r); place(r, x, 0); x += r._w + H_GAP * 2; });
   return nodes;
+}
+
+/* ─── SECTOR BOXES ──────────────────────────────────────────────────────────── */
+function computeSectorBoxes(nodes) {
+  const boxes = [];
+  sectors.forEach(s => {
+    const ns = nodes.filter(n => n.setorId === s.id);
+    if (!ns.length) return;
+    const x1 = Math.min(...ns.map(n => n._x)) - SEC_PAD;
+    const y1 = Math.min(...ns.map(n => n._y)) - SEC_PAD - 18; // room for label
+    const x2 = Math.max(...ns.map(n => n._x + NODE_W)) + SEC_PAD;
+    const y2 = Math.max(...ns.map(n => n._y + NODE_H)) + SEC_PAD;
+    boxes.push({ sector: s, x: x1, y: y1, w: x2-x1, h: y2-y1 });
+  });
+  return boxes;
 }
 
 /* ─── DRAW ──────────────────────────────────────────────────────────────────── */
@@ -496,33 +571,35 @@ function drawChart() {
   const canvas  = document.getElementById('orgCanvas');
   const empty   = document.getElementById('chartEmpty');
   const toolbar = document.getElementById('chartToolbar');
-  const legRow  = document.getElementById('legendRow');
 
   if (!people.length) {
     canvas.style.display = 'none';
     empty.style.display  = '';
     toolbar.style.display = 'none';
-    legRow.style.display  = 'none';
+    document.getElementById('legFuncoes').style.display = 'none';
+    document.getElementById('legSetores').style.display = 'none';
     return;
   }
-  empty.style.display  = 'none';
+  empty.style.display   = 'none';
   toolbar.style.display = '';
 
   const roots = buildTree();
   const nodes = layoutTree(roots);
+  const boxes = computeSectorBoxes(nodes);
 
-  // bounding box
-  const pad = 40;
-  const minX = Math.min(...nodes.map(n => n._x));
-  const minY = Math.min(...nodes.map(n => n._y));
-  const maxX = Math.max(...nodes.map(n => n._x + NODE_W));
-  const maxY = Math.max(...nodes.map(n => n._y + NODE_H));
+  const pad = 50;
+  const allX = [...nodes.map(n=>n._x), ...boxes.map(b=>b.x)];
+  const allY = [...nodes.map(n=>n._y), ...boxes.map(b=>b.y)];
+  const minX = Math.min(...allX);
+  const minY = Math.min(...allY);
+  const maxX = Math.max(...nodes.map(n=>n._x+NODE_W), ...boxes.map(b=>b.x+b.w));
+  const maxY = Math.max(...nodes.map(n=>n._y+NODE_H), ...boxes.map(b=>b.y+b.h));
 
-  const cw = (maxX - minX + pad * 2) * _zoom;
-  const ch = (maxY - minY + pad * 2) * _zoom;
+  const cw = (maxX - minX + pad*2) * _zoom;
+  const ch = (maxY - minY + pad*2) * _zoom;
 
-  canvas.width  = Math.max(cw, 100);
-  canvas.height = Math.max(ch, 100);
+  canvas.width  = Math.max(cw, 200);
+  canvas.height = Math.max(ch, 200);
   canvas.style.display = 'block';
 
   const ctx = canvas.getContext('2d');
@@ -532,128 +609,177 @@ function drawChart() {
   const ox = -minX + pad;
   const oy = -minY + pad;
 
-  // draw connectors
+  // 1. SECTOR BOXES
+  boxes.forEach(b => {
+    const pal = SECTOR_PALETTE[b.sector.palIdx % SECTOR_PALETTE.length];
+    const x = b.x + ox, y = b.y + oy;
+    roundRect(ctx, x, y, b.w, b.h, 10);
+    ctx.fillStyle = pal.fill;
+    ctx.fill();
+    roundRect(ctx, x, y, b.w, b.h, 10);
+    ctx.strokeStyle = pal.border;
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([]);
+    ctx.stroke();
+
+    // sector label
+    ctx.font = `700 11px 'Space Grotesk', sans-serif`;
+    ctx.fillStyle = pal.label;
+    ctx.fillText(b.sector.nome.toUpperCase(), x + 10, y + 13);
+  });
+
+  // 2. CONNECTORS
   ctx.strokeStyle = '#d1d5db';
   ctx.lineWidth = 1.5;
+  ctx.setLineDash([]);
   nodes.forEach(node => {
     if (!node.children.length) return;
-    const px = node._x + ox + NODE_W / 2;
+    const px = node._x + ox + NODE_W/2;
     const py = node._y + oy + NODE_H;
-    const midY = py + V_GAP / 2;
-
+    const midY = py + V_GAP/2;
     node.children.forEach(child => {
-      const cx = child._x + ox + NODE_W / 2;
+      const cx = child._x + ox + NODE_W/2;
       const cy = child._y + oy;
       ctx.beginPath();
-      ctx.moveTo(px, py);
-      ctx.lineTo(px, midY);
-      ctx.lineTo(cx, midY);
-      ctx.lineTo(cx, cy);
+      ctx.moveTo(px, py); ctx.lineTo(px, midY);
+      ctx.lineTo(cx, midY); ctx.lineTo(cx, cy);
       ctx.stroke();
     });
   });
 
-  // draw nodes
-  const R = 8; // corner radius
+  // 3. NODE CARDS
   nodes.forEach(node => {
     const x = node._x + ox;
     const y = node._y + oy;
-    const colorIdx = COLORS.indexOf(node.color);
-    const lightBg  = colorIdx >= 0 ? COLORS_LIGHT[colorIdx] : '#f9fafb';
+    const s = sectors.find(s => s.id === node.setorId);
+    const pal = s ? SECTOR_PALETTE[s.palIdx % SECTOR_PALETTE.length] : null;
+    const accentColor = pal ? pal.border : '#9ca3af';
+    const bgColor = '#ffffff';
 
-    // shadow
     ctx.shadowColor = 'rgba(0,0,0,.10)';
     ctx.shadowBlur  = 8;
     ctx.shadowOffsetY = 2;
 
-    // card bg
-    roundRect(ctx, x, y, NODE_W, NODE_H, R);
-    ctx.fillStyle = lightBg;
+    roundRect(ctx, x, y, NODE_W, NODE_H, 8);
+    ctx.fillStyle = bgColor;
     ctx.fill();
     ctx.shadowColor = 'transparent';
+    ctx.shadowBlur  = 0;
+    ctx.shadowOffsetY = 0;
 
     // left accent bar
-    roundRect(ctx, x, y, 5, NODE_H, [R, 0, 0, R]);
-    ctx.fillStyle = node.color;
+    roundRect(ctx, x, y, 5, NODE_H, [8,0,0,8]);
+    ctx.fillStyle = accentColor;
     ctx.fill();
 
     // border
-    roundRect(ctx, x, y, NODE_W, NODE_H, R);
+    roundRect(ctx, x, y, NODE_W, NODE_H, 8);
     ctx.strokeStyle = '#e5e7eb';
     ctx.lineWidth = 1;
     ctx.stroke();
 
-    // text
+    // nome
     const tx = x + 14;
     ctx.fillStyle = '#111827';
     ctx.font = `600 12px 'DM Sans', sans-serif`;
-    ctx.fillText(truncate(ctx, node.nome, NODE_W - 20), tx, y + 24);
+    ctx.fillText(truncate(ctx, node.nome, NODE_W - 22), tx, y + 26);
 
+    // cargo
     ctx.fillStyle = '#6b7280';
-    ctx.font = `500 10px 'DM Sans', sans-serif`;
-    ctx.fillText(truncate(ctx, node.cargo, NODE_W - 20), tx, y + 40);
+    ctx.font = `500 10.5px 'DM Sans', sans-serif`;
+    ctx.fillText(truncate(ctx, node.cargo, NODE_W - 22), tx, y + 44);
 
-    if (node.depto) {
+    // setor badge (if no sector box — i.e. node alone)
+    if (s) {
       ctx.fillStyle = '#9ca3af';
-      ctx.font = `400 9.5px 'DM Sans', sans-serif`;
-      ctx.fillText(truncate(ctx, node.depto, NODE_W - 20), tx, y + 56);
+      ctx.font = `400 9px 'DM Sans', sans-serif`;
+      ctx.fillText(truncate(ctx, s.nome, NODE_W - 22), tx, y + 59);
     }
   });
 
   ctx.restore();
+  renderLegend(nodes);
+}
 
-  // legend: unique colors used
-  const used = [...new Set(people.map(p => p.color))];
-  if (used.length > 1) {
-    legRow.style.display = '';
-    legRow.innerHTML = used.map(c => {
-      const colorIdx = COLORS.indexOf(c);
-      const light = colorIdx >= 0 ? COLORS_LIGHT[colorIdx] : '#f9fafb';
-      const names = people.filter(p => p.color === c).map(p => p.nome).join(', ');
+/* ─── LEGEND ────────────────────────────────────────────────────────────────── */
+function renderLegend(nodes) {
+  // Funções: group by cargo, show color accent + names
+  const cargoMap = {};
+  people.forEach(p => {
+    if (!cargoMap[p.cargo]) cargoMap[p.cargo] = { nomes: [], setorId: p.setorId };
+    cargoMap[p.cargo].nomes.push(p.nome);
+    if (!cargoMap[p.cargo].setorId) cargoMap[p.cargo].setorId = p.setorId;
+  });
+
+  const legF = document.getElementById('legFuncoes');
+  const legFG = document.getElementById('legFuncoesGrid');
+  const cargos = Object.keys(cargoMap);
+  if (cargos.length) {
+    legF.style.display = '';
+    legFG.innerHTML = cargos.map(cargo => {
+      const info = cargoMap[cargo];
+      const s = sectors.find(x => x.id === info.setorId);
+      const pal = s ? SECTOR_PALETTE[s.palIdx % SECTOR_PALETTE.length] : null;
+      const barColor = pal ? pal.border : '#9ca3af';
+      const nomes = info.nomes.join(', ');
       return `<div class="leg-i">
-        <div class="leg-d" style="background:${c};"></div>
-        <span title="${esc(names)}">${esc(names.length > 40 ? names.slice(0, 38) + '…' : names)}</span>
+        <div class="leg-bar" style="background:${barColor};"></div>
+        <div class="leg-info">
+          <div class="leg-cargo">${esc(cargo)}</div>
+          <div class="leg-names">${esc(nomes.length > 60 ? nomes.slice(0,58)+'…' : nomes)}</div>
+        </div>
       </div>`;
     }).join('');
   } else {
-    legRow.style.display = 'none';
+    legF.style.display = 'none';
+  }
+
+  // Setores
+  const legS = document.getElementById('legSetores');
+  const legSG = document.getElementById('legSetoresGrid');
+  const usedSectors = sectors.filter(s => people.some(p => p.setorId === s.id));
+  if (usedSectors.length) {
+    legS.style.display = '';
+    legSG.innerHTML = usedSectors.map(s => {
+      const pal = SECTOR_PALETTE[s.palIdx % SECTOR_PALETTE.length];
+      const count = people.filter(p => p.setorId === s.id).length;
+      return `<div class="leg-si">
+        <div class="leg-swatch" style="background:${pal.fill};border-color:${pal.border};"></div>
+        <span><strong>${esc(s.nome)}</strong> (${count})</span>
+      </div>`;
+    }).join('');
+  } else {
+    legS.style.display = 'none';
   }
 }
 
+/* ─── CANVAS HELPERS ────────────────────────────────────────────────────────── */
 function roundRect(ctx, x, y, w, h, r) {
-  if (typeof r === 'number') r = [r, r, r, r];
-  const [tl, tr, br, bl] = r;
+  if (typeof r === 'number') r = [r,r,r,r];
+  const [tl,tr,br,bl] = r;
   ctx.beginPath();
-  ctx.moveTo(x + tl, y);
-  ctx.lineTo(x + w - tr, y);
-  ctx.quadraticCurveTo(x + w, y, x + w, y + tr);
-  ctx.lineTo(x + w, y + h - br);
-  ctx.quadraticCurveTo(x + w, y + h, x + w - br, y + h);
-  ctx.lineTo(x + bl, y + h);
-  ctx.quadraticCurveTo(x, y + h, x, y + h - bl);
-  ctx.lineTo(x, y + tl);
-  ctx.quadraticCurveTo(x, y, x + tl, y);
+  ctx.moveTo(x+tl, y);
+  ctx.lineTo(x+w-tr, y); ctx.quadraticCurveTo(x+w, y, x+w, y+tr);
+  ctx.lineTo(x+w, y+h-br); ctx.quadraticCurveTo(x+w, y+h, x+w-br, y+h);
+  ctx.lineTo(x+bl, y+h); ctx.quadraticCurveTo(x, y+h, x, y+h-bl);
+  ctx.lineTo(x, y+tl); ctx.quadraticCurveTo(x, y, x+tl, y);
   ctx.closePath();
 }
 
 function truncate(ctx, text, maxW) {
   if (ctx.measureText(text).width <= maxW) return text;
   let t = text;
-  while (t.length > 0 && ctx.measureText(t + '…').width > maxW) t = t.slice(0, -1);
+  while (t.length > 0 && ctx.measureText(t+'…').width > maxW) t = t.slice(0,-1);
   return t + '…';
 }
 
-/* ─── ZOOM ──────────────────────────────────────────────────────────────────── */
-function zoom(delta) {
-  _zoom = Math.min(3, Math.max(0.3, _zoom + delta));
-  drawChart();
-}
+/* ─── ZOOM / EXPORT ─────────────────────────────────────────────────────────── */
+function zoom(delta) { _zoom = Math.min(3, Math.max(0.25, _zoom+delta)); drawChart(); }
 function resetZoom() { _zoom = 1; drawChart(); }
 
-/* ─── EXPORT ────────────────────────────────────────────────────────────────── */
 function exportPNG() {
   const canvas = document.getElementById('orgCanvas');
-  if (!canvas || canvas.style.display === 'none') return;
+  if (!canvas || canvas.style.display==='none') return;
   const link = document.createElement('a');
   link.download = 'organograma.png';
   link.href = canvas.toDataURL('image/png');
@@ -662,34 +788,44 @@ function exportPNG() {
 
 /* ─── RENDER ALL ─────────────────────────────────────────────────────────────── */
 function renderAll() {
+  renderSectorList();
+  populateSetorSelect('pSetor');
+  populateSupSelect('pSuperior');
   renderList();
-  populateSupSelect('pSuperior', null, '');
   drawChart();
 }
 
-/* ─── LOCAL STORAGE ──────────────────────────────────────────────────────────── */
+/* ─── PERSISTENCE ───────────────────────────────────────────────────────────── */
 function saveLocal() {
-  localStorage.setItem('org_people',  JSON.stringify(people));
-  localStorage.setItem('org_nextId',  _nextId);
+  localStorage.setItem('org2_sectors', JSON.stringify(sectors));
+  localStorage.setItem('org2_people',  JSON.stringify(people));
+  localStorage.setItem('org2_sid',     _sid);
+  localStorage.setItem('org2_pid',     _pid);
 }
 function loadLocal() {
   try {
-    const p = localStorage.getItem('org_people');
-    if (p) { people = JSON.parse(p); _nextId = Number(localStorage.getItem('org_nextId') || 1); }
+    const s = localStorage.getItem('org2_sectors');
+    const p = localStorage.getItem('org2_people');
+    if (s) sectors = JSON.parse(s);
+    if (p) people  = JSON.parse(p);
+    _sid = Number(localStorage.getItem('org2_sid') || 1);
+    _pid = Number(localStorage.getItem('org2_pid') || 1);
   } catch(e) {}
 }
 
 /* ─── UTILS ─────────────────────────────────────────────────────────────────── */
-function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 
-/* ─── CLOSE MODAL ON BG CLICK ─────────────────────────────────────────────── */
+/* ─── MODAL CLOSE ON BG ─────────────────────────────────────────────────────── */
 document.getElementById('editModal').addEventListener('click', e => {
   if (e.target === document.getElementById('editModal')) closeModal();
 });
 
 /* ─── INIT ──────────────────────────────────────────────────────────────────── */
 loadLocal();
-initFormPicker();
+initSectorSwatches();
 renderAll();
 </script>
 </body>
