@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Organograma</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:      #f4f4f5;
+      --surface: #ffffff;
+      --border:  #d1d5db;
+      --border-l:#e5e7eb;
+      --text:    #111827;
+      --muted:   #6b7280;
+      --subtle:  #9ca3af;
+      --hdr:     #1f2937;
+      --r: 8px;
+      --sh: 0 1px 3px rgba(0,0,0,.08), 0 2px 8px rgba(0,0,0,.05);
+      --fd: 'Space Grotesk', sans-serif;
+      --fb: 'DM Sans', sans-serif;
+    }
+    body { font-family: var(--fb); background: var(--bg); color: var(--text); min-height: 100vh; }
+    header { background: var(--hdr); padding: 32px 24px 28px; }
+    .hdr { max-width: 1300px; margin: 0 auto; display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+    header h1 { font-family: var(--fd); font-size: 1.6rem; font-weight: 700; color: #fff; letter-spacing: -.3px; }
+    header p  { margin-top: 6px; color: #9ca3af; font-size: .88rem; }
+    .hdr-link { font-family: var(--fd); font-size: .8rem; color: #9ca3af; text-decoration: none; border: 1px solid #374151; border-radius: var(--r); padding: 6px 14px; transition: background .15s; }
+    .hdr-link:hover { background: #374151; color: #fff; }
+
+    .wrap { max-width: 1300px; margin: 0 auto; padding: 0 16px 64px; }
+    .card { background: var(--surface); border-radius: var(--r); box-shadow: var(--sh); border: 1px solid var(--border); padding: 26px 28px; margin-top: 20px; }
+    .section-title { font-family: var(--fd); font-size: .82rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .7px; margin-bottom: 18px; padding-bottom: 10px; border-bottom: 1px solid var(--border-l); }
+
+    /* LAYOUT */
+    .main-layout { display: grid; grid-template-columns: 360px 1fr; gap: 20px; align-items: start; margin-top: 20px; }
+    @media(max-width: 900px) { .main-layout { grid-template-columns: 1fr; } }
+
+    /* FORM */
+    .fg { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
+    .fg label { font-size: .75rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+    input[type="text"], select {
+      border: 1px solid var(--border); border-radius: var(--r);
+      padding: 9px 12px; font-family: var(--fb); font-size: .92rem; color: var(--text);
+      outline: none; transition: border-color .15s, box-shadow .15s; background: #fff; width: 100%;
+    }
+    input:focus, select:focus { border-color: #6b7280; box-shadow: 0 0 0 3px rgba(107,114,128,.12); }
+    .color-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 2px; }
+    .color-opt { width: 28px; height: 28px; border-radius: 6px; cursor: pointer; border: 2px solid transparent; transition: border-color .15s, transform .1s; }
+    .color-opt:hover { transform: scale(1.1); }
+    .color-opt.selected { border-color: #1f2937; }
+
+    .btn { font-family: var(--fd); font-size: .85rem; font-weight: 600; padding: 9px 22px; border-radius: var(--r); border: none; cursor: pointer; transition: opacity .15s; }
+    .btn:hover { opacity: .85; }
+    .btn-primary { background: #1f2937; color: #fff; }
+    .btn-ghost   { background: #fff; color: var(--muted); border: 1px solid var(--border); }
+    .btn-danger  { background: #fff; color: #b91c1c; border: 1px solid #fecaca; }
+    .btn-danger:hover { background: #fef2f2; }
+    .btn-sm { padding: 5px 12px; font-size: .78rem; }
+    .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+
+    /* PEOPLE LIST */
+    .people-list { display: flex; flex-direction: column; gap: 6px; margin-top: 16px; max-height: 320px; overflow-y: auto; }
+    .person-item { display: flex; align-items: center; gap: 10px; background: #f9fafb; border: 1px solid var(--border-l); border-radius: 6px; padding: 8px 12px; cursor: pointer; transition: background .15s; }
+    .person-item:hover { background: #f3f4f6; }
+    .person-item.selected-item { background: #dbeafe; border-color: #93c5fd; }
+    .person-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+    .person-info { flex: 1; min-width: 0; }
+    .person-name { font-weight: 600; font-size: .88rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .person-role { font-size: .75rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .person-actions { display: flex; gap: 4px; flex-shrink: 0; }
+    .icon-btn { background: none; border: none; cursor: pointer; color: var(--muted); padding: 3px 6px; border-radius: 4px; font-size: .82rem; transition: background .12s; }
+    .icon-btn:hover { background: #e5e7eb; color: var(--text); }
+    .icon-btn.del:hover { background: #fee2e2; color: #b91c1c; }
+
+    /* CHART AREA */
+    .chart-card { overflow: auto; min-height: 300px; }
+    #orgCanvas { display: block; }
+    .chart-empty { text-align: center; padding: 60px 20px; color: var(--subtle); font-size: .92rem; font-style: italic; }
+    .chart-toolbar { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+    .chart-toolbar span { font-size: .82rem; color: var(--muted); margin-right: 4px; }
+    .zoom-btn { background: #f3f4f6; border: 1px solid var(--border); border-radius: 6px; padding: 5px 12px; font-size: .88rem; cursor: pointer; font-family: var(--fd); font-weight: 600; color: var(--text); }
+    .zoom-btn:hover { background: #e5e7eb; }
+    #exportBtn { margin-left: auto; }
+
+    /* LEGEND */
+    .legend-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border-l); }
+    .leg-i { display: flex; align-items: center; gap: 6px; font-size: .78rem; color: var(--muted); }
+    .leg-d { width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; }
+
+    .alert { border-radius: var(--r); padding: 10px 14px; font-size: .86rem; margin-top: 12px; display: none; }
+    .alert.on { display: block; }
+    .alert-err  { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+    .alert-info { background: #f9fafb; color: var(--muted); border: 1px solid var(--border); }
+
+    .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 1000; align-items: center; justify-content: center; }
+    .modal-bg.open { display: flex; }
+    .modal { background: #fff; border-radius: var(--r); box-shadow: 0 8px 32px rgba(0,0,0,.18); padding: 28px 28px 24px; width: 100%; max-width: 420px; }
+    .modal h3 { font-family: var(--fd); font-size: 1rem; font-weight: 700; margin-bottom: 18px; }
+    .modal .btn-row { margin-top: 18px; justify-content: flex-end; }
+
+    @media print {
+      header p, .main-layout > .card:first-child, .chart-toolbar, .hdr-link { display: none !important; }
+      .main-layout { display: block; }
+      body { background: #fff; }
+      .card { box-shadow: none; border: none; padding: 0; }
+      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="hdr">
+    <div>
+      <h1>Organograma</h1>
+      <p>Monte a estrutura hierárquica da sua equipe ou empresa</p>
+    </div>
+    <a class="hdr-link" href="index.html">← Calendário de Obras</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="main-layout">
+
+    <!-- LEFT: FORM + LIST -->
+    <div>
+      <div class="card">
+        <div class="section-title" id="formTitle">Adicionar Pessoa</div>
+
+        <input type="hidden" id="editId" />
+
+        <div class="fg">
+          <label for="pNome">Nome completo</label>
+          <input type="text" id="pNome" placeholder="Ex: Maria Silva" />
+        </div>
+        <div class="fg">
+          <label for="pCargo">Cargo / Função</label>
+          <input type="text" id="pCargo" placeholder="Ex: Engenheira Responsável" />
+        </div>
+        <div class="fg">
+          <label for="pDepto">Departamento / Área <span style="font-weight:400;color:var(--muted)">(opcional)</span></label>
+          <input type="text" id="pDepto" placeholder="Ex: Obras" />
+        </div>
+        <div class="fg">
+          <label for="pSuperior">Superior hierárquico</label>
+          <select id="pSuperior">
+            <option value="">— Raiz (topo da hierarquia) —</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Cor do cartão</label>
+          <div class="color-row" id="colorPicker"></div>
+        </div>
+
+        <div class="alert alert-err" id="aErr"></div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="btnSave" onclick="savePerson()">Adicionar</button>
+          <button class="btn btn-ghost" id="btnCancel" onclick="cancelEdit()" style="display:none">Cancelar</button>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:16px;">
+        <div class="section-title">Equipe cadastrada <span id="countBadge" style="font-weight:400;color:var(--muted);font-size:.78rem;"></span></div>
+        <div class="people-list" id="peopleList">
+          <span style="color:var(--subtle);font-size:.82rem;font-style:italic;">Nenhuma pessoa cadastrada ainda.</span>
+        </div>
+        <div class="btn-row" style="margin-top:16px;">
+          <button class="btn btn-ghost btn-sm" onclick="loadExample()">Carregar exemplo</button>
+          <button class="btn btn-danger btn-sm" onclick="clearAll()">Limpar tudo</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: CHART -->
+    <div class="card chart-card">
+      <div class="section-title">Organograma</div>
+      <div class="chart-toolbar" id="chartToolbar" style="display:none;">
+        <span>Zoom:</span>
+        <button class="zoom-btn" onclick="zoom(-0.15)">−</button>
+        <button class="zoom-btn" onclick="zoom(0.15)">+</button>
+        <button class="zoom-btn" onclick="resetZoom()">Ajustar</button>
+        <button class="btn btn-ghost btn-sm" id="exportBtn" onclick="exportPNG()">Exportar PNG</button>
+        <button class="btn btn-ghost btn-sm" onclick="window.print()">Imprimir</button>
+      </div>
+      <div id="chartWrap">
+        <div class="chart-empty" id="chartEmpty">Adicione ao menos uma pessoa para gerar o organograma.</div>
+        <canvas id="orgCanvas" style="display:none;"></canvas>
+      </div>
+      <div class="legend-row" id="legendRow" style="display:none;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit modal -->
+<div class="modal-bg" id="editModal">
+  <div class="modal">
+    <h3 id="modalTitle">Editar Pessoa</h3>
+    <div class="fg">
+      <label for="mNome">Nome completo</label>
+      <input type="text" id="mNome" />
+    </div>
+    <div class="fg">
+      <label for="mCargo">Cargo / Função</label>
+      <input type="text" id="mCargo" />
+    </div>
+    <div class="fg">
+      <label for="mDepto">Departamento / Área</label>
+      <input type="text" id="mDepto" />
+    </div>
+    <div class="fg">
+      <label for="mSuperior">Superior hierárquico</label>
+      <select id="mSuperior"></select>
+    </div>
+    <div class="fg">
+      <label>Cor do cartão</label>
+      <div class="color-row" id="mColorPicker"></div>
+    </div>
+    <div class="alert alert-err" id="mErr"></div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveModal()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ─── DATA ─────────────────────────────────────────────────────────────────── */
+const COLORS = [
+  '#1f2937','#1d4ed8','#0369a1','#0f766e','#166534',
+  '#6d28d9','#be185d','#b45309','#9f1239','#374151',
+];
+const COLORS_LIGHT = [
+  '#f3f4f6','#dbeafe','#e0f2fe','#ccfbf1','#dcfce7',
+  '#ede9fe','#fce7f3','#fef3c7','#ffe4e6','#f9fafb',
+];
+
+let people = [];   // { id, nome, cargo, depto, superiorId, color }
+let _nextId = 1;
+let _zoom = 1;
+let _editId = null;
+
+/* ─── COLOR PICKER ──────────────────────────────────────────────────────────── */
+function renderColorPicker(containerId, selected, onSelect) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = COLORS.map((c, i) =>
+    `<div class="color-opt${selected===c?' selected':''}" style="background:${c};"
+      title="${c}" onclick="(${onSelect.toString()})(this,'${c}')"></div>`
+  ).join('');
+}
+
+let _formColor = COLORS[0];
+function initFormPicker() {
+  renderColorPicker('colorPicker', _formColor, function(el, c) {
+    _formColor = c;
+    document.querySelectorAll('#colorPicker .color-opt').forEach(e => e.classList.remove('selected'));
+    el.classList.add('selected');
+  });
+}
+
+let _modalColor = COLORS[0];
+function initModalPicker(current) {
+  _modalColor = current || COLORS[0];
+  renderColorPicker('mColorPicker', _modalColor, function(el, c) {
+    _modalColor = c;
+    document.querySelectorAll('#mColorPicker .color-opt').forEach(e => e.classList.remove('selected'));
+    el.classList.add('selected');
+  });
+}
+
+/* ─── SUPERIOR SELECT ───────────────────────────────────────────────────────── */
+function populateSupSelect(selId, excludeId = null, currentVal = '') {
+  const sel = document.getElementById(selId);
+  sel.innerHTML = '<option value="">— Raiz (topo da hierarquia) —</option>';
+  people.filter(p => p.id !== excludeId).forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.id;
+    opt.textContent = `${p.nome} — ${p.cargo}`;
+    if (String(p.id) === String(currentVal)) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+
+/* ─── CRUD ──────────────────────────────────────────────────────────────────── */
+function savePerson() {
+  const nome  = document.getElementById('pNome').value.trim();
+  const cargo = document.getElementById('pCargo').value.trim();
+  const depto = document.getElementById('pDepto').value.trim();
+  const supId = document.getElementById('pSuperior').value || null;
+  const err   = document.getElementById('aErr');
+
+  if (!nome)  { showErr(err, 'Informe o nome.'); return; }
+  if (!cargo) { showErr(err, 'Informe o cargo/função.'); return; }
+  err.classList.remove('on');
+
+  people.push({ id: _nextId++, nome, cargo, depto, superiorId: supId ? Number(supId) : null, color: _formColor });
+  clearForm();
+  renderAll();
+  saveLocal();
+}
+
+function clearForm() {
+  document.getElementById('pNome').value = '';
+  document.getElementById('pCargo').value = '';
+  document.getElementById('pDepto').value = '';
+  document.getElementById('pSuperior').value = '';
+  document.getElementById('aErr').classList.remove('on');
+}
+
+function cancelEdit() {
+  clearForm();
+  document.getElementById('formTitle').textContent = 'Adicionar Pessoa';
+  document.getElementById('btnSave').textContent = 'Adicionar';
+  document.getElementById('btnCancel').style.display = 'none';
+  _editId = null;
+}
+
+function openEdit(id) {
+  const p = people.find(x => x.id === id);
+  if (!p) return;
+  _editId = id;
+  document.getElementById('mNome').value  = p.nome;
+  document.getElementById('mCargo').value = p.cargo;
+  document.getElementById('mDepto').value = p.depto || '';
+  populateSupSelect('mSuperior', id, p.superiorId);
+  initModalPicker(p.color);
+  document.getElementById('mErr').classList.remove('on');
+  document.getElementById('editModal').classList.add('open');
+}
+
+function saveModal() {
+  const nome  = document.getElementById('mNome').value.trim();
+  const cargo = document.getElementById('mCargo').value.trim();
+  const depto = document.getElementById('mDepto').value.trim();
+  const supId = document.getElementById('mSuperior').value || null;
+  const err   = document.getElementById('mErr');
+
+  if (!nome)  { showErr(err, 'Informe o nome.'); return; }
+  if (!cargo) { showErr(err, 'Informe o cargo/função.'); return; }
+
+  const p = people.find(x => x.id === _editId);
+  if (!p) return;
+  p.nome = nome; p.cargo = cargo; p.depto = depto;
+  p.superiorId = supId ? Number(supId) : null;
+  p.color = _modalColor;
+
+  // fix circular references
+  fixCircular(_editId);
+  closeModal();
+  renderAll();
+  saveLocal();
+}
+
+function fixCircular(id) {
+  // if someone sets their superior to one of their own descendants → set to null
+  function descendants(pid) {
+    const ch = people.filter(p => p.superiorId === pid).map(p => p.id);
+    return ch.concat(ch.flatMap(c => descendants(c)));
+  }
+  const desc = descendants(id);
+  const self = people.find(p => p.id === id);
+  if (self && desc.includes(self.superiorId)) self.superiorId = null;
+}
+
+function closeModal() {
+  document.getElementById('editModal').classList.remove('open');
+  _editId = null;
+}
+
+function deletePerson(id) {
+  if (!confirm('Remover esta pessoa do organograma?')) return;
+  // reassign children to grandparent
+  const p = people.find(x => x.id === id);
+  people.filter(x => x.superiorId === id).forEach(x => x.superiorId = p ? p.superiorId : null);
+  people = people.filter(x => x.id !== id);
+  renderAll();
+  saveLocal();
+}
+
+function clearAll() {
+  if (!confirm('Limpar todo o organograma?')) return;
+  people = []; _nextId = 1;
+  renderAll(); saveLocal();
+}
+
+function showErr(el, msg) {
+  el.textContent = msg;
+  el.classList.add('on');
+}
+
+/* ─── EXAMPLE DATA ──────────────────────────────────────────────────────────── */
+function loadExample() {
+  if (people.length && !confirm('Isso substituirá os dados atuais. Continuar?')) return;
+  people = [];
+  _nextId = 1;
+  const add = (nome, cargo, depto, supId, color) =>
+    people.push({ id: _nextId++, nome, cargo, depto, superiorId: supId, color });
+
+  add('Carlos Andrade',   'Diretor de Obras',          'Diretoria',        null, COLORS[0]);
+  add('Mariana Costa',    'Gerente de Projetos',        'Engenharia',       1,    COLORS[1]);
+  add('Felipe Souza',     'Gerente Administrativo',     'Administração',    1,    COLORS[2]);
+  add('Ana Lima',         'Engenheira Civil Sr.',       'Engenharia',       2,    COLORS[3]);
+  add('Pedro Carvalho',   'Engenheiro de Segurança',   'Segurança',        2,    COLORS[4]);
+  add('Luisa Ferreira',   'Coordenadora Financeira',   'Administração',    3,    COLORS[5]);
+  add('Roberto Dias',     'Analista de Contratos',     'Administração',    3,    COLORS[6]);
+  add('Camila Torres',    'Engenheira de Campo',       'Engenharia',       4,    COLORS[7]);
+  add('João Mendes',      'Técnico em Edificações',    'Engenharia',       4,    COLORS[8]);
+  add('Sandra Oliveira',  'Técnica de Segurança',      'Segurança',        5,    COLORS[9]);
+
+  renderAll(); saveLocal();
+}
+
+/* ─── RENDER LIST ───────────────────────────────────────────────────────────── */
+function renderList() {
+  const el = document.getElementById('peopleList');
+  document.getElementById('countBadge').textContent = `(${people.length})`;
+  if (!people.length) {
+    el.innerHTML = '<span style="color:var(--subtle);font-size:.82rem;font-style:italic;">Nenhuma pessoa cadastrada ainda.</span>';
+    return;
+  }
+  el.innerHTML = people.map(p => {
+    const supName = p.superiorId ? (people.find(x => x.id === p.superiorId)?.nome || '?') : '—';
+    return `<div class="person-item" id="pi-${p.id}">
+      <div class="person-dot" style="background:${p.color};"></div>
+      <div class="person-info">
+        <div class="person-name">${esc(p.nome)}</div>
+        <div class="person-role">${esc(p.cargo)}${p.depto ? ' · ' + esc(p.depto) : ''}</div>
+      </div>
+      <div class="person-actions">
+        <button class="icon-btn" title="Editar" onclick="openEdit(${p.id})">✏️</button>
+        <button class="icon-btn del" title="Remover" onclick="deletePerson(${p.id})">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ─── TREE LAYOUT ───────────────────────────────────────────────────────────── */
+const NODE_W = 180;
+const NODE_H = 74;
+const H_GAP  = 24;   // horizontal gap between siblings
+const V_GAP  = 56;   // vertical gap between levels
+
+function buildTree() {
+  const roots = people.filter(p => !p.superiorId || !people.find(x => x.id === p.superiorId));
+  const nodeMap = {};
+  people.forEach(p => { nodeMap[p.id] = { ...p, children: [] }; });
+  people.forEach(p => {
+    if (p.superiorId && nodeMap[p.superiorId]) {
+      nodeMap[p.superiorId].children.push(nodeMap[p.id]);
+    }
+  });
+  return roots.map(r => nodeMap[r.id]);
+}
+
+/* Assign x positions using a post-order subtree-width pass */
+function layoutTree(roots) {
+  const nodes = [];
+
+  function subtreeWidth(node) {
+    if (!node.children.length) {
+      node._w = NODE_W;
+      return NODE_W;
+    }
+    let total = node.children.reduce((s, c) => s + subtreeWidth(c), 0)
+              + H_GAP * (node.children.length - 1);
+    node._w = Math.max(NODE_W, total);
+    return node._w;
+  }
+
+  function place(node, x, y) {
+    node._x = x + (node._w - NODE_W) / 2;
+    node._y = y;
+    nodes.push(node);
+    if (!node.children.length) return;
+    let cx = x;
+    node.children.forEach(c => {
+      place(c, cx, y + NODE_H + V_GAP);
+      cx += c._w + H_GAP;
+    });
+  }
+
+  let x = 0;
+  roots.forEach(r => {
+    subtreeWidth(r);
+    place(r, x, 0);
+    x += r._w + H_GAP * 2;
+  });
+
+  return nodes;
+}
+
+/* ─── DRAW ──────────────────────────────────────────────────────────────────── */
+function drawChart() {
+  const canvas  = document.getElementById('orgCanvas');
+  const empty   = document.getElementById('chartEmpty');
+  const toolbar = document.getElementById('chartToolbar');
+  const legRow  = document.getElementById('legendRow');
+
+  if (!people.length) {
+    canvas.style.display = 'none';
+    empty.style.display  = '';
+    toolbar.style.display = 'none';
+    legRow.style.display  = 'none';
+    return;
+  }
+  empty.style.display  = 'none';
+  toolbar.style.display = '';
+
+  const roots = buildTree();
+  const nodes = layoutTree(roots);
+
+  // bounding box
+  const pad = 40;
+  const minX = Math.min(...nodes.map(n => n._x));
+  const minY = Math.min(...nodes.map(n => n._y));
+  const maxX = Math.max(...nodes.map(n => n._x + NODE_W));
+  const maxY = Math.max(...nodes.map(n => n._y + NODE_H));
+
+  const cw = (maxX - minX + pad * 2) * _zoom;
+  const ch = (maxY - minY + pad * 2) * _zoom;
+
+  canvas.width  = Math.max(cw, 100);
+  canvas.height = Math.max(ch, 100);
+  canvas.style.display = 'block';
+
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.save();
+  ctx.scale(_zoom, _zoom);
+  const ox = -minX + pad;
+  const oy = -minY + pad;
+
+  // draw connectors
+  ctx.strokeStyle = '#d1d5db';
+  ctx.lineWidth = 1.5;
+  nodes.forEach(node => {
+    if (!node.children.length) return;
+    const px = node._x + ox + NODE_W / 2;
+    const py = node._y + oy + NODE_H;
+    const midY = py + V_GAP / 2;
+
+    node.children.forEach(child => {
+      const cx = child._x + ox + NODE_W / 2;
+      const cy = child._y + oy;
+      ctx.beginPath();
+      ctx.moveTo(px, py);
+      ctx.lineTo(px, midY);
+      ctx.lineTo(cx, midY);
+      ctx.lineTo(cx, cy);
+      ctx.stroke();
+    });
+  });
+
+  // draw nodes
+  const R = 8; // corner radius
+  nodes.forEach(node => {
+    const x = node._x + ox;
+    const y = node._y + oy;
+    const colorIdx = COLORS.indexOf(node.color);
+    const lightBg  = colorIdx >= 0 ? COLORS_LIGHT[colorIdx] : '#f9fafb';
+
+    // shadow
+    ctx.shadowColor = 'rgba(0,0,0,.10)';
+    ctx.shadowBlur  = 8;
+    ctx.shadowOffsetY = 2;
+
+    // card bg
+    roundRect(ctx, x, y, NODE_W, NODE_H, R);
+    ctx.fillStyle = lightBg;
+    ctx.fill();
+    ctx.shadowColor = 'transparent';
+
+    // left accent bar
+    roundRect(ctx, x, y, 5, NODE_H, [R, 0, 0, R]);
+    ctx.fillStyle = node.color;
+    ctx.fill();
+
+    // border
+    roundRect(ctx, x, y, NODE_W, NODE_H, R);
+    ctx.strokeStyle = '#e5e7eb';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // text
+    const tx = x + 14;
+    ctx.fillStyle = '#111827';
+    ctx.font = `600 12px 'DM Sans', sans-serif`;
+    ctx.fillText(truncate(ctx, node.nome, NODE_W - 20), tx, y + 24);
+
+    ctx.fillStyle = '#6b7280';
+    ctx.font = `500 10px 'DM Sans', sans-serif`;
+    ctx.fillText(truncate(ctx, node.cargo, NODE_W - 20), tx, y + 40);
+
+    if (node.depto) {
+      ctx.fillStyle = '#9ca3af';
+      ctx.font = `400 9.5px 'DM Sans', sans-serif`;
+      ctx.fillText(truncate(ctx, node.depto, NODE_W - 20), tx, y + 56);
+    }
+  });
+
+  ctx.restore();
+
+  // legend: unique colors used
+  const used = [...new Set(people.map(p => p.color))];
+  if (used.length > 1) {
+    legRow.style.display = '';
+    legRow.innerHTML = used.map(c => {
+      const colorIdx = COLORS.indexOf(c);
+      const light = colorIdx >= 0 ? COLORS_LIGHT[colorIdx] : '#f9fafb';
+      const names = people.filter(p => p.color === c).map(p => p.nome).join(', ');
+      return `<div class="leg-i">
+        <div class="leg-d" style="background:${c};"></div>
+        <span title="${esc(names)}">${esc(names.length > 40 ? names.slice(0, 38) + '…' : names)}</span>
+      </div>`;
+    }).join('');
+  } else {
+    legRow.style.display = 'none';
+  }
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  if (typeof r === 'number') r = [r, r, r, r];
+  const [tl, tr, br, bl] = r;
+  ctx.beginPath();
+  ctx.moveTo(x + tl, y);
+  ctx.lineTo(x + w - tr, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + tr);
+  ctx.lineTo(x + w, y + h - br);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - br, y + h);
+  ctx.lineTo(x + bl, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - bl);
+  ctx.lineTo(x, y + tl);
+  ctx.quadraticCurveTo(x, y, x + tl, y);
+  ctx.closePath();
+}
+
+function truncate(ctx, text, maxW) {
+  if (ctx.measureText(text).width <= maxW) return text;
+  let t = text;
+  while (t.length > 0 && ctx.measureText(t + '…').width > maxW) t = t.slice(0, -1);
+  return t + '…';
+}
+
+/* ─── ZOOM ──────────────────────────────────────────────────────────────────── */
+function zoom(delta) {
+  _zoom = Math.min(3, Math.max(0.3, _zoom + delta));
+  drawChart();
+}
+function resetZoom() { _zoom = 1; drawChart(); }
+
+/* ─── EXPORT ────────────────────────────────────────────────────────────────── */
+function exportPNG() {
+  const canvas = document.getElementById('orgCanvas');
+  if (!canvas || canvas.style.display === 'none') return;
+  const link = document.createElement('a');
+  link.download = 'organograma.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+/* ─── RENDER ALL ─────────────────────────────────────────────────────────────── */
+function renderAll() {
+  renderList();
+  populateSupSelect('pSuperior', null, '');
+  drawChart();
+}
+
+/* ─── LOCAL STORAGE ──────────────────────────────────────────────────────────── */
+function saveLocal() {
+  localStorage.setItem('org_people',  JSON.stringify(people));
+  localStorage.setItem('org_nextId',  _nextId);
+}
+function loadLocal() {
+  try {
+    const p = localStorage.getItem('org_people');
+    if (p) { people = JSON.parse(p); _nextId = Number(localStorage.getItem('org_nextId') || 1); }
+  } catch(e) {}
+}
+
+/* ─── UTILS ─────────────────────────────────────────────────────────────────── */
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+/* ─── CLOSE MODAL ON BG CLICK ─────────────────────────────────────────────── */
+document.getElementById('editModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('editModal')) closeModal();
+});
+
+/* ─── INIT ──────────────────────────────────────────────────────────────────── */
+loadLocal();
+initFormPicker();
+renderAll();
+</script>
+</body>
+</html>
