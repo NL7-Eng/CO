@@ -517,27 +517,19 @@
     <!-- MARCOS / FASES -->
     <div class="custom-section" id="fasesSection">
       <div class="custom-title">Marcos e Fases do Contrato</div>
-      <p class="custom-sub">Defina as fases do contrato. Escolha o modo de ancoragem de cada fase: sequencial (inicia após a anterior), OS + prazo (N dias após a OS) ou data fixa de início.</p>
+      <p class="custom-sub">Preencha os campos que se aplicam. Se informar data de início, ela será usada como âncora. Se informar OS + dias (sem data), a fase começa nesse offset. Sem nenhum dos dois, inicia após a fase anterior.</p>
       <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:8px;">
         <div class="fg" style="min-width:180px;">
           <label>Nome da fase</label>
           <input type="text" id="faseNome" placeholder="Ex: Mobilização" style="width:100%;" />
         </div>
-        <div class="fg" style="max-width:140px;">
-          <label>Ancoragem</label>
-          <select id="faseTipo" onchange="onFaseTipoChange()" style="width:100%;padding:9px 8px;border:1px solid var(--border);border-radius:6px;font-size:.88rem;background:#fff;">
-            <option value="seq">Sequencial</option>
-            <option value="os">OS + dias</option>
-            <option value="data">Data fixa</option>
-          </select>
-        </div>
-        <div class="fg fase-campo-os" style="max-width:90px;display:none;">
-          <label>Dias após OS</label>
-          <input type="number" id="faseOsOffset" min="0" step="1" placeholder="0" style="width:100%;" />
-        </div>
-        <div class="fg fase-campo-data" style="max-width:130px;display:none;">
-          <label>Data início</label>
+        <div class="fg" style="max-width:130px;">
+          <label>Data início <span style="font-weight:400;color:var(--muted);">(opcional)</span></label>
           <input type="text" id="faseDataInicio" placeholder="DD/MM/AAAA" maxlength="10" style="width:100%;" />
+        </div>
+        <div class="fg" style="max-width:100px;">
+          <label>OS + dias <span style="font-weight:400;color:var(--muted);">(opcional)</span></label>
+          <input type="number" id="faseOsOffset" min="0" step="1" placeholder="0" style="width:100%;" />
         </div>
         <div class="fg" style="max-width:100px;">
           <label>Duração (dias)</label>
@@ -1243,26 +1235,19 @@ let customHols=[];
 let fases=[];
 let _faseId=0;
 
-function onFaseTipoChange(){
-  const t=document.getElementById('faseTipo').value;
-  document.querySelectorAll('.fase-campo-os').forEach(el=>el.style.display=t==='os'?'':'none');
-  document.querySelectorAll('.fase-campo-data').forEach(el=>el.style.display=t==='data'?'':'none');
-}
-
-// Resolve start date for each fase given ordered list and osDate
-// Returns array of {faseId, start: Date|null, end: Date|null}
+// Resolve start date for each fase — infers mode from stored fields:
+// dataInicio filled → data; osOffset > 0 → os; otherwise → seq
 function resolveFaseDates(osDate){
   const out=[];
   fases.forEach((f,i)=>{
     let start=null;
-    if(f.tipo==='os'||(!f.tipo&&i===0&&osDate)){
-      // OS + offset (default for first fase if no tipo)
-      const offset=f.osOffset||0;
-      start=osDate?add(osDate,offset):null;
-    } else if(f.tipo==='data'){
-      start=f.dataInicio?parseBR(f.dataInicio):null;
+    const dataFilled = f.dataInicio && parseBR(f.dataInicio);
+    const osFilled   = (f.osOffset??0) > 0;
+    if(dataFilled){
+      start=dataFilled;
+    } else if(osFilled){
+      start=osDate?add(osDate,f.osOffset):null;
     } else {
-      // seq (default): starts right after previous fase ends
       const prev=out[i-1];
       start=prev?.end?add(prev.end,1):osDate||null;
     }
@@ -1275,11 +1260,12 @@ function resolveFaseDates(osDate){
 function addFase(){
   const nome=document.getElementById('faseNome').value.trim();
   const dur=parseInt(document.getElementById('faseDur').value)||0;
-  const tipo=document.getElementById('faseTipo').value;
   if(!nome||dur<1){showAlert('warn','Informe nome e duração da fase.');return;}
-  const fase={id:++_faseId,nome,dur,tipo};
-  if(tipo==='os') fase.osOffset=parseInt(document.getElementById('faseOsOffset').value)||0;
-  if(tipo==='data') fase.dataInicio=document.getElementById('faseDataInicio').value.trim();
+  const dataInicio=document.getElementById('faseDataInicio').value.trim();
+  const osOffset=parseInt(document.getElementById('faseOsOffset').value)||0;
+  // infer tipo for badge display
+  const tipo=dataInicio?'data':osOffset>0?'os':'seq';
+  const fase={id:++_faseId,nome,dur,tipo,dataInicio,osOffset};
   fases.push(fase);
   document.getElementById('faseNome').value='';
   document.getElementById('faseDur').value='';
@@ -1312,11 +1298,11 @@ function renderFasesList(){
     const {start,end}=resolved[i];
     const fimStr=end?fBR(end):'—';
     const iniStr=start?fBR(start):'—';
-    const tipo=f.tipo||'seq';
+    const tipo=f.dataInicio?'data':(f.osOffset>0?'os':'seq');
     const badge=`<span style="font-size:.68rem;font-weight:700;background:${TIPO_COLOR[tipo]};color:#374151;border-radius:3px;padding:1px 5px;white-space:nowrap;">${TIPO_LBL[tipo]}</span>`;
     let ancoragem='';
     if(tipo==='os') ancoragem=`<span style="font-size:.75rem;color:var(--muted);">OS+${f.osOffset||0}d</span>`;
-    else if(tipo==='data') ancoragem=`<span style="font-size:.75rem;color:var(--muted);">${f.dataInicio||'—'}</span>`;
+    else if(tipo==='data') ancoragem=`<span style="font-size:.75rem;color:var(--muted);">${f.dataInicio}</span>`;
     return `<div class="fase-item">
       <span class="fase-num">${i+1}</span>
       <input class="fase-nome" value="${f.nome}" onchange="fases[${i}].nome=this.value;saveState();if(hasCalcResult&&lastResult)render(lastResult);" placeholder="Nome">
