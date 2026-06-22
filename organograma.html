@@ -67,6 +67,16 @@
     .sw{width:22px;height:22px;border-radius:4px;cursor:pointer;border:2.5px solid transparent;transition:border-color .12s,transform .1s}
     .sw:hover{transform:scale(1.1)}
     .sw.sel{border-color:#1f2937}
+    /* color picker popup */
+    .cpick-wrap{position:relative;display:inline-block}
+    .cpick-btn{width:22px;height:22px;border-radius:4px;cursor:pointer;border:2px solid rgba(0,0,0,.15);flex-shrink:0;transition:transform .1s}
+    .cpick-btn:hover{transform:scale(1.12)}
+    .cpick-pop{display:none;position:absolute;z-index:200;background:#fff;border:1px solid var(--border);border-radius:8px;
+      box-shadow:0 4px 16px rgba(0,0,0,.12);padding:8px;top:28px;left:0;display:none}
+    .cpick-pop.open{display:flex;flex-wrap:wrap;gap:5px;width:120px}
+    .cpick-swatch{width:22px;height:22px;border-radius:4px;cursor:pointer;border:2.5px solid transparent;transition:border-color .1s,transform .1s}
+    .cpick-swatch:hover{transform:scale(1.1)}
+    .cpick-swatch.sel{border-color:#1f2937}
 
     /* FORM */
     .fg{display:flex;flex-direction:column;gap:4px}
@@ -732,10 +742,21 @@ function removeGrupo(id){
   grupos=grupos.filter(g=>g.id!==id);
   renderCadastro(); renderAll(); saveLocal();
 }
-function changeGrupoColor(id,palIdx){
-  const g=grupos.find(x=>x.id===id); if(!g) return;
-  g.palIdx=palIdx; renderCadastro(); drawChart(); saveLocal();
+function toggleCpick(e,id){
+  e.stopPropagation();
+  const pop=document.getElementById('cpick_'+id);
+  const isOpen=pop.classList.contains('open');
+  document.querySelectorAll('.cpick-pop.open').forEach(p=>p.classList.remove('open'));
+  if(!isOpen) pop.classList.add('open');
 }
+function pickGrupoColor(e,id,palIdx){
+  e.stopPropagation();
+  const g=grupos.find(x=>x.id===id); if(!g) return;
+  g.palIdx=palIdx;
+  document.querySelectorAll('.cpick-pop.open').forEach(p=>p.classList.remove('open'));
+  renderCadastro(); drawChart(); saveLocal();
+}
+document.addEventListener('click',()=>document.querySelectorAll('.cpick-pop.open').forEach(p=>p.classList.remove('open')));
 function moveGrupo(id,dir){
   const i=grupos.findIndex(g=>g.id===id), j=i+dir;
   if(j<0||j>=grupos.length) return;
@@ -764,7 +785,10 @@ function renderCadastro(){
           </div>
           <span class="ord-num" style="color:${p.label}">${i+1}</span>
           <span style="font-size:.8rem;font-weight:600;color:${p.label};flex:1">${esc(g.nome)}</span>
-          <div style="display:flex;gap:3px;flex-wrap:wrap;max-width:124px">${SW_HEX.map((c,si)=>`<div class="sw${si===g.palIdx?' sel':''}" style="background:${c};width:16px;height:16px;border-radius:3px;cursor:pointer;" onclick="changeGrupoColor(${g.id},${si})"></div>`).join('')}</div>
+          <div class="cpick-wrap">
+            <div class="cpick-btn" style="background:${p.border}" onclick="toggleCpick(event,${g.id})" title="Trocar cor"></div>
+            <div class="cpick-pop" id="cpick_${g.id}">${SW_HEX.map((c,si)=>`<div class="cpick-swatch${si===g.palIdx?' sel':''}" style="background:${c}" onclick="pickGrupoColor(event,${g.id},${si})"></div>`).join('')}</div>
+          </div>
           <button class="tag-x" onclick="removeGrupo(${g.id})" style="color:${p.label}">✕</button>
         </div>`;}).join('')
     : '<p style="color:var(--subtle);font-size:.8rem;font-style:italic">Nenhum grupo cadastrado.</p>';
