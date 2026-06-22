@@ -866,18 +866,41 @@ function importJSON(ev){
 }
 
 /* ══ CHART ══ */
-const NW=196,NH=72,HG=28,VG=52,COL_GAP=72,LABEL_H=26;
+const NW=196,NH=72,HG=28,VG=52;
 
 function grpOrder(grupoId){ const i=grupos.findIndex(g=>g.id===grupoId); return i<0?999:i; }
 
-function buildTree(treePpl){
+// Corp people are inserted as siblings right after their primary support target.
+// They get _isCorp=true and no vertical connector is drawn from the parent.
+function buildTree(treePpl, corpPpl){
   const map={};
   treePpl.forEach(p=>{map[p.id]={...p,children:[]};});
   treePpl.forEach(p=>{ if(p.superiorId&&map[p.superiorId]) map[p.superiorId].children.push(map[p.id]); });
   Object.values(map).forEach(n=>n.children.sort((a,b)=>grpOrder(a.grupoId)-grpOrder(b.grupoId)));
+
+  // Group corp by primary support target
+  const byTarget={};
+  const soloCorps=[];
+  corpPpl.forEach(cp=>{
+    const tid=(cp.suportaIds||[])[0];
+    if(tid&&map[tid]){ (byTarget[tid]=byTarget[tid]||[]).push({...cp,children:[],_isCorp:true}); }
+    else soloCorps.push({...cp,children:[],_isCorp:true});
+  });
+
+  // Insert corp nodes right after their target in each parent's children list
+  Object.values(map).forEach(n=>{
+    const nc=[];
+    n.children.forEach(c=>{ nc.push(c); (byTarget[c.id]||[]).forEach(cp=>nc.push(cp)); });
+    n.children=nc;
+  });
+
+  // Build root list; corp whose target is a root appear right after it
   const roots=treePpl.filter(p=>!p.superiorId||!map[p.superiorId]).map(r=>map[r.id]);
   roots.sort((a,b)=>grpOrder(a.grupoId)-grpOrder(b.grupoId));
-  return roots;
+  const finalRoots=[];
+  roots.forEach(r=>{ finalRoots.push(r); (byTarget[r.id]||[]).forEach(cp=>finalRoots.push(cp)); });
+  soloCorps.forEach(cp=>finalRoots.push(cp));
+  return finalRoots;
 }
 
 function layout(roots){
@@ -890,40 +913,34 @@ function layout(roots){
 
 function drawCard(ctx,n,ox,oy){
   const x=n._x+ox, y=n._y+oy;
-  const isCorp=n.tipo==='corp', isOrph=!!n._isOrphan;
+  const isCorp=n._isCorp;
   const g=isCorp?null:grupos.find(g=>g.id===n.grupoId);
   const pal=g?PAL[g.palIdx%PAL.length]:null;
   const accent=pal?pal.border:'#d1d5db';
 
   ctx.shadowColor='rgba(0,0,0,.08)'; ctx.shadowBlur=8; ctx.shadowOffsetY=2;
   rr(ctx,x,y,NW,NH,8);
-  ctx.fillStyle=isCorp?'#f8fafc':isOrph?'#fff7ed':'#fff'; ctx.fill();
+  ctx.fillStyle=isCorp?'#f8fafc':'#fff'; ctx.fill();
   ctx.shadowColor='transparent'; ctx.shadowBlur=0; ctx.shadowOffsetY=0;
 
   if(isCorp){
     ctx.setLineDash([5,3]); ctx.strokeStyle='#94a3b8'; ctx.lineWidth=1.5;
-    rr(ctx,x,y,NW,NH,8); ctx.stroke(); ctx.setLineDash([]);
-  } else if(isOrph){
-    ctx.setLineDash([4,3]); ctx.strokeStyle='#fb923c'; ctx.lineWidth=1.5;
     rr(ctx,x,y,NW,NH,8); ctx.stroke(); ctx.setLineDash([]);
   } else {
     rr(ctx,x,y,5,NH,[8,0,0,8]); ctx.fillStyle=accent; ctx.fill();
     rr(ctx,x,y,NW,NH,8); ctx.strokeStyle='#e5e7eb'; ctx.lineWidth=1; ctx.stroke();
   }
 
-  const tx2=(isCorp||isOrph)?x+10:x+12;
-  ctx.fillStyle=isCorp?'#475569':isOrph?'#9a3412':'#111827';
+  const tx2=isCorp?x+10:x+12;
+  ctx.fillStyle=isCorp?'#475569':'#111827';
   ctx.font='700 11.5px "DM Sans",sans-serif';
   ctx.fillText(trunc(ctx,n.nome,NW-18),tx2,y+22);
-  ctx.fillStyle=isCorp?'#94a3b8':isOrph?'#c2410c':'#6b7280';
+  ctx.fillStyle=isCorp?'#94a3b8':'#6b7280';
   ctx.font='500 10px "DM Sans",sans-serif';
   ctx.fillText(trunc(ctx,n.cargo,NW-18),tx2,y+38);
   if(isCorp){
     ctx.fillStyle='#94a3b8'; ctx.font='600 8.5px "DM Sans",sans-serif';
     ctx.fillText('CORPORATIVO',tx2,y+56);
-  } else if(isOrph){
-    ctx.fillStyle='#fb923c'; ctx.font='600 8.5px "DM Sans",sans-serif';
-    ctx.fillText(`N${n.nivel||1} · SEM VÍNCULO`,tx2,y+56);
   } else if(g){
     ctx.fillStyle=accent; ctx.font='600 9px "DM Sans",sans-serif';
     ctx.fillText(trunc(ctx,g.nome.toUpperCase(),NW-18),tx2,y+56);
@@ -936,93 +953,52 @@ function drawChart(){
   if(!people.length){ cs.style.display='none'; ce.style.display=''; return; }
   cs.style.display=''; ce.style.display='none';
 
-  // — Categorise people —
-  const corpIds=new Set(people.filter(p=>p.tipo==='corp').map(p=>p.id));
-  const noSupNoCorp=people.filter(p=>!p.superiorId&&!corpIds.has(p.id));
-  const minNvl=noSupNoCorp.length?Math.min(...noSupNoCorp.map(p=>p.nivel||1)):1;
-  const orphanIds=new Set(noSupNoCorp.filter(p=>(p.nivel||1)>minNvl).map(p=>p.id));
+  const corpPpl=people.filter(p=>p.tipo==='corp');
+  const treePpl=people.filter(p=>p.tipo!=='corp');
+  const roots=buildTree(treePpl,corpPpl);
+  const nodes=layout(roots);
 
-  const treePpl=people.filter(p=>!corpIds.has(p.id)&&!orphanIds.has(p.id));
-  const orphanArr=people.filter(p=>orphanIds.has(p.id));
-  const corpArr=people.filter(p=>corpIds.has(p.id));
-
-  // — Layout tree —
-  const roots=buildTree(treePpl);
-  const treeNodes=layout(roots);
-
-  // — Orphan column (left) —
-  const sortedOrphans=[...orphanArr].sort((a,b)=>(a.nivel||1)-(b.nivel||1)||a.nome.localeCompare(b.nome,'pt'));
-  let oY=0;
-  const orphanNodes=sortedOrphans.map(p=>{ const n={...p,_x:0,_y:oY,children:[],_w:NW,_isOrphan:true}; oY+=NH+HG; return n; });
-
-  // — Corp column (right) —
-  const sortedCorps=[...corpArr].sort((a,b)=>(a.nivel||1)-(b.nivel||1)||a.nome.localeCompare(b.nome,'pt'));
-  let cY=0;
-  const corpNodes=sortedCorps.map(p=>{ const n={...p,_x:0,_y:cY,children:[],_w:NW}; cY+=NH+HG; return n; });
-
-  const allNodes=[...orphanNodes,...treeNodes,...corpNodes];
-  if(!allNodes.length){ cs.style.display='none'; ce.style.display=''; return; }
-
-  const hasOrphans=orphanNodes.length>0, hasCorps=corpNodes.length>0;
-  const tMinX=treeNodes.length?Math.min(...treeNodes.map(n=>n._x)):0;
-  const tMaxX=treeNodes.length?Math.max(...treeNodes.map(n=>n._x+NW)):0;
-  const leftX=hasOrphans?tMinX-NW-COL_GAP:tMinX;
-  const rightX=hasCorps?tMaxX+COL_GAP:tMaxX;
-  orphanNodes.forEach(n=>n._x=leftX);
-  corpNodes.forEach(n=>n._x=rightX);
-
-  // — Canvas size —
-  const allXs=allNodes.flatMap(n=>[n._x,n._x+NW]);
-  const allYs=allNodes.flatMap(n=>[n._y,n._y+NH]);
-  const minX=Math.min(...allXs), minY=Math.min(...allYs);
-  const maxX=Math.max(...allXs), maxY=Math.max(...allYs);
-  const pad=48, topExtra=(hasOrphans||hasCorps)?LABEL_H:0;
+  const pad=48;
+  const minX=Math.min(...nodes.map(n=>n._x)), minY=Math.min(...nodes.map(n=>n._y));
+  const maxX=Math.max(...nodes.map(n=>n._x+NW)), maxY=Math.max(...nodes.map(n=>n._y+NH));
   canvas.width=Math.max((maxX-minX+pad*2)*_zoom,200);
-  canvas.height=Math.max((maxY-minY+pad*2+topExtra)*_zoom,200);
+  canvas.height=Math.max((maxY-minY+pad*2)*_zoom,200);
   const ctx=canvas.getContext('2d');
   ctx.clearRect(0,0,canvas.width,canvas.height);
   ctx.save(); ctx.scale(_zoom,_zoom);
-  const ox=-minX+pad, oy=-minY+pad+topExtra;
+  const ox=-minX+pad, oy=-minY+pad;
 
-  // — Column backgrounds —
-  function drawColBg(nodes,color,label){
-    const colL=nodes[0]._x+ox-10, colW=NW+20;
-    const colT=Math.min(...nodes.map(n=>n._y+oy))-8;
-    const colB=Math.max(...nodes.map(n=>n._y+oy+NH))+8;
-    ctx.fillStyle=color+'11'; ctx.fillRect(colL,colT-LABEL_H,colW,colB-colT+LABEL_H);
-    ctx.setLineDash([4,4]); ctx.strokeStyle=color+'55'; ctx.lineWidth=1;
-    ctx.strokeRect(colL,colT-LABEL_H,colW,colB-colT+LABEL_H);
-    ctx.setLineDash([]);
-    ctx.fillStyle=color; ctx.font='700 9.5px "DM Sans",sans-serif';
-    ctx.fillText(label,colL+8,colT-LABEL_H+16);
-  }
-  if(hasOrphans) drawColBg(orphanNodes,'#f97316','SEM VÍNCULO');
-  if(hasCorps)   drawColBg(corpNodes,'#64748b','CORPORATIVO');
-
-  // — Hierarchy connectors —
+  // Hierarchy connectors — skip corp nodes (no vertical line from parent to corp)
   ctx.strokeStyle='#d1d5db'; ctx.lineWidth=1.5; ctx.setLineDash([]);
-  treeNodes.forEach(n=>{
-    if(!n.children.length) return;
+  nodes.forEach(n=>{
+    if(!n.children.length||n._isCorp) return;
     const px=n._x+ox+NW/2,py=n._y+oy+NH,my=py+VG/2;
     n.children.forEach(c=>{
+      if(c._isCorp) return;
       const cx=c._x+ox+NW/2,cy=c._y+oy;
       ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px,my);ctx.lineTo(cx,my);ctx.lineTo(cx,cy);ctx.stroke();
     });
   });
 
-  // — Support lines (dashed indigo) —
+  // Support lines (dashed indigo) — horizontal when same row, bezier otherwise
   const nodeMap={};
-  allNodes.forEach(n=>nodeMap[n.id]=n);
+  nodes.forEach(n=>nodeMap[n.id]=n);
   ctx.setLineDash([5,4]); ctx.strokeStyle='rgba(99,102,241,0.65)'; ctx.lineWidth=1.5;
-  allNodes.forEach(n=>{
+  nodes.forEach(n=>{
     if(!(n.suportaIds||[]).length) return;
     const sx=n._x+ox+NW/2, sy=n._y+oy+NH/2;
     n.suportaIds.forEach(tid=>{
       const t=nodeMap[tid]; if(!t) return;
       const tx2=t._x+ox+NW/2, ty2=t._y+oy+NH/2;
-      const mx=(sx+tx2)/2, my=(sy+ty2)/2-30;
-      ctx.beginPath(); ctx.moveTo(sx,sy); ctx.quadraticCurveTo(mx,my,tx2,ty2); ctx.stroke();
-      const angle=Math.atan2(ty2-my,tx2-mx), al=9;
+      ctx.beginPath(); ctx.moveTo(sx,sy);
+      if(Math.abs(sy-ty2)<NH){
+        ctx.lineTo(tx2,ty2); // straight horizontal
+      } else {
+        ctx.quadraticCurveTo((sx+tx2)/2,(sy+ty2)/2-30,tx2,ty2);
+      }
+      ctx.stroke();
+      // arrowhead
+      const angle=Math.atan2(ty2-sy,tx2-sx), al=9;
       ctx.setLineDash([]); ctx.beginPath();
       ctx.moveTo(tx2-al*Math.cos(angle-Math.PI/6),ty2-al*Math.sin(angle-Math.PI/6));
       ctx.lineTo(tx2,ty2);
@@ -1032,8 +1008,8 @@ function drawChart(){
   });
   ctx.setLineDash([]);
 
-  // — Cards —
-  allNodes.forEach(n=>drawCard(ctx,n,ox,oy));
+  // Cards
+  nodes.forEach(n=>drawCard(ctx,n,ox,oy));
   ctx.restore();
   renderLegend();
 }
@@ -1053,9 +1029,6 @@ function renderLegend(){
   const usedG=grupos.filter(g=>people.some(p=>p.grupoId===g.id&&p.tipo!=='corp'));
   const hasCorp=people.some(p=>p.tipo==='corp');
   const hasSupport=people.some(p=>(p.suportaIds||[]).length>0);
-  const noSupNoCorp2=people.filter(p=>!p.superiorId&&p.tipo!=='corp');
-  const minNvl2=noSupNoCorp2.length?Math.min(...noSupNoCorp2.map(p=>p.nivel||1)):1;
-  const hasOrphan=noSupNoCorp2.some(p=>(p.nivel||1)>minNvl2);
   let html='';
   if(usedG.length){
     html+=`<div class="leg-block"><div class="leg-title">Grupos / Setores</div><div class="leg-grid">`+
@@ -1064,10 +1037,9 @@ function renderLegend(){
           <div class="leg-info"><div class="lc">${esc(g.nome)}</div><div class="ln">${cnt} pessoa${cnt!==1?'s':''}</div></div></div>`;
       }).join('')+'</div></div>';
   }
-  if(hasCorp||hasSupport||hasOrphan){
+  if(hasCorp||hasSupport){
     html+=`<div class="leg-block"><div class="leg-title">Legenda visual</div><div class="leg-grid">`;
-    if(hasCorp) html+=`<div class="leg-item"><div style="width:28px;height:22px;border:1.5px dashed #94a3b8;border-radius:4px;background:#f8fafc;flex-shrink:0"></div><div class="leg-info"><div class="lc">Corporativo</div><div class="ln">Coluna direita, tracejado cinza</div></div></div>`;
-    if(hasOrphan) html+=`<div class="leg-item"><div style="width:28px;height:22px;border:1.5px dashed #fb923c;border-radius:4px;background:#fff7ed;flex-shrink:0"></div><div class="leg-info"><div class="lc">Sem vínculo</div><div class="ln">Coluna esquerda, tracejado laranja</div></div></div>`;
+    if(hasCorp) html+=`<div class="leg-item"><div style="width:28px;height:22px;border:1.5px dashed #94a3b8;border-radius:4px;background:#f8fafc;flex-shrink:0"></div><div class="leg-info"><div class="lc">Corporativo</div><div class="ln">Card tracejado cinza, sem linha vertical</div></div></div>`;
     if(hasSupport) html+=`<div class="leg-item"><div style="width:28px;height:0;border-top:2px dashed rgba(99,102,241,.7);margin-top:11px;flex-shrink:0"></div><div class="leg-info"><div class="lc">Suporte</div><div class="ln">Linha tracejada índigo</div></div></div>`;
     html+='</div></div>';
   }
