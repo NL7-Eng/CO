@@ -180,20 +180,25 @@
     .prat-clear-btn  { background:none; border:none; cursor:pointer; font-size:.8rem; color:#1e3a8a; padding:0; line-height:1; font-weight:700; }
 
     /* fases / marcos */
-    .fases-list { display:flex; flex-direction:column; gap:6px; margin-top:10px; }
-    .fase-item  { background:#f9fafb; border:1px solid var(--border-l); border-radius:6px; padding:8px 12px; display:flex; flex-direction:column; gap:6px; }
-    .fase-row1  { display:flex; align-items:center; gap:8px; }
-    .fase-row2  { display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding-left:28px; }
-    .fase-num   { font-size:.75rem; font-weight:700; color:var(--muted); min-width:18px; text-align:center; flex-shrink:0; }
-    .fase-nome  { border:1px solid var(--border); border-radius:4px; padding:4px 8px; font-family:var(--fb); font-size:.88rem; flex:1; min-width:0; }
-    .fase-move  { display:flex; flex-direction:column; gap:1px; flex-shrink:0; }
-    .fase-move-btn { background:none; border:1px solid var(--border); border-radius:3px; color:var(--muted); cursor:pointer; font-size:.65rem; padding:1px 4px; line-height:1.2; }
+    .fases-list { display:flex; flex-direction:column; gap:5px; margin-top:10px; }
+    .fase-item  { display:grid; grid-template-columns:22px 24px 1fr auto auto 24px;
+                  gap:8px; align-items:center;
+                  background:#f9fafb; border:1px solid var(--border-l); border-radius:6px; padding:7px 10px; }
+    .fase-move  { display:flex; flex-direction:column; gap:2px; }
+    .fase-move-btn { background:none; border:1px solid var(--border-l); border-radius:3px;
+                     color:var(--muted); cursor:pointer; font-size:.6rem; padding:0 4px; line-height:1.4;
+                     transition:background .1s; }
     .fase-move-btn:hover { background:#e5e7eb; color:var(--text); }
-    .fase-del   { background:none; border:none; color:var(--muted); cursor:pointer; font-size:1.1rem; padding:0 2px; line-height:1; flex-shrink:0; }
+    .fase-num   { font-size:.75rem; font-weight:700; color:var(--muted); text-align:center; }
+    .fase-nome  { border:1px solid var(--border); border-radius:4px; padding:5px 8px;
+                  font-family:var(--fb); font-size:.88rem; width:100%; min-width:0; }
+    .fase-info  { display:flex; align-items:center; gap:6px; white-space:nowrap; }
+    .fase-info-badge { font-size:.67rem; font-weight:700; border-radius:3px; padding:2px 6px; }
+    .fase-info-txt  { font-size:.78rem; color:var(--muted); }
+    .fase-datas { font-size:.82rem; font-weight:600; color:var(--text); white-space:nowrap; }
+    .fase-del   { background:none; border:none; color:var(--muted); cursor:pointer;
+                  font-size:1rem; padding:0; line-height:1; text-align:center; }
     .fase-del:hover { color:#b91c1c; }
-    .fase-dur   { width:54px; border:1px solid var(--border); border-radius:4px; padding:3px 5px; font-family:var(--fb); font-size:.82rem; text-align:center; }
-    .fase-dur-lbl { font-size:.75rem; color:var(--muted); white-space:nowrap; }
-    .fase-fim   { font-size:.82rem; color:var(--text); font-weight:600; white-space:nowrap; margin-left:auto; }
 
     /* tabela de fases nos resultados */
     .fase-table { width:100%; border-collapse:collapse; font-size:.82rem; }
@@ -1322,37 +1327,23 @@ function renderFasesList(){
     const fimStr=end?fBR(end):'—';
     const iniStr=start?fBR(start):'—';
     const tipo=f.dataInicio?'data':((f.osOffset>0||f.prazTotal>0)?'os':'seq');
-    const badge=`<span style="font-size:.68rem;font-weight:700;background:${TIPO_COLOR[tipo]};color:#374151;border-radius:3px;padding:1px 5px;white-space:nowrap;">${TIPO_LBL[tipo]}</span>`;
-    let detalhe='';
-    if(tipo==='os'){
-      detalhe=f.prazTotal>0
-        ?`<span style="font-size:.75rem;color:var(--muted);">OS+${f.osOffset||0}d → OS+${f.prazTotal}d</span>`
-        :`<span style="font-size:.75rem;color:var(--muted);">OS+${f.osOffset||0}d · ${f.dur}d</span>`;
-    } else if(tipo==='data'){
-      detalhe=`<span style="font-size:.75rem;color:var(--muted);">${f.dataInicio} · ${f.dur}d</span>`;
-    } else {
-      detalhe=`<span style="font-size:.75rem;color:var(--muted);">${f.dur} dias corridos</span>`;
-    }
-    const durField=f.prazTotal>0
-      ?`<span style="font-size:.75rem;color:var(--muted);">Prazo OS+${f.prazTotal}d</span>`
-      :`<input class="fase-dur" type="number" min="1" value="${f.dur}"
-          onchange="fases[${i}].dur=parseInt(this.value)||0;renderFasesList();saveState();if(hasCalcResult&&lastResult)render(lastResult);">
-        <span class="fase-dur-lbl">dias</span>`;
+    let infoTxt='';
+    if(tipo==='os')        infoTxt=f.prazTotal>0?`OS+${f.osOffset||0} → OS+${f.prazTotal}d`:`OS+${f.osOffset||0}d · ${f.dur}d`;
+    else if(tipo==='data') infoTxt=`${f.dataInicio} · ${f.dur}d`;
+    else                   infoTxt=`${f.dur}d corridos`;
     return `<div class="fase-item">
-      <div class="fase-row1">
-        <div class="fase-move">
-          <button class="fase-move-btn" onclick="moveFase(${f.id},-1)" title="Mover para cima">▲</button>
-          <button class="fase-move-btn" onclick="moveFase(${f.id},1)"  title="Mover para baixo">▼</button>
-        </div>
-        <span class="fase-num">${i+1}</span>
-        <input class="fase-nome" value="${f.nome}" onchange="fases[${i}].nome=this.value;saveState();if(hasCalcResult&&lastResult)render(lastResult);" placeholder="Nome da fase">
-        <button class="fase-del" onclick="removeFase(${f.id})" title="Remover">×</button>
+      <div class="fase-move">
+        <button class="fase-move-btn" onclick="moveFase(${f.id},-1)" title="Subir">▲</button>
+        <button class="fase-move-btn" onclick="moveFase(${f.id},1)"  title="Descer">▼</button>
       </div>
-      <div class="fase-row2">
-        ${badge}${detalhe}
-        ${durField}
-        <span class="fase-fim">${iniStr} → ${fimStr}</span>
+      <span class="fase-num">${i+1}</span>
+      <input class="fase-nome" value="${f.nome}" onchange="fases[${i}].nome=this.value;saveState();if(hasCalcResult&&lastResult)render(lastResult);" placeholder="Nome da fase">
+      <div class="fase-info">
+        <span class="fase-info-badge" style="background:${TIPO_COLOR[tipo]};color:#374151;">${TIPO_LBL[tipo]}</span>
+        <span class="fase-info-txt">${infoTxt}</span>
       </div>
+      <span class="fase-datas">${iniStr} → ${fimStr}</span>
+      <button class="fase-del" onclick="removeFase(${f.id})" title="Remover">×</button>
     </div>`;
   }).join('');
 }
