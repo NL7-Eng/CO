@@ -950,8 +950,9 @@ function buildTree(treePpl, corpPpl){
 function layout(roots){
   const nodes=[];
   function sw(n){ if(!n.children.length){n._w=NW;return NW;} const t=n.children.reduce((s,c)=>s+sw(c),0)+HG*(n.children.length-1); n._w=Math.max(NW,t);return n._w; }
-  function pl(n,x,y){ n._x=x+(n._w-NW)/2;n._y=y;nodes.push(n);if(!n.children.length)return;let cx=x;n.children.forEach(c=>{pl(c,cx,y+NH+VG);cx+=c._w+HG;}); }
-  let x=0;roots.forEach(r=>{sw(r);pl(r,x,0);x+=r._w+HG*2;});
+  // Y is determined by nivel field, not by tree depth
+  function pl(n,x){ n._x=x+(n._w-NW)/2; n._y=(( n.nivel||1)-1)*(NH+VG); nodes.push(n);if(!n.children.length)return;let cx=x;n.children.forEach(c=>{pl(c,cx);cx+=c._w+HG;}); }
+  let x=0;roots.forEach(r=>{sw(r);pl(r,x);x+=r._w+HG*2;});
   return nodes;
 }
 
@@ -1048,11 +1049,26 @@ function drawChart(){
   ctx.strokeStyle='#d1d5db'; ctx.lineWidth=1.5; ctx.setLineDash([]);
   treeNodes.forEach(n=>{
     if(!n.children.length||n._isCorp) return;
-    const px=n._x+ox+NW/2,py=n._y+oy+NH,my=py+VG/2;
+    const pnv=n.nivel||1;
     n.children.forEach(c=>{
       if(c._isCorp) return;
-      const cx=c._x+ox+NW/2,cy=c._y+oy;
-      ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px,my);ctx.lineTo(cx,my);ctx.lineTo(cx,cy);ctx.stroke();
+      const cnv=c.nivel||1;
+      const fromX=n._x+ox+NW/2, toX=c._x+ox+NW/2;
+      ctx.beginPath();
+      if(cnv===pnv){
+        // Same nivel → horizontal, right-center to left-center
+        const midY=n._y+oy+NH/2;
+        ctx.moveTo(n._x+ox+NW,midY); ctx.lineTo(c._x+ox,midY);
+      } else if(cnv>pnv){
+        // Child below → elbow from parent bottom to child top
+        const fromY=n._y+oy+NH, toY=c._y+oy, midY=fromY+VG/2;
+        ctx.moveTo(fromX,fromY);ctx.lineTo(fromX,midY);ctx.lineTo(toX,midY);ctx.lineTo(toX,toY);
+      } else {
+        // Child above → elbow from parent top to child bottom
+        const fromY=n._y+oy, toY=c._y+oy+NH, midY=fromY-VG/2;
+        ctx.moveTo(fromX,fromY);ctx.lineTo(fromX,midY);ctx.lineTo(toX,midY);ctx.lineTo(toX,toY);
+      }
+      ctx.stroke();
     });
   });
 
