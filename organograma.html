@@ -732,7 +732,10 @@ function removeGrupo(id){
   grupos=grupos.filter(g=>g.id!==id);
   renderCadastro(); renderAll(); saveLocal();
 }
-function moveGrupo(id,dir){
+function changeGrupoColor(id,palIdx){
+  const g=grupos.find(x=>x.id===id); if(!g) return;
+  g.palIdx=palIdx; renderCadastro(); drawChart(); saveLocal();
+}
   const i=grupos.findIndex(g=>g.id===id), j=i+dir;
   if(j<0||j>=grupos.length) return;
   [grupos[i],grupos[j]]=[grupos[j],grupos[i]];
@@ -753,6 +756,7 @@ function renderCadastro(){
   const gl=document.getElementById('grpList');
   gl.innerHTML=grupos.length
     ? grupos.map((g,i)=>{ const p=PAL[g.palIdx%PAL.length];
+        const swatches=SW_HEX.map((c,si)=>`<div class="sw${si===g.palIdx?' sel':''}" style="background:${c};width:16px;height:16px;border-radius:3px;" onclick="changeGrupoColor(${g.id},${si})"></div>`).join('');
         return `<div class="grp-list-row" style="border-left:4px solid ${p.border};background:${p.fill};">
           <div style="display:flex;flex-direction:column;gap:1px;">
             <button class="ord-btn" onclick="moveGrupo(${g.id},-1)" ${i===0?'disabled':''}>▲</button>
@@ -760,6 +764,7 @@ function renderCadastro(){
           </div>
           <span class="ord-num" style="color:${p.label}">${i+1}</span>
           <span style="font-size:.8rem;font-weight:600;color:${p.label};flex:1">${esc(g.nome)}</span>
+          <div style="display:flex;gap:3px;flex-wrap:wrap;max-width:120px">${swatches}</div>
           <button class="tag-x" onclick="removeGrupo(${g.id})" style="color:${p.label}">✕</button>
         </div>`;}).join('')
     : '<p style="color:var(--subtle);font-size:.8rem;font-style:italic">Nenhum grupo cadastrado.</p>';
