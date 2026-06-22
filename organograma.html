@@ -47,9 +47,9 @@
     @media(max-width:680px){.cad-grid{grid-template-columns:1fr}}
 
     /* tags de funções */
-    .tag-wrap{display:flex;flex-wrap:wrap;gap:6px;min-height:32px;margin-bottom:14px}
-    .func-tag{display:inline-flex;align-items:center;gap:5px;font-size:.76rem;font-weight:600;
-      padding:3px 9px;border-radius:20px;background:#f3f4f6;border:1px solid var(--border-l);color:var(--text)}
+    .tag-wrap{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;min-height:32px;margin-bottom:14px;align-content:start}
+    .func-tag{display:flex;align-items:center;justify-content:space-between;gap:5px;font-size:.76rem;font-weight:500;
+      padding:4px 8px;border-radius:6px;background:#f9fafb;border:1px solid var(--border-l);color:var(--text)}
     .grp-tag{display:inline-flex;align-items:center;gap:6px;font-size:.76rem;font-weight:600;
       padding:3px 10px 3px 7px;border-radius:20px;border:1.5px solid}
     .tag-dot{width:9px;height:9px;border-radius:2px;flex-shrink:0}
@@ -121,6 +121,12 @@
     .iBtn:hover{background:#e5e7eb;color:var(--text)}
     .iBtn.del:hover{background:#fee2e2;color:#b91c1c}
     .empty-row td{text-align:center;color:var(--subtle);font-style:italic;padding:24px}
+    /* inline edit cells */
+    .org-table td.editing input[type=text],
+    .org-table td.editing select{
+      font-size:.82rem;padding:4px 7px;border-radius:5px;width:100%;min-width:90px}
+    .org-table td.editing{padding:5px 8px}
+    .org-table tr.is-editing td{background:#fffbf0!important}
 
     /* level group rows */
     .level-row td{
@@ -154,14 +160,6 @@
     .alert.on{display:block}
     .alert-err{background:#fef2f2;color:#b91c1c;border:1px solid #fecaca}
 
-    /* ── MODAL ── */
-    .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center}
-    .modal-bg.open{display:flex}
-    .modal{background:#fff;border-radius:var(--r);box-shadow:0 8px 32px rgba(0,0,0,.18);
-      padding:24px;width:100%;max-width:480px;max-height:92vh;overflow-y:auto}
-    .modal h3{font-family:var(--fd);font-size:.95rem;font-weight:700;margin-bottom:16px}
-    .modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
-    @media(max-width:480px){.modal-grid{grid-template-columns:1fr}}
 
     @media print{
       header p,.main-tabs,.chart-toolbar,.back-link{display:none!important}
@@ -334,37 +332,6 @@
 
 </div><!-- /wrap -->
 
-<!-- EDIT MODAL -->
-<div class="modal-bg" id="editModal">
-  <div class="modal">
-    <h3>Editar Pessoa</h3>
-    <div class="modal-grid">
-      <div class="fg"><label>Nome</label><input type="text" id="mNome"/></div>
-      <div class="fg"><label>Cargo / Função</label><select id="mCargo" onchange="onMCargoChange()"></select></div>
-    </div>
-    <div class="fg" id="mCustomWrap" style="display:none;margin-bottom:12px;">
-      <label>Cargo personalizado</label><input type="text" id="mCargoCustom"/>
-    </div>
-    <div class="modal-grid">
-      <div class="fg"><label>Grupo / Setor</label><select id="mGrupo"></select></div>
-      <div class="fg"><label>Nível</label>
-        <select id="mNivel" onchange="onMNivelChange()">
-          <option value="1">Nível 1 — Topo</option>
-          <option value="2">Nível 2</option><option value="3">Nível 3</option>
-          <option value="4">Nível 4</option><option value="5">Nível 5</option>
-        </select>
-      </div>
-    </div>
-    <div class="fg" style="margin-bottom:12px;">
-      <label>Reporta a</label><select id="mSuperior"></select>
-    </div>
-    <div class="alert alert-err" id="mErr"></div>
-    <div class="brow" style="justify-content:flex-end;">
-      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
-      <button class="btn btn-primary" onclick="saveModal()">Salvar</button>
-    </div>
-  </div>
-</div>
 
 <script>
 /* ══════════════ PALETTE ══════════════ */
@@ -494,46 +461,86 @@ function saveDrawer(){
   closeDrawer(); renderAll(); saveLocal();
 }
 
-/* ══════════════ EDIT MODAL ══════════════ */
-function openEdit(id){
-  const p=people.find(x=>x.id===id); if(!p) return;
-  _editId=id;
-  document.getElementById('mNome').value=p.nome;
-  fillCargoSel('mCargo',funcoes.includes(p.cargo)?p.cargo:'__OUTRO__');
-  document.getElementById('mCustomWrap').style.display=funcoes.includes(p.cargo)?'none':'';
-  if(!funcoes.includes(p.cargo)) document.getElementById('mCargoCustom').value=p.cargo;
-  fillGrupoSel('mGrupo',p.grupoId);
-  const lvl=getNivel(id);
-  document.getElementById('mNivel').value=String(lvl);
-  fillSupSel('mSuperior','mNivel',id,p.superiorId);
-  document.getElementById('mErr').classList.remove('on');
-  document.getElementById('editModal').classList.add('open');
-}
-function onMCargoChange(){
-  document.getElementById('mCustomWrap').style.display=
-    document.getElementById('mCargo').value==='__OUTRO__'?'':'none';
-}
-function onMNivelChange(){ fillSupSel('mSuperior','mNivel',_editId); }
+/* ══════════════ INLINE ROW EDIT ══════════════ */
+let _inlineEditId=null;
 
-function saveModal(){
-  const nome=document.getElementById('mNome').value.trim().toUpperCase();
-  const cargo=getCargoVal('mCargo','mCargoCustom');
-  const grupoId=document.getElementById('mGrupo').value||null;
-  const nivel=Number(document.getElementById('mNivel').value||1);
-  const supId=nivel>1?(document.getElementById('mSuperior').value||null):null;
-  const err=document.getElementById('mErr');
-  if(!nome){showErr(err,'Informe o nome.');return;}
-  if(!cargo){showErr(err,'Informe o cargo.');return;}
-  if(nivel>1&&!supId){showErr(err,'Selecione a quem esta pessoa reporta.');return;}
-  const p=people.find(x=>x.id===_editId); if(!p) return;
-  p.nome=nome;p.cargo=cargo;p.grupoId=grupoId?Number(grupoId):null;p.superiorId=supId?Number(supId):null;
-  fixCircular(_editId);
-  closeModal(); renderAll(); saveLocal();
+function openInlineEdit(id){
+  if(_inlineEditId===id) return;
+  if(_inlineEditId) cancelInlineEdit();
+  _inlineEditId=id;
+  const p=people.find(x=>x.id===id); if(!p) return;
+  const tr=document.querySelector(`tr[data-pid="${id}"]`); if(!tr) return;
+  tr.classList.add('is-editing');
+
+  const lvl=getNivel(id);
+
+  // build superior options
+  function supOpts(nivel){
+    if(nivel<=1) return '<option value="">— Sem superior (topo) —</option>';
+    const above=people.filter(x=>x.id!==id&&getNivel(x.id)===nivel-1);
+    return '<option value="">— Selecione —</option>'+
+      above.map(x=>`<option value="${x.id}"${String(x.id)===String(p.superiorId)?' selected':''}>${esc(x.nome)}</option>`).join('');
+  }
+
+  const cargoOpts=funcoes.map(f=>`<option value="${esc(f)}"${p.cargo===f?' selected':''}>${esc(f)}</option>`).join('')+
+    `<option value="__OUTRO__"${!funcoes.includes(p.cargo)?' selected':''}>Outro…</option>`;
+  const grpOpts='<option value="">— Sem grupo —</option>'+
+    grupos.map(g=>`<option value="${g.id}"${String(g.id)===String(p.grupoId)?' selected':''}>${esc(g.nome)}</option>`).join('');
+  const lvlOpts=[1,2,3,4,5].map(n=>`<option value="${n}"${n===lvl?' selected':''}>N${n}</option>`).join('');
+
+  tr.innerHTML=`
+    <td class="editing">
+      <input type="text" id="ie_nome" value="${esc(p.nome)}" placeholder="Nome" />
+      <select id="ie_cargo" onchange="onIECargoChange()" style="margin-top:4px;">${cargoOpts}</select>
+      <input type="text" id="ie_cargo_custom" value="${!funcoes.includes(p.cargo)?esc(p.cargo):''}"
+        placeholder="Cargo personalizado" style="margin-top:4px;display:${funcoes.includes(p.cargo)?'none':'block'};" />
+    </td>
+    <td class="editing"><select id="ie_grupo">${grpOpts}</select></td>
+    <td class="editing"><select id="ie_nivel" onchange="onIENivelChange()">${lvlOpts}</select></td>
+    <td class="editing"><select id="ie_superior">${supOpts(lvl)}</select></td>
+    <td><div class="act-cell">
+      <button class="btn btn-primary btn-xs" onclick="saveInlineEdit(${id})">✓ Salvar</button>
+      <button class="btn btn-ghost btn-xs" onclick="cancelInlineEdit()">✕</button>
+      <button class="iBtn del" onclick="deletePerson(${id})" title="Remover">🗑</button>
+    </div></td>`;
 }
-function closeModal(){
-  document.getElementById('editModal').classList.remove('open');
-  document.getElementById('mCustomWrap').style.display='none';
-  _editId=null;
+
+function onIECargoChange(){
+  const v=document.getElementById('ie_cargo').value;
+  const c=document.getElementById('ie_cargo_custom');
+  if(c) c.style.display=v==='__OUTRO__'?'block':'none';
+}
+function onIENivelChange(){
+  const nivel=Number(document.getElementById('ie_nivel')?.value||1);
+  const sel=document.getElementById('ie_superior'); if(!sel) return;
+  if(nivel<=1){ sel.innerHTML='<option value="">— Sem superior (topo) —</option>'; return; }
+  const above=people.filter(x=>x.id!==_inlineEditId&&getNivel(x.id)===nivel-1);
+  sel.innerHTML='<option value="">— Selecione —</option>'+
+    above.map(x=>`<option value="${x.id}">${esc(x.nome)}</option>`).join('');
+}
+
+function saveInlineEdit(id){
+  const nome=(document.getElementById('ie_nome')?.value||'').trim().toUpperCase();
+  const cargoSel=document.getElementById('ie_cargo')?.value||'';
+  const cargo=cargoSel==='__OUTRO__'
+    ?(document.getElementById('ie_cargo_custom')?.value||'').trim().toUpperCase()
+    :cargoSel;
+  const grupoId=document.getElementById('ie_grupo')?.value||null;
+  const nivel=Number(document.getElementById('ie_nivel')?.value||1);
+  const supId=nivel>1?(document.getElementById('ie_superior')?.value||null):null;
+  if(!nome||!cargo) { alert('Preencha o nome e o cargo.'); return; }
+  if(nivel>1&&!supId){ alert('Selecione a quem esta pessoa reporta.'); return; }
+  const p=people.find(x=>x.id===id); if(!p) return;
+  p.nome=nome; p.cargo=cargo;
+  p.grupoId=grupoId?Number(grupoId):null;
+  p.superiorId=supId?Number(supId):null;
+  fixCircular(id);
+  _inlineEditId=null;
+  renderAll(); saveLocal();
+}
+function cancelInlineEdit(){
+  _inlineEditId=null;
+  renderTable(); drawChart();
 }
 
 /* ══════════════ PERSON UTILS ══════════════ */
@@ -636,14 +643,13 @@ function renderTable(){
       const chip=g?`<span class="grp-chip" style="background:${pal.fill};border-color:${pal.border};color:${pal.label};"><span class="chip-dot" style="background:${pal.border};"></span>${esc(g.nome)}</span>` :'<span style="color:var(--subtle);font-size:.72rem;">—</span>';
       const sup=p.superiorId?people.find(x=>x.id===p.superiorId):null;
       const supTxt=sup?`<span class="sup-txt" title="${esc(sup.nome)}">${esc(sup.nome)}</span>`:'<span style="color:var(--subtle);font-size:.72rem;">—</span>';
-      return `<tr>
+      return `<tr data-pid="${p.id}" onclick="openInlineEdit(${p.id})" style="cursor:pointer;">
         <td><div class="td-nome">${esc(p.nome)}</div><div class="td-cargo">${esc(p.cargo)}</div></td>
         <td>${chip}</td>
         <td><span class="lvl-badge">N${getNivel(p.id)}</span></td>
         <td>${supTxt}</td>
         <td><div class="act-cell">
-          <button class="iBtn" onclick="openEdit(${p.id})" title="Editar">✏️</button>
-          <button class="iBtn del" onclick="deletePerson(${p.id})" title="Remover">🗑</button>
+          <button class="iBtn del" onclick="event.stopPropagation();deletePerson(${p.id})" title="Remover">🗑</button>
         </div></td>
       </tr>`;
     }).join('');
@@ -762,25 +768,12 @@ function trunc(ctx,t,mw){ if(ctx.measureText(t).width<=mw)return t; let s=t; whi
 function renderLegend(){
   const wrap=document.getElementById('legWrap');
   const usedG=grupos.filter(g=>people.some(p=>p.grupoId===g.id));
-  const cargoMap={};
-  people.forEach(p=>{ (cargoMap[p.cargo]=cargoMap[p.cargo]||{nomes:[],gid:p.grupoId}).nomes.push(p.nome); });
-
-  let html='';
-  if(usedG.length){
-    html+=`<div class="leg-block"><div class="leg-title">Grupos</div><div class="leg-grid">`+
-      usedG.map(g=>{ const p=PAL[g.palIdx%PAL.length]; const cnt=people.filter(x=>x.grupoId===g.id).length;
-        return `<div class="leg-item"><div class="leg-bar" style="background:${p.border};"></div>
-          <div class="leg-info"><div class="lc">${esc(g.nome)}</div><div class="ln">${cnt}p</div></div></div>`;}).join('')+'</div></div>';
-  }
-  const cargos=Object.keys(cargoMap);
-  if(cargos.length){
-    html+=`<div class="leg-block"><div class="leg-title">Funções</div><div class="leg-grid">`+
-      cargos.map(c=>{ const info=cargoMap[c]; const g=grupos.find(x=>x.id===info.gid); const bar=g?PAL[g.palIdx%PAL.length].border:'#d1d5db';
-        const nm=info.nomes.join(', ');
-        return `<div class="leg-item"><div class="leg-bar" style="background:${bar};height:18px;"></div>
-          <div class="leg-info"><div class="lc">${esc(c)}</div><div class="ln">${esc(nm.length>50?nm.slice(0,48)+'…':nm)}</div></div></div>`;}).join('')+'</div></div>';
-  }
-  wrap.innerHTML=html;
+  if(!usedG.length){ wrap.innerHTML=''; return; }
+  wrap.innerHTML=`<div class="leg-block"><div class="leg-title">Grupos / Setores</div><div class="leg-grid">`+
+    usedG.map(g=>{ const p=PAL[g.palIdx%PAL.length]; const cnt=people.filter(x=>x.grupoId===g.id).length;
+      return `<div class="leg-item"><div class="leg-bar" style="background:${p.border};"></div>
+        <div class="leg-info"><div class="lc">${esc(g.nome)}</div><div class="ln">${cnt} pessoa${cnt!==1?'s':''}</div></div></div>`;
+    }).join('')+'</div></div>';
 }
 
 /* ══════════════ ZOOM / EXPORT ══════════════ */
@@ -814,8 +807,6 @@ function loadLocal(){
 
 function showErr(el,msg){ el.textContent=msg;el.classList.add('on'); }
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
-document.getElementById('editModal').addEventListener('click',e=>{ if(e.target===document.getElementById('editModal'))closeModal(); });
 
 /* ══════════════ INIT ══════════════ */
 loadLocal();
