@@ -34,6 +34,7 @@
     }
 
     body { font-family: var(--fb); background: var(--bg); color: var(--text); min-height: 100vh; }
+    .hidden { display: none !important; }
 
     /* ── HEADER ── */
     header { background: var(--hdr); padding: 32px 24px 28px; }
@@ -1620,9 +1621,8 @@ async function calcular(){
     else if(onWE)                          display = 'weekend';
     dayMap[key] = display;
 
-    // COUNTING: weekend days (incl. those with holidays) count as FDS
-    // since holidays on weekends don't reduce workable days
-    if(onRec)                              nR++;
+    // COUNTING: weekends inside recess count as FDS, not recess
+    if(onRec && !onWE)                     nR++;
     else if(onWE)                          nW++;
     else if(onHol?.type==='folga')         nF++;
     else if(onHol?.type==='municipal')     nHm++;
@@ -1929,7 +1929,7 @@ function render(res){
     const resolvedDates=resolveFaseDates(start);
     const faseRows=fases.map((f,i)=>{
       const res=resolvedDates[i];
-      if(!res.start){return '';}
+      if(!res.start){ truncadas.push(`<strong>${i+1}. ${f.nome}</strong> — data de início não pôde ser calculada (verifique a OS ou a fase anterior)`); return ''; }
       const fStartRaw=res.start;
       const fStart=D(fStartRaw.getUTCFullYear(),fStartRaw.getUTCMonth(),fStartRaw.getUTCDate());
       const fEndRaw=res.end||add(fStart,f.dur-1);
@@ -2078,11 +2078,11 @@ function exportarCSV(){
       let nUtil=0,hProd=0,hPrat=0;
       const byT={umido:{hprat:0},transicao:{hprat:0},seco:{hprat:0}};
       const moBucket={};
-      let dt=D2(fStart.getUTCFullYear(),fStart.getUTCMonth(),fStart.getUTCDate());
+      let dt=D(fStart.getUTCFullYear(),fStart.getUTCMonth(),fStart.getUTCDate());
       while(dt.getTime()<=fEnd.getTime()){
-        const k=[dt.getUTCFullYear(),String(dt.getUTCMonth()+1).padStart(2,'0'),String(dt.getUTCDate()).padStart(2,'0')].join('-');
+        const k=YMD(dt);
         if(dayMap[k]==='working'){nUtil++;hProd+=jp;const mk=k.slice(0,7);moBucket[mk]=(moBucket[mk]||0)+1;}
-        dt=add2(dt,1);
+        dt=add(dt,1);
       }
       for(const [mk,days] of Object.entries(moBucket)){
         const per=getPer(mk);
