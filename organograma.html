@@ -15,20 +15,29 @@
       --fd:'Space Grotesk',sans-serif;--fb:'DM Sans',sans-serif;
     }
     body{font-family:var(--fb);background:var(--bg);color:var(--text);min-height:100vh}
-
-    /* ── HEADER ── */
     header{background:var(--hdr);padding:28px 24px}
     .hdr-inner{max-width:1060px;margin:0 auto;display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:10px}
     header h1{font-family:var(--fd);font-size:1.5rem;font-weight:700;color:#fff;letter-spacing:-.3px}
     header p{margin-top:4px;color:#9ca3af;font-size:.86rem}
     .back-link{font-family:var(--fd);font-size:.78rem;color:#9ca3af;text-decoration:none;border:1px solid #374151;border-radius:var(--r);padding:5px 13px;transition:background .15s}
     .back-link:hover{background:#374151;color:#fff}
-
-    /* ── WRAP ── */
     .wrap{max-width:1060px;margin:0 auto;padding:0 16px 80px}
 
-    /* ── MAIN TABS ── */
-    .main-tabs{display:flex;gap:0;border-bottom:2px solid var(--border-l);margin-top:28px}
+    /* ORG SELECTOR BAR */
+    .org-bar{display:flex;gap:4px;align-items:flex-end;margin-top:24px;flex-wrap:wrap;border-bottom:2px solid var(--border-l);padding-bottom:0}
+    .org-pill{font-family:var(--fd);font-size:.78rem;font-weight:600;color:var(--muted);padding:7px 14px 8px;cursor:pointer;
+      border-radius:var(--r) var(--r) 0 0;border:1px solid transparent;border-bottom:none;
+      display:inline-flex;align-items:center;gap:6px;background:#f3f4f6;margin-bottom:-2px;transition:all .15s}
+    .org-pill.on{background:#fff;color:var(--text);border-color:var(--border)}
+    .org-pill:hover:not(.on){background:#e9eaeb}
+    .org-pill-del{background:none;border:none;cursor:pointer;color:var(--subtle);font-size:.65rem;padding:1px 3px;border-radius:3px;line-height:1}
+    .org-pill-del:hover{background:#fee2e2;color:#b91c1c}
+    .org-add-btn{font-family:var(--fd);font-size:.75rem;font-weight:600;color:var(--muted);padding:6px 12px 8px;cursor:pointer;
+      border:1px dashed var(--border);border-bottom:none;border-radius:var(--r) var(--r) 0 0;background:none;margin-bottom:-2px;transition:all .15s}
+    .org-add-btn:hover{background:#f3f4f6;color:var(--text)}
+
+    /* MAIN TABS */
+    .main-tabs{display:flex;gap:0;border-bottom:2px solid var(--border-l);margin-top:20px}
     .main-tab{font-family:var(--fd);font-size:.85rem;font-weight:700;color:var(--muted);
       padding:10px 24px;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;
       text-transform:uppercase;letter-spacing:.5px;transition:color .15s;user-select:none}
@@ -36,51 +45,40 @@
     .main-pane{display:none;margin-top:20px}
     .main-pane.on{display:block}
 
-    /* ── CARD ── */
+    /* CARD */
     .card{background:var(--surface);border-radius:var(--r);box-shadow:var(--sh);border:1px solid var(--border);padding:22px 24px}
     .card-title{font-family:var(--fd);font-size:.78rem;font-weight:700;color:var(--muted);
-      text-transform:uppercase;letter-spacing:.7px;margin-bottom:16px;padding-bottom:10px;
-      border-bottom:1px solid var(--border-l)}
+      text-transform:uppercase;letter-spacing:.7px;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border-l)}
 
-    /* ── CADASTRO: dois blocos ── */
+    /* CADASTRO */
     .cad-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
     @media(max-width:680px){.cad-grid{grid-template-columns:1fr}}
-
-    /* tags de funções */
     .tag-wrap{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;min-height:32px;margin-bottom:14px;align-content:start;max-height:320px;overflow-y:auto}
     .func-tag{display:flex;align-items:center;justify-content:space-between;gap:5px;font-size:.76rem;font-weight:500;
       padding:4px 8px;border-radius:6px;background:#f9fafb;border:1px solid var(--border-l);color:var(--text)}
-    .grp-tag{display:inline-flex;align-items:center;gap:6px;font-size:.76rem;font-weight:600;
-      padding:3px 10px 3px 7px;border-radius:20px;border:1.5px solid}
-    .tag-dot{width:9px;height:9px;border-radius:2px;flex-shrink:0}
-    .tag-x{background:none;border:none;cursor:pointer;color:var(--subtle);font-size:.7rem;padding:0 1px;line-height:1;transition:color .1s}
-    .tag-x:hover{color:#b91c1c}
-
-    /* grupo list rows */
     .grp-list-row{display:flex;align-items:center;gap:8px;padding:5px 10px 5px 8px;border-radius:6px;border:1px solid rgba(0,0,0,.06);margin-bottom:4px}
     .ord-btn{background:none;border:none;cursor:pointer;color:#9ca3af;font-size:.62rem;line-height:1;padding:1px 3px;border-radius:3px;transition:background .1s}
     .ord-btn:hover:not([disabled]){background:#e5e7eb;color:#374151}
     .ord-btn[disabled]{opacity:.25;cursor:default}
     .ord-num{font-family:var(--fd);font-size:.68rem;font-weight:700;min-width:14px;text-align:center}
-
-    /* swatches */
+    .tag-x{background:none;border:none;cursor:pointer;color:var(--subtle);font-size:.7rem;padding:0 1px;line-height:1;transition:color .1s}
+    .tag-x:hover{color:#b91c1c}
     .sw-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:4px}
     .sw{width:22px;height:22px;border-radius:4px;cursor:pointer;border:2.5px solid transparent;transition:border-color .12s,transform .1s}
     .sw:hover{transform:scale(1.1)}
     .sw.sel{border-color:#1f2937}
 
-    /* ── FORM FIELDS ── */
+    /* FORM */
     .fg{display:flex;flex-direction:column;gap:4px;margin-bottom:0}
     .fg label{font-size:.7rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
-    input[type=text],select{
-      border:1px solid var(--border);border-radius:var(--r);padding:8px 10px;
-      font-family:var(--fb);font-size:.88rem;color:var(--text);
-      outline:none;transition:border-color .15s,box-shadow .15s;background:#fff;width:100%}
+    input[type=text],select{border:1px solid var(--border);border-radius:var(--r);padding:8px 10px;
+      font-family:var(--fb);font-size:.88rem;color:var(--text);outline:none;
+      transition:border-color .15s,box-shadow .15s;background:#fff;width:100%}
     input:focus,select:focus{border-color:#6b7280;box-shadow:0 0 0 3px rgba(107,114,128,.12)}
     .input-row{display:flex;gap:7px;align-items:flex-end}
     .input-row .fg{flex:1}
 
-    /* ── BUTTONS ── */
+    /* BUTTONS */
     .btn{font-family:var(--fd);font-size:.8rem;font-weight:600;padding:8px 18px;
       border-radius:var(--r);border:none;cursor:pointer;transition:opacity .15s}
     .btn:hover{opacity:.85}
@@ -92,9 +90,15 @@
     .btn-xs{padding:3px 9px;font-size:.72rem}
     .brow{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
 
-    /* ── PESSOA MODAL INLINE (drawer) ── */
-    .drawer{background:#f9fafb;border:1px solid var(--border-l);border-radius:var(--r);
-      padding:16px 18px;margin-bottom:14px;display:none}
+    /* ORG TITLE */
+    .org-title-row{display:flex;align-items:center;gap:12px;margin-bottom:18px;padding-bottom:16px;border-bottom:1px solid var(--border-l)}
+    .org-title-input{font-family:var(--fd);font-size:1.1rem;font-weight:700;color:var(--text);border:none;
+      border-bottom:2px solid transparent;border-radius:0;padding:2px 0;background:transparent;flex:1;outline:none;transition:border-color .15s}
+    .org-title-input:focus{border-bottom-color:#1f2937}
+    .org-title-input::placeholder{color:var(--subtle);font-weight:400;font-size:.95rem}
+
+    /* DRAWER */
+    .drawer{background:#f9fafb;border:1px solid var(--border-l);border-radius:var(--r);padding:16px 18px;margin-bottom:14px;display:none}
     .drawer.open{display:block}
     .drawer-title{font-family:var(--fd);font-size:.82rem;font-weight:700;color:var(--text);
       margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
@@ -102,11 +106,14 @@
     .drawer-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px}
     @media(max-width:580px){.drawer-grid,.drawer-grid-3{grid-template-columns:1fr}}
 
-    /* ── ESTRUTURA TABLE ── */
+    /* SEARCH */
+    .search-row{margin-bottom:12px}
+    .search-input{font-size:.84rem!important;padding:7px 12px!important;max-width:380px}
+
+    /* TABLE */
     .org-table-wrap{overflow-x:auto;margin-bottom:6px}
     .org-table{width:100%;border-collapse:collapse;font-size:.82rem}
-    .org-table th{
-      font-family:var(--fd);font-size:.68rem;font-weight:700;color:var(--muted);
+    .org-table th{font-family:var(--fd);font-size:.68rem;font-weight:700;color:var(--muted);
       text-transform:uppercase;letter-spacing:.4px;padding:8px 12px;
       border-bottom:2px solid var(--border);text-align:left;background:#fafafa;white-space:nowrap}
     .org-table td{padding:9px 12px;border-bottom:1px solid var(--border-l);vertical-align:middle}
@@ -117,59 +124,56 @@
     .grp-chip{display:inline-flex;align-items:center;gap:5px;font-size:.7rem;font-weight:600;
       padding:3px 9px 3px 6px;border-radius:20px;border:1.5px solid;white-space:nowrap}
     .chip-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+    .no-grp-chip{font-size:.7rem;color:#9a3412;background:#fff7ed;border:1px solid #fed7aa;border-radius:20px;padding:2px 9px}
     .lvl-badge{font-family:var(--fd);font-size:.7rem;font-weight:700;
-      background:#f3f4f6;color:var(--muted);border:1px solid var(--border-l);
-      border-radius:20px;padding:2px 8px;white-space:nowrap}
-    .sup-txt{font-size:.74rem;color:var(--muted);white-space:nowrap;max-width:130px;
-      overflow:hidden;text-overflow:ellipsis;display:inline-block}
+      background:#f3f4f6;color:var(--muted);border:1px solid var(--border-l);border-radius:20px;padding:2px 8px;white-space:nowrap}
+    .sup-txt{font-size:.74rem;color:var(--muted);white-space:nowrap;max-width:130px;overflow:hidden;text-overflow:ellipsis;display:inline-block}
     .act-cell{display:flex;gap:4px;justify-content:flex-end;white-space:nowrap}
-    .iBtn{background:none;border:none;cursor:pointer;color:var(--muted);
-      padding:4px 6px;border-radius:4px;font-size:.8rem;transition:background .1s}
+    .iBtn{background:none;border:none;cursor:pointer;color:var(--muted);padding:4px 6px;border-radius:4px;font-size:.8rem;transition:background .1s}
     .iBtn:hover{background:#e5e7eb;color:var(--text)}
     .iBtn.del:hover{background:#fee2e2;color:#b91c1c}
     .empty-row td{text-align:center;color:var(--subtle);font-style:italic;padding:24px}
-    /* inline edit cells */
-    .org-table td.editing input[type=text],
-    .org-table td.editing select{
-      font-size:.82rem;padding:4px 7px;border-radius:5px;width:100%;min-width:90px}
+    .org-table td.editing input[type=text],.org-table td.editing select{font-size:.82rem;padding:4px 7px;border-radius:5px;width:100%;min-width:90px}
     .org-table td.editing{padding:5px 8px}
     .org-table tr.is-editing td{background:#fffbf0!important}
-
-    /* level group rows */
-    .level-row td{
-      background:#f9fafb;font-family:var(--fd);font-size:.7rem;font-weight:700;
+    .no-group-row td:first-child{border-left:3px solid #f97316}
+    .level-row td{background:#f9fafb;font-family:var(--fd);font-size:.7rem;font-weight:700;
       color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding:5px 12px;
       border-bottom:1px solid var(--border-l);border-top:1px solid var(--border-l)}
+    @keyframes saved-flash{0%{background:#dcfce7}100%{background:transparent}}
+    .org-table tbody tr.saved-flash td{animation:saved-flash .8s ease-out}
 
-    /* ── CHART ── */
+    /* WARN BAR */
+    .warn-bar{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:var(--r);padding:8px 14px;font-size:.8rem;margin:8px 0}
+
+    /* CHART */
     .chart-section{margin-top:24px;padding-top:24px;border-top:2px dashed var(--border-l)}
     .chart-toolbar{display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
     .chart-toolbar label{font-size:.78rem;color:var(--muted)}
-    .zb{background:#f3f4f6;border:1px solid var(--border);border-radius:5px;
-      padding:4px 12px;font-size:.86rem;cursor:pointer;font-family:var(--fd);font-weight:600;color:var(--text)}
+    .zb{background:#f3f4f6;border:1px solid var(--border);border-radius:5px;padding:4px 12px;font-size:.86rem;cursor:pointer;font-family:var(--fd);font-weight:600;color:var(--text)}
     .zb:hover{background:#e5e7eb}
     .chart-empty{text-align:center;padding:60px 20px;color:var(--subtle);font-size:.9rem;font-style:italic}
-    #orgCanvas{display:block;margin:0 auto}
+    .canvas-wrap{overflow:auto;border-radius:var(--r);background:#fafafa;border:1px solid var(--border-l)}
+    #orgCanvas{display:block;cursor:grab}
+    #orgCanvas:active{cursor:grabbing}
 
-    /* ── LEGEND ── */
+    /* LEGEND */
     .leg-wrap{margin-top:18px;display:flex;flex-wrap:wrap;gap:20px}
     .leg-block{flex:1;min-width:200px}
-    .leg-title{font-family:var(--fd);font-size:.7rem;font-weight:700;color:var(--muted);
-      text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px}
+    .leg-title{font-family:var(--fd);font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px}
     .leg-grid{display:flex;flex-wrap:wrap;gap:6px 14px}
     .leg-item{display:flex;align-items:center;gap:6px;font-size:.75rem}
     .leg-bar{width:4px;height:22px;border-radius:2px;flex-shrink:0}
     .leg-info .lc{font-weight:600;color:var(--text);font-size:.75rem}
     .leg-info .ln{font-size:.67rem;color:var(--muted)}
 
-    /* ── ALERT ── */
+    /* ALERT */
     .alert{border-radius:var(--r);padding:8px 12px;font-size:.82rem;margin-top:8px;display:none}
     .alert.on{display:block}
     .alert-err{background:#fef2f2;color:#b91c1c;border:1px solid #fecaca}
 
-
     @media print{
-      header p,.main-tabs,.chart-toolbar,.back-link{display:none!important}
+      header p,.main-tabs,.org-bar,.chart-toolbar,.back-link,.brow,.drawer,.search-row{display:none!important}
       body{background:#fff}
       .card{box-shadow:none;border:none;padding:0}
       *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
@@ -177,7 +181,6 @@
   </style>
 </head>
 <body>
-
 <header>
   <div class="hdr-inner">
     <div>
@@ -190,40 +193,34 @@
 
 <div class="wrap">
 
+  <!-- SELETOR DE ORGANOGRAMAS -->
+  <div class="org-bar" id="orgBar"></div>
+
   <!-- ABAS PRINCIPAIS -->
   <div class="main-tabs">
     <div class="main-tab on" id="mtab-cad" onclick="showMain('cad')">Cadastro</div>
-    <div class="main-tab"    id="mtab-org" onclick="showMain('org')">Organograma</div>
+    <div class="main-tab"   id="mtab-org" onclick="showMain('org')">Organograma</div>
   </div>
 
-  <!-- ════════════════════════════════════════════
-       ABA 1: CADASTRO
-       ════════════════════════════════════════════ -->
+  <!-- ABA 1: CADASTRO -->
   <div class="main-pane on" id="mpane-cad">
     <div class="cad-grid">
-
-      <!-- FUNÇÕES -->
       <div class="card">
         <div class="card-title">Funções</div>
-        <div class="tag-wrap" id="funcTags">
-          <span style="color:var(--subtle);font-size:.8rem;font-style:italic;">Carregando…</span>
-        </div>
+        <div class="tag-wrap" id="funcTags"></div>
         <div class="input-row">
           <div class="fg">
             <label for="newFunc">Nova função</label>
-            <input type="text" id="newFunc" placeholder="Ex: ANALISTA DE DADOS" />
+            <input type="text" id="newFunc" placeholder="Ex: Analista de dados" />
           </div>
           <button class="btn btn-primary btn-sm" onclick="addFuncao()" style="align-self:flex-end;">+ Adicionar</button>
         </div>
         <div class="alert alert-err" id="aFuncErr"></div>
       </div>
 
-      <!-- GRUPOS -->
       <div class="card">
         <div class="card-title">Grupos / Setores</div>
-        <div class="tag-wrap" id="grpTags">
-          <span style="color:var(--subtle);font-size:.8rem;font-style:italic;">Carregando…</span>
-        </div>
+        <div id="grpList" style="margin-bottom:8px;max-height:300px;overflow-y:auto;"></div>
         <div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end;">
           <div class="fg">
             <label for="newGrp">Nome do grupo</label>
@@ -239,21 +236,20 @@
         </div>
         <div class="alert alert-err" id="aGrpErr"></div>
       </div>
-
     </div>
   </div>
 
-  <!-- ════════════════════════════════════════════
-       ABA 2: ORGANOGRAMA
-       ════════════════════════════════════════════ -->
+  <!-- ABA 2: ORGANOGRAMA -->
   <div class="main-pane" id="mpane-org">
     <div class="card">
-      <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;">
-        <span>Estrutura da equipe</span>
-        <span id="countBadge" style="font-weight:400;font-size:.76rem;color:var(--subtle);text-transform:none;letter-spacing:0;"></span>
+
+      <!-- TÍTULO DO ORGANOGRAMA -->
+      <div class="org-title-row">
+        <input type="text" id="orgTitle" class="org-title-input" placeholder="Nome do organograma…" oninput="saveOrgTitle()" />
+        <span id="countBadge" style="font-size:.76rem;color:var(--subtle);white-space:nowrap;"></span>
       </div>
 
-      <!-- DRAWER: form inline para adicionar/editar -->
+      <!-- DRAWER: adicionar pessoa -->
       <div class="drawer" id="drawer">
         <div class="drawer-title">
           <span id="drawerTitle">Nova pessoa</span>
@@ -261,7 +257,7 @@
         </div>
         <div class="drawer-grid">
           <div class="fg"><label>Nome completo</label>
-            <input type="text" id="dNome" placeholder="Ex: JOÃO SILVA" /></div>
+            <input type="text" id="dNome" placeholder="Ex: João Silva" /></div>
           <div class="fg"><label>Cargo / Função</label>
             <select id="dCargo" onchange="onDCargoChange()"></select></div>
         </div>
@@ -272,7 +268,11 @@
         <div class="drawer-grid-3">
           <div class="fg"><label>Grupo / Setor</label>
             <select id="dGrupo"></select></div>
-          <div class="fg"><label>Nível hierárquico</label>
+          <div class="fg"><label>Reporta a</label>
+            <select id="dSuperior" onchange="onDSuperiorChange()">
+              <option value="">— Sem superior (topo) —</option>
+            </select></div>
+          <div class="fg"><label>Nível</label>
             <select id="dNivel" onchange="onDNivelChange()">
               <option value="1">Nível 1 — Topo</option>
               <option value="2">Nível 2</option>
@@ -280,8 +280,6 @@
               <option value="4">Nível 4</option>
               <option value="5">Nível 5</option>
             </select></div>
-          <div class="fg"><label>Reporta a</label>
-            <select id="dSuperior"></select></div>
         </div>
         <div class="alert alert-err" id="aDErr"></div>
         <div class="brow">
@@ -290,35 +288,39 @@
         </div>
       </div>
 
-      <!-- CONTROLS -->
-      <div class="brow" style="margin-bottom:14px;">
+      <!-- CONTROLES -->
+      <div class="brow" style="margin-bottom:12px;">
         <button class="btn btn-primary btn-sm" onclick="openDrawerAdd()">+ Adicionar pessoa</button>
         <button class="btn btn-ghost btn-sm" onclick="loadExample()">Carregar exemplo</button>
         <span style="flex:1"></span>
+        <button class="btn btn-ghost btn-sm" onclick="exportJSON()" title="Salvar JSON no computador">⬇ Exportar</button>
+        <label class="btn btn-ghost btn-sm" style="cursor:pointer;" title="Carregar de arquivo JSON">⬆ Importar<input type="file" accept=".json" style="display:none" onchange="importJSON(event)"/></label>
         <button class="btn btn-danger btn-xs" onclick="clearPeople()">Limpar equipe</button>
+      </div>
+
+      <!-- BUSCA -->
+      <div class="search-row">
+        <input type="text" class="search-input" id="searchInput" placeholder="🔍 Buscar por nome, cargo ou grupo…" oninput="onSearch()" />
+      </div>
+
+      <!-- AVISO SEM GRUPO -->
+      <div class="warn-bar" id="noGroupWarn" style="display:none;">
+        ⚠ Há pessoas sem grupo atribuído — elas aparecerão sem cor no organograma.
       </div>
 
       <!-- TABELA -->
       <div class="org-table-wrap">
         <table class="org-table">
-          <thead>
-            <tr>
-              <th>Nome / Cargo</th>
-              <th>Grupo</th>
-              <th>Nível</th>
-              <th>Reporta a</th>
-              <th></th>
-            </tr>
-          </thead>
+          <thead><tr>
+            <th>Nome / Cargo</th><th>Grupo</th><th>Nível</th><th>Reporta a</th><th></th>
+          </tr></thead>
           <tbody id="orgTbody"></tbody>
         </table>
       </div>
 
-      <!-- ORGANOGRAMA ABAIXO DA TABELA -->
+      <!-- ORGANOGRAMA (GRÁFICO) -->
       <div class="chart-section" id="chartSection" style="display:none;">
-        <div class="card-title" style="border-bottom:none;margin-bottom:0;padding-bottom:0;">
-          Organograma
-        </div>
+        <div class="card-title" style="border-bottom:none;margin-bottom:0;padding-bottom:0;">Organograma</div>
         <div class="chart-toolbar">
           <label>Zoom:</label>
           <button class="zb" onclick="zoom(-.15)">−</button>
@@ -327,7 +329,7 @@
           <button class="btn btn-ghost btn-sm" style="margin-left:auto;" onclick="exportPNG()">Exportar PNG</button>
           <button class="btn btn-ghost btn-sm" onclick="window.print()">Imprimir</button>
         </div>
-        <div style="overflow-x:auto;">
+        <div class="canvas-wrap" id="canvasWrap">
           <canvas id="orgCanvas"></canvas>
         </div>
         <div class="leg-wrap" id="legWrap"></div>
@@ -337,11 +339,10 @@
     </div>
   </div>
 
-</div><!-- /wrap -->
-
+</div>
 
 <script>
-/* ══════════════ PALETTE ══════════════ */
+/* ══ PALETTE ══ */
 const PAL=[
   {fill:'rgba(219,234,254,.5)',border:'#3b82f6',label:'#1d4ed8'},
   {fill:'rgba(220,252,231,.5)',border:'#22c55e',label:'#166534'},
@@ -355,7 +356,7 @@ const PAL=[
 ];
 const SW_HEX=PAL.map(p=>p.border);
 
-/* ══════════════ DEFAULTS ══════════════ */
+/* ══ DEFAULTS ══ */
 const DEF_FUNC=[
   'Almoxarife','Analista de engenharia','Analista de meio ambiente',
   'Assistente adm. meio ambiente','Auxiliar administrativo','Auxiliar de almoxarifado',
@@ -377,11 +378,74 @@ const DEF_GRUPOS=[
   {nome:'Administração / Apoio Operacional e Logístico',palIdx:7},
 ];
 
-/* ══════════════ STATE ══════════════ */
-let funcoes=[], grupos=[], people=[];
-let _gid=1, _pid=1, _zoom=1, _editId=null, _swColor=0, _drawerMode='add';
+/* ══ STATE ══ */
+let funcoes=[], grupos=[], orgs=[], people=[];
+let _gid=1,_pid=1,_oid=1,_currentOrgId=null;
+let _zoom=1,_editId=null,_swColor=0,_drawerMode='add',_inlineEditId=null,_searchQ='';
 
-/* ══════════════ MAIN TABS ══════════════ */
+/* ══ ORG MANAGEMENT ══ */
+function curOrg(){ return orgs.find(o=>o.id===_currentOrgId)||orgs[0]; }
+
+function saveCurrentPeople(){
+  const org=curOrg(); if(!org) return;
+  org.people=[...people]; org._pid=_pid;
+}
+
+function switchOrg(id){
+  if(_inlineEditId) { _inlineEditId=null; }
+  saveCurrentPeople();
+  _currentOrgId=id;
+  const org=curOrg();
+  if(org){ people=[...org.people]; _pid=org._pid||1; }
+  else { people=[]; _pid=1; }
+  const ti=document.getElementById('orgTitle');
+  if(ti) ti.value=org?.nome||'';
+  const si=document.getElementById('searchInput');
+  if(si) si.value='';
+  _searchQ='';
+  renderOrgBar(); renderAll(); saveLocal();
+}
+
+function addOrg(){
+  saveCurrentPeople();
+  const nome='Organograma '+(orgs.length+1);
+  const id=_oid++;
+  orgs.push({id,nome,people:[],_pid:1});
+  _currentOrgId=id; people=[]; _pid=1;
+  renderOrgBar(); renderAll(); saveLocal();
+  const ti=document.getElementById('orgTitle');
+  if(ti){ ti.value=nome; ti.select(); ti.focus(); }
+}
+
+function deleteOrg(id){
+  if(orgs.length<=1){ alert('Não é possível remover o único organograma.'); return; }
+  if(!confirm('Remover este organograma e toda a sua equipe?')) return;
+  orgs=orgs.filter(o=>o.id!==id);
+  if(_currentOrgId===id){
+    _currentOrgId=orgs[0].id;
+    const org=curOrg();
+    people=[...org.people]; _pid=org._pid||1;
+  }
+  renderOrgBar(); renderAll(); saveLocal();
+}
+
+function saveOrgTitle(){
+  const org=curOrg(); if(!org) return;
+  org.nome=document.getElementById('orgTitle').value||'Organograma';
+  renderOrgBar(); saveLocal();
+}
+
+function renderOrgBar(){
+  const bar=document.getElementById('orgBar');
+  bar.innerHTML=orgs.map(o=>`
+    <div class="org-pill${o.id===_currentOrgId?' on':''}" onclick="switchOrg(${o.id})">
+      <span>${esc(o.nome)}</span>
+      ${orgs.length>1?`<button class="org-pill-del" onclick="event.stopPropagation();deleteOrg(${o.id})" title="Remover">✕</button>`:''}
+    </div>`).join('')+
+    `<button class="org-add-btn" onclick="addOrg()">+ Novo</button>`;
+}
+
+/* ══ MAIN TABS ══ */
 function showMain(id){
   ['cad','org'].forEach(t=>{
     document.getElementById('mpane-'+t).classList.toggle('on',t===id);
@@ -390,7 +454,7 @@ function showMain(id){
   if(id==='org') drawChart();
 }
 
-/* ══════════════ COMPUTED NIVEL ══════════════ */
+/* ══ COMPUTED NIVEL ══ */
 function getNivel(pid,vis=new Set()){
   if(!pid||vis.has(pid)) return 1;
   vis.add(pid);
@@ -398,7 +462,7 @@ function getNivel(pid,vis=new Set()){
   return p&&p.superiorId ? getNivel(p.superiorId,vis)+1 : 1;
 }
 
-/* ══════════════ SELECT HELPERS ══════════════ */
+/* ══ SELECT HELPERS ══ */
 function fillCargoSel(selId,cur=''){
   const s=document.getElementById(selId); if(!s) return;
   s.innerHTML='<option value="">— Selecione —</option>'+
@@ -410,21 +474,23 @@ function fillGrupoSel(selId,cur=''){
   s.innerHTML='<option value="">— Sem grupo —</option>'+
     grupos.map(g=>`<option value="${g.id}"${String(g.id)===String(cur)?' selected':''}>${esc(g.nome)}</option>`).join('');
 }
-function fillSupSel(selId,nivelSelId,excludeId=null,curSup=''){
-  const nivel=Number(document.getElementById(nivelSelId)?.value||1);
+function fillAllSupSel(selId,excludeId=null,curSup=''){
+  // shows ALL people as potential superiors (no nivel filter)
   const s=document.getElementById(selId); if(!s) return;
-  if(nivel<=1){ s.innerHTML='<option value="">— Sem superior (topo) —</option>'; return; }
-  // any person at a level strictly above (nivel < this person's nivel)
-  const opts=people.filter(p=>p.id!==excludeId&&getNivel(p.id)<nivel);
-  s.innerHTML='<option value="">— Selecione —</option>'+
+  const opts=people.filter(p=>p.id!==excludeId);
+  s.innerHTML='<option value="">— Sem superior (topo) —</option>'+
     opts.map(p=>`<option value="${p.id}"${String(p.id)===String(curSup)?' selected':''}>${esc(p.nome)} · N${getNivel(p.id)}</option>`).join('');
 }
 function getCargoVal(selId,custId){
   const v=document.getElementById(selId)?.value;
-  return v==='__OUTRO__'?(document.getElementById(custId)?.value||'').trim().toUpperCase():v||'';
+  if(v==='__OUTRO__'){
+    const raw=(document.getElementById(custId)?.value||'').trim();
+    return raw ? raw.charAt(0).toUpperCase()+raw.slice(1) : '';
+  }
+  return v||'';
 }
 
-/* ══════════════ DRAWER (add / inline edit) ══════════════ */
+/* ══ DRAWER ══ */
 function openDrawerAdd(){
   _drawerMode='add'; _editId=null;
   document.getElementById('drawerTitle').textContent='Nova pessoa';
@@ -434,20 +500,31 @@ function openDrawerAdd(){
   document.getElementById('dCustomWrap').style.display='none';
   document.getElementById('aDErr').classList.remove('on');
   fillCargoSel('dCargo'); fillGrupoSel('dGrupo');
+  fillAllSupSel('dSuperior',null,'');
   document.getElementById('dNivel').value='1';
-  fillSupSel('dSuperior','dNivel',null);
   document.getElementById('drawer').classList.add('open');
   document.getElementById('dNome').focus();
 }
-
 function closeDrawer(){ document.getElementById('drawer').classList.remove('open'); }
-
 function onDCargoChange(){
   document.getElementById('dCustomWrap').style.display=
     document.getElementById('dCargo').value==='__OUTRO__'?'':'none';
 }
-function onDNivelChange(){ fillSupSel('dSuperior','dNivel',_editId); }
-
+function onDSuperiorChange(){
+  const supId=document.getElementById('dSuperior').value;
+  if(supId){
+    const lvl=Math.min(getNivel(Number(supId))+1,5);
+    document.getElementById('dNivel').value=String(lvl);
+  } else {
+    document.getElementById('dNivel').value='1';
+  }
+}
+function onDNivelChange(){
+  // when nivel manually set to 1, clear superior
+  if(document.getElementById('dNivel').value==='1'){
+    document.getElementById('dSuperior').value='';
+  }
+}
 function saveDrawer(){
   const nome=document.getElementById('dNome').value.trim().toUpperCase();
   const cargo=getCargoVal('dCargo','dCargoCustom');
@@ -459,7 +536,6 @@ function saveDrawer(){
   if(!cargo){showErr(err,'Informe o cargo.');return;}
   if(nivel>1&&!supId){showErr(err,'Selecione a quem esta pessoa reporta.');return;}
   err.classList.remove('on');
-
   if(_drawerMode==='add'){
     people.push({id:_pid++,nome,cargo,grupoId:grupoId?Number(grupoId):null,superiorId:supId?Number(supId):null});
   } else {
@@ -469,9 +545,7 @@ function saveDrawer(){
   closeDrawer(); renderAll(); saveLocal();
 }
 
-/* ══════════════ INLINE ROW EDIT ══════════════ */
-let _inlineEditId=null;
-
+/* ══ INLINE ROW EDIT ══ */
 function openInlineEdit(id){
   if(_inlineEditId===id) return;
   if(_inlineEditId) cancelInlineEdit();
@@ -479,17 +553,13 @@ function openInlineEdit(id){
   const p=people.find(x=>x.id===id); if(!p) return;
   const tr=document.querySelector(`tr[data-pid="${id}"]`); if(!tr) return;
   tr.classList.add('is-editing');
-
   const lvl=getNivel(id);
 
-  // build superior options — any person at a level strictly above
-  function supOpts(nivel){
-    if(nivel<=1) return '<option value="">— Sem superior (topo) —</option>';
-    const above=people.filter(x=>x.id!==id&&getNivel(x.id)<nivel);
-    return '<option value="">— Selecione —</option>'+
+  function supOpts(){
+    const above=people.filter(x=>x.id!==id);
+    return '<option value="">— Sem superior (topo) —</option>'+
       above.map(x=>`<option value="${x.id}"${String(x.id)===String(p.superiorId)?' selected':''}>${esc(x.nome)} · N${getNivel(x.id)}</option>`).join('');
   }
-
   const cargoOpts=funcoes.map(f=>`<option value="${esc(f)}"${p.cargo===f?' selected':''}>${esc(f)}</option>`).join('')+
     `<option value="__OUTRO__"${!funcoes.includes(p.cargo)?' selected':''}>Outro…</option>`;
   const grpOpts='<option value="">— Sem grupo —</option>'+
@@ -505,38 +575,46 @@ function openInlineEdit(id){
     </td>
     <td class="editing"><select id="ie_grupo">${grpOpts}</select></td>
     <td class="editing"><select id="ie_nivel" onchange="onIENivelChange()">${lvlOpts}</select></td>
-    <td class="editing"><select id="ie_superior">${supOpts(lvl)}</select></td>
+    <td class="editing"><select id="ie_superior" onchange="onIESuperiorChange()">${supOpts()}</select></td>
     <td><div class="act-cell">
       <button class="btn btn-primary btn-xs" onclick="saveInlineEdit(${id})">✓ Salvar</button>
       <button class="btn btn-ghost btn-xs" onclick="cancelInlineEdit()">✕</button>
-      <button class="iBtn del" onclick="deletePerson(${id})" title="Remover">🗑</button>
+      <button class="iBtn del" onclick="event.stopPropagation();deletePerson(${id})" title="Remover">🗑</button>
     </div></td>`;
 }
-
 function onIECargoChange(){
   const v=document.getElementById('ie_cargo').value;
   const c=document.getElementById('ie_cargo_custom');
   if(c) c.style.display=v==='__OUTRO__'?'block':'none';
 }
 function onIENivelChange(){
-  const nivel=Number(document.getElementById('ie_nivel')?.value||1);
-  const sel=document.getElementById('ie_superior'); if(!sel) return;
-  if(nivel<=1){ sel.innerHTML='<option value="">— Sem superior (topo) —</option>'; return; }
-  const above=people.filter(x=>x.id!==_inlineEditId&&getNivel(x.id)<nivel);
-  sel.innerHTML='<option value="">— Selecione —</option>'+
-    above.map(x=>`<option value="${x.id}">${esc(x.nome)} · N${getNivel(x.id)}</option>`).join('');
+  if(document.getElementById('ie_nivel')?.value==='1'){
+    const sel=document.getElementById('ie_superior');
+    if(sel) sel.value='';
+  }
 }
-
+function onIESuperiorChange(){
+  const supId=document.getElementById('ie_superior')?.value;
+  if(supId){
+    const lvl=Math.min(getNivel(Number(supId))+1,5);
+    const ns=document.getElementById('ie_nivel');
+    if(ns) ns.value=String(lvl);
+  } else {
+    const ns=document.getElementById('ie_nivel');
+    if(ns) ns.value='1';
+  }
+}
 function saveInlineEdit(id){
   const nome=(document.getElementById('ie_nome')?.value||'').trim().toUpperCase();
   const cargoSel=document.getElementById('ie_cargo')?.value||'';
-  const cargo=cargoSel==='__OUTRO__'
-    ?(document.getElementById('ie_cargo_custom')?.value||'').trim().toUpperCase()
+  const cargoRaw=cargoSel==='__OUTRO__'
+    ?(document.getElementById('ie_cargo_custom')?.value||'').trim()
     :cargoSel;
+  const cargo=cargoSel==='__OUTRO__'?(cargoRaw.charAt(0).toUpperCase()+cargoRaw.slice(1)):cargoRaw;
   const grupoId=document.getElementById('ie_grupo')?.value||null;
   const nivel=Number(document.getElementById('ie_nivel')?.value||1);
   const supId=nivel>1?(document.getElementById('ie_superior')?.value||null):null;
-  if(!nome||!cargo) { alert('Preencha o nome e o cargo.'); return; }
+  if(!nome||!cargo){ alert('Preencha o nome e o cargo.'); return; }
   if(nivel>1&&!supId){ alert('Selecione a quem esta pessoa reporta.'); return; }
   const p=people.find(x=>x.id===id); if(!p) return;
   p.nome=nome; p.cargo=cargo;
@@ -545,23 +623,24 @@ function saveInlineEdit(id){
   fixCircular(id);
   _inlineEditId=null;
   renderAll(); saveLocal();
+  requestAnimationFrame(()=>{
+    const tr=document.querySelector(`tr[data-pid="${id}"]`);
+    if(tr){ tr.classList.add('saved-flash'); setTimeout(()=>tr.classList.remove('saved-flash'),800); }
+  });
 }
-function cancelInlineEdit(){
-  _inlineEditId=null;
-  renderTable(); drawChart();
-}
+function cancelInlineEdit(){ _inlineEditId=null; renderTable(); drawChart(); }
 
-/* ══════════════ PERSON UTILS ══════════════ */
+/* ══ PERSON UTILS ══ */
 function deletePerson(id){
   if(!confirm('Remover esta pessoa do organograma?')) return;
   const p=people.find(x=>x.id===id);
   people.filter(x=>x.superiorId===id).forEach(x=>x.superiorId=p?p.superiorId:null);
   people=people.filter(x=>x.id!==id);
-  renderAll(); saveLocal();
+  _inlineEditId=null; renderAll(); saveLocal();
 }
 function clearPeople(){
-  if(!confirm('Limpar toda a equipe?')) return;
-  people=[]; _pid=1; renderAll(); saveLocal();
+  if(!confirm('Limpar toda a equipe deste organograma?')) return;
+  people=[]; _pid=1; _inlineEditId=null; renderAll(); saveLocal();
 }
 function fixCircular(id){
   function desc(pid){ const ch=people.filter(p=>p.superiorId===pid).map(p=>p.id); return ch.concat(ch.flatMap(c=>desc(c))); }
@@ -569,8 +648,13 @@ function fixCircular(id){
   if(self&&desc(id).includes(self.superiorId)) self.superiorId=null;
 }
 
-/* ══════════════ FUNCOES CRUD ══════════════ */
-function toTitleCase(s){ return s.charAt(0).toUpperCase()+s.slice(1).toLowerCase(); }
+/* ══ SEARCH ══ */
+function onSearch(){
+  _searchQ=(document.getElementById('searchInput')?.value||'').toLowerCase().trim();
+  renderTable();
+}
+
+/* ══ FUNCOES CRUD ══ */
 function sortFuncoes(){ funcoes.sort((a,b)=>a.localeCompare(b,'pt',{sensitivity:'base'})); }
 function addFuncao(){
   const raw=document.getElementById('newFunc').value.trim();
@@ -589,7 +673,7 @@ function removeFuncao(nome){
   renderCadastro(); saveLocal();
 }
 
-/* ══════════════ GRUPOS CRUD ══════════════ */
+/* ══ GRUPOS CRUD ══ */
 function addGrupo(){
   const nome=document.getElementById('newGrp').value.trim();
   const err=document.getElementById('aGrpErr');
@@ -598,17 +682,17 @@ function addGrupo(){
   err.classList.remove('on');
   grupos.push({id:_gid++,nome,palIdx:_swColor});
   document.getElementById('newGrp').value='';
-  renderCadastro(); fillGrupoSel('dGrupo'); fillGrupoSel('mGrupo'); saveLocal();
+  renderCadastro(); saveLocal();
 }
 function removeGrupo(id){
   if(people.some(p=>p.grupoId===id)&&!confirm('Grupo em uso. Remover?')) return;
+  orgs.forEach(o=>o.people.filter(p=>p.grupoId===id).forEach(p=>p.grupoId=null));
   people.filter(p=>p.grupoId===id).forEach(p=>p.grupoId=null);
   grupos=grupos.filter(g=>g.id!==id);
   renderCadastro(); renderAll(); saveLocal();
 }
 function moveGrupo(id,dir){
-  const i=grupos.findIndex(g=>g.id===id);
-  const j=i+dir;
+  const i=grupos.findIndex(g=>g.id===id), j=i+dir;
   if(j<0||j>=grupos.length) return;
   [grupos[i],grupos[j]]=[grupos[j],grupos[i]];
   renderCadastro(); drawChart(); saveLocal();
@@ -619,62 +703,72 @@ function initSwatches(){
 }
 function pickSw(i){ _swColor=i; document.querySelectorAll('#grpSwatches .sw').forEach((e,j)=>e.classList.toggle('sel',j===i)); }
 
-/* ══════════════ RENDER CADASTRO ══════════════ */
+/* ══ RENDER CADASTRO ══ */
 function renderCadastro(){
-  // funções
   const ft=document.getElementById('funcTags');
   ft.innerHTML=funcoes.length
     ? funcoes.map(f=>`<span class="func-tag">${esc(f)}<button class="tag-x" onclick="removeFuncao('${esc(f).replace(/'/g,"\\'")}')">✕</button></span>`).join('')
-    : '<span style="color:var(--subtle);font-size:.8rem;font-style:italic;">Nenhuma função cadastrada.</span>';
-  // grupos — lista ordenável com setas
-  const gt=document.getElementById('grpTags');
+    : '<span style="color:var(--subtle);font-size:.8rem;font-style:italic;grid-column:1/-1;">Nenhuma função cadastrada.</span>';
+  const gl=document.getElementById('grpList');
   if(!grupos.length){
-    gt.innerHTML='<span style="color:var(--subtle);font-size:.8rem;font-style:italic;">Nenhum grupo cadastrado.</span>';
+    gl.innerHTML='<p style="color:var(--subtle);font-size:.8rem;font-style:italic;margin-bottom:6px;">Nenhum grupo cadastrado.</p>';
   } else {
-    gt.innerHTML=grupos.map((g,i)=>{
+    gl.innerHTML=grupos.map((g,i)=>{
       const p=PAL[g.palIdx%PAL.length];
       return `<div class="grp-list-row" style="border-left:4px solid ${p.border};background:${p.fill};">
         <div style="display:flex;flex-direction:column;gap:1px;">
-          <button class="ord-btn" onclick="moveGrupo(${g.id},-1)" ${i===0?'disabled':''} title="Mover para cima">▲</button>
-          <button class="ord-btn" onclick="moveGrupo(${g.id},+1)" ${i===grupos.length-1?'disabled':''} title="Mover para baixo">▼</button>
+          <button class="ord-btn" onclick="moveGrupo(${g.id},-1)" ${i===0?'disabled':''}>▲</button>
+          <button class="ord-btn" onclick="moveGrupo(${g.id},+1)" ${i===grupos.length-1?'disabled':''}>▼</button>
         </div>
         <span class="ord-num" style="color:${p.label};">${i+1}</span>
         <span style="font-size:.8rem;font-weight:600;color:${p.label};flex:1;">${esc(g.nome)}</span>
-        <button class="tag-x" onclick="removeGrupo(${g.id})" style="color:${p.label};font-size:.8rem;" title="Remover">✕</button>
+        <button class="tag-x" onclick="removeGrupo(${g.id})" style="color:${p.label};font-size:.8rem;">✕</button>
       </div>`;
     }).join('');
   }
   fillCargoSel('dCargo');
-  fillGrupoSel('dGrupo'); fillGrupoSel('mGrupo');
+  fillGrupoSel('dGrupo');
 }
 
-/* ══════════════ RENDER TABELA ══════════════ */
+/* ══ RENDER TABLE ══ */
 function renderTable(){
   const tbody=document.getElementById('orgTbody');
   document.getElementById('countBadge').textContent=people.length?`${people.length} pessoa${people.length!==1?'s':''}` : '';
+  document.getElementById('noGroupWarn').style.display=people.some(p=>!p.grupoId)?'':'none';
 
   if(!people.length){
     tbody.innerHTML='<tr class="empty-row"><td colspan="5">Nenhuma pessoa cadastrada. Clique em "+ Adicionar pessoa".</td></tr>';
     return;
   }
 
-  // group by nivel
-  const byLvl={};
-  people.forEach(p=>{ const n=getNivel(p.id); (byLvl[n]=byLvl[n]||[]).push(p); });
-  const levels=Object.keys(byLvl).map(Number).sort((a,b)=>a-b);
+  const q=_searchQ;
+  const filtered=q
+    ? people.filter(p=>{ const g=grupos.find(x=>x.id===p.grupoId); return p.nome.toLowerCase().includes(q)||p.cargo.toLowerCase().includes(q)||(g&&g.nome.toLowerCase().includes(q)); })
+    : people;
 
+  if(!filtered.length){
+    tbody.innerHTML='<tr class="empty-row"><td colspan="5">Nenhum resultado para a busca.</td></tr>';
+    return;
+  }
+
+  const byLvl={};
+  filtered.forEach(p=>{ const n=getNivel(p.id); (byLvl[n]=byLvl[n]||[]).push(p); });
+  const levels=Object.keys(byLvl).map(Number).sort((a,b)=>a-b);
   const NIVEL_LABEL={1:'Nível 1 — Liderança',2:'Nível 2 — Gerência / Coordenação',
     3:'Nível 3 — Supervisão / Técnico Sr.',4:'Nível 4 — Técnico / Analista',5:'Nível 5 — Operacional'};
 
   tbody.innerHTML=levels.flatMap(lvl=>{
-    const hdr=`<tr class="level-row"><td colspan="5">${NIVEL_LABEL[lvl]||('Nível '+lvl)}</td></tr>`;
+    const cnt=byLvl[lvl].length;
+    const hdr=`<tr class="level-row"><td colspan="5">${NIVEL_LABEL[lvl]||('Nível '+lvl)} <span style="font-weight:400;opacity:.6;">(${cnt})</span></td></tr>`;
     const rows=byLvl[lvl].map(p=>{
       const g=grupos.find(x=>x.id===p.grupoId);
       const pal=g?PAL[g.palIdx%PAL.length]:null;
-      const chip=g?`<span class="grp-chip" style="background:${pal.fill};border-color:${pal.border};color:${pal.label};"><span class="chip-dot" style="background:${pal.border};"></span>${esc(g.nome)}</span>` :'<span style="color:var(--subtle);font-size:.72rem;">—</span>';
+      const chip=g
+        ?`<span class="grp-chip" style="background:${pal.fill};border-color:${pal.border};color:${pal.label};"><span class="chip-dot" style="background:${pal.border};"></span>${esc(g.nome)}</span>`
+        :'<span class="no-grp-chip">Sem grupo</span>';
       const sup=p.superiorId?people.find(x=>x.id===p.superiorId):null;
       const supTxt=sup?`<span class="sup-txt" title="${esc(sup.nome)}">${esc(sup.nome)}</span>`:'<span style="color:var(--subtle);font-size:.72rem;">—</span>';
-      return `<tr data-pid="${p.id}" onclick="openInlineEdit(${p.id})" style="cursor:pointer;">
+      return `<tr data-pid="${p.id}" onclick="openInlineEdit(${p.id})" style="cursor:pointer;"${!p.grupoId?' class="no-group-row"':''}>
         <td><div class="td-nome">${esc(p.nome)}</div><div class="td-cargo">${esc(p.cargo)}</div></td>
         <td>${chip}</td>
         <td><span class="lvl-badge">N${getNivel(p.id)}</span></td>
@@ -688,38 +782,65 @@ function renderTable(){
   }).join('');
 }
 
-/* ══════════════ EXAMPLE ══════════════ */
+/* ══ EXAMPLE ══ */
 function loadExample(){
-  if(people.length&&!confirm('Substituir equipe atual?')) return;
+  if(people.length&&!confirm('Substituir equipe atual pelo exemplo?')) return;
   people=[]; _pid=1;
   const g=n=>grupos.find(x=>x.nome===n)?.id||null;
   const add=(nome,cargo,grp,sup)=>{ people.push({id:_pid++,nome:nome.toUpperCase(),cargo,grupoId:g(grp),superiorId:sup}); return _pid-1; };
-  const dir=add('Carlos Andrade','GERENTE DE CONTRATOS','Gestão Contratual',null);
-  const gp =add('Mariana Costa','ENGENHEIRO DE OBRAS','Produção',dir);
-  const gpl=add('Felipe Souza','ENGENHEIRO DE PLANEJAMENTO','Planejamento / Medição',dir);
-  const gq =add('Renata Alves','LABORATORISTA','Qualidade / Laboratório',dir);
-  const gs =add('Paula Nunes','ENGENHEIRO SEG DO TRABALHO','SSMA',dir);
-  const ga =add('Roberto Dias','GERENTE ADMINISTRATIVO','Administração',dir);
-       add('Ana Lima','SUPERVISOR DE OBRAS','Produção',gp);
-       add('João Mendes','MESTRE DE OBRA','Produção',gp);
-       add('Camila Torres','ENCARREGADO DE OBRAS','Produção',gp);
-       add('Lucas Barbosa','TECNICO DE PLANEJAMENTO','Planejamento / Medição',gpl);
-       add('Sandra Oliveira','TECNICO SEG DO TRABALHO','SSMA',gs);
-       add('Thiago Ramos','ANALISTA DE MEIO AMBIENTE','SSMA',gs);
-       add('Isabela Freitas','AUXILIAR DE LABORATORISTA','Qualidade / Laboratório',gq);
-       add('Luisa Ferreira','AUXILIAR ADMINISTRATIVO','Administração',ga);
+  const dir=add('Carlos Andrade','Gerente de contratos','Gestão Contratual',null);
+  const gp =add('Mariana Costa','Engenheiro de obras','Produção',dir);
+  const gpl=add('Felipe Souza','Engenheiro de planejamento','Planejamento / Medição',dir);
+  const gq =add('Renata Alves','Laboratorista','Qualidade / Laboratório',dir);
+  const gs =add('Paula Nunes','Engenheiro seg do trabalho','SSMA',dir);
+  const ga =add('Roberto Dias','Gerente administrativo','Administração',dir);
+       add('Ana Lima','Supervisor de obras','Produção',gp);
+       add('João Mendes','Mestre de obra','Produção',gp);
+       add('Camila Torres','Encarregado de obras','Produção',gp);
+       add('Lucas Barbosa','Técnico de planejamento','Planejamento / Medição',gpl);
+       add('Sandra Oliveira','Técnico seg do trabalho','SSMA',gs);
+       add('Thiago Ramos','Analista de meio ambiente','SSMA',gs);
+       add('Isabela Freitas','Auxiliar de laboratorista','Qualidade / Laboratório',gq);
+       add('Luisa Ferreira','Auxiliar administrativo','Administração',ga);
   renderAll(); saveLocal();
 }
 
-/* ══════════════ CHART ══════════════ */
-const NW=196,NH=72,HG=28,VG=52;
+/* ══ EXPORT / IMPORT JSON ══ */
+function exportJSON(){
+  const org=curOrg();
+  const data={versao:'org6',titulo:org?.nome||'Organograma',funcoes,grupos,people,exportadoEm:new Date().toISOString()};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.download=`${(org?.nome||'organograma').replace(/[^a-z0-9]/gi,'_').toLowerCase()}.json`;
+  a.href=URL.createObjectURL(blob); a.click(); URL.revokeObjectURL(a.href);
+}
+function importJSON(ev){
+  const file=ev.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      if(!data.people||!Array.isArray(data.people)) throw new Error('Formato inválido');
+      if(!confirm(`Importar "${data.titulo||'organograma'}"?\nIsso substituirá a equipe e o catálogo atuais.`)) return;
+      if(data.funcoes&&Array.isArray(data.funcoes)) funcoes=data.funcoes;
+      if(data.grupos&&Array.isArray(data.grupos)){ grupos=data.grupos; _gid=Math.max(0,...grupos.map(g=>g.id))+1; }
+      people=data.people; _pid=Math.max(0,...people.map(p=>p.id))+1;
+      const org=curOrg();
+      if(org){ org.nome=data.titulo||'Organograma'; document.getElementById('orgTitle').value=org.nome; }
+      sortFuncoes(); renderOrgBar(); renderAll(); saveLocal();
+    }catch(err){ alert('Erro ao importar: '+err.message); }
+  };
+  reader.readAsText(file);
+  ev.target.value='';
+}
 
+/* ══ CHART ══ */
+const NW=196,NH=72,HG=28,VG=52;
 function grpOrder(grupoId){ const i=grupos.findIndex(g=>g.id===grupoId); return i<0?999:i; }
 function buildTree(){
   const map={};
   people.forEach(p=>{map[p.id]={...p,children:[]};});
   people.forEach(p=>{ if(p.superiorId&&map[p.superiorId]) map[p.superiorId].children.push(map[p.id]); });
-  // sort children by group order so left-to-right matches group list order
   Object.values(map).forEach(n=>n.children.sort((a,b)=>grpOrder(a.grupoId)-grpOrder(b.grupoId)));
   const roots=people.filter(p=>!p.superiorId||!map[p.superiorId]).map(r=>map[r.id]);
   roots.sort((a,b)=>grpOrder(a.grupoId)-grpOrder(b.grupoId));
@@ -732,30 +853,21 @@ function layout(roots){
   let x=0;roots.forEach(r=>{sw(r);pl(r,x,0);x+=r._w+HG*2;});
   return nodes;
 }
-
 function drawChart(){
   const canvas=document.getElementById('orgCanvas');
-  const cs=document.getElementById('chartSection');
-  const ce=document.getElementById('chartEmpty');
-  if(!people.length){ cs.style.display='none';ce.style.display=''; return; }
+  const cs=document.getElementById('chartSection'), ce=document.getElementById('chartEmpty');
+  if(!people.length){ cs.style.display='none'; ce.style.display=''; return; }
   cs.style.display=''; ce.style.display='none';
-
   const roots=buildTree(), nodes=layout(roots);
   const pad=48;
-  const minX=Math.min(...nodes.map(n=>n._x));
-  const minY=Math.min(...nodes.map(n=>n._y));
-  const maxX=Math.max(...nodes.map(n=>n._x+NW));
-  const maxY=Math.max(...nodes.map(n=>n._y+NH));
-
+  const minX=Math.min(...nodes.map(n=>n._x)), minY=Math.min(...nodes.map(n=>n._y));
+  const maxX=Math.max(...nodes.map(n=>n._x+NW)), maxY=Math.max(...nodes.map(n=>n._y+NH));
   canvas.width=Math.max((maxX-minX+pad*2)*_zoom,200);
   canvas.height=Math.max((maxY-minY+pad*2)*_zoom,200);
-
   const ctx=canvas.getContext('2d');
   ctx.clearRect(0,0,canvas.width,canvas.height);
   ctx.save(); ctx.scale(_zoom,_zoom);
   const ox=-minX+pad,oy=-minY+pad;
-
-  // connectors
   ctx.strokeStyle='#d1d5db';ctx.lineWidth=1.5;ctx.setLineDash([]);
   nodes.forEach(n=>{
     if(!n.children.length) return;
@@ -765,21 +877,16 @@ function drawChart(){
       ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px,my);ctx.lineTo(cx,my);ctx.lineTo(cx,cy);ctx.stroke();
     });
   });
-
-  // cards
   nodes.forEach(n=>{
     const x=n._x+ox,y=n._y+oy;
     const g=grupos.find(g=>g.id===n.grupoId);
     const pal=g?PAL[g.palIdx%PAL.length]:null;
     const accent=pal?pal.border:'#d1d5db';
-
     ctx.shadowColor='rgba(0,0,0,.09)';ctx.shadowBlur=8;ctx.shadowOffsetY=2;
     rr(ctx,x,y,NW,NH,8);ctx.fillStyle='#fff';ctx.fill();
     ctx.shadowColor='transparent';ctx.shadowBlur=0;ctx.shadowOffsetY=0;
-
     rr(ctx,x,y,5,NH,[8,0,0,8]);ctx.fillStyle=accent;ctx.fill();
     rr(ctx,x,y,NW,NH,8);ctx.strokeStyle='#e5e7eb';ctx.lineWidth=1;ctx.stroke();
-
     const tx=x+12;
     ctx.fillStyle='#111827';ctx.font='700 11.5px "DM Sans",sans-serif';
     ctx.fillText(trunc(ctx,n.nome,NW-18),tx,y+22);
@@ -790,7 +897,6 @@ function drawChart(){
   ctx.restore();
   renderLegend();
 }
-
 function rr(ctx,x,y,w,h,r){
   if(typeof r==='number')r=[r,r,r,r];
   const[tl,tr,br,bl]=r;
@@ -800,7 +906,6 @@ function rr(ctx,x,y,w,h,r){
   ctx.lineTo(x,y+tl);ctx.quadraticCurveTo(x,y,x+tl,y);ctx.closePath();
 }
 function trunc(ctx,t,mw){ if(ctx.measureText(t).width<=mw)return t; let s=t; while(s.length>0&&ctx.measureText(s+'…').width>mw)s=s.slice(0,-1); return s+'…'; }
-
 function renderLegend(){
   const wrap=document.getElementById('legWrap');
   const usedG=grupos.filter(g=>people.some(p=>p.grupoId===g.id));
@@ -812,46 +917,92 @@ function renderLegend(){
     }).join('')+'</div></div>';
 }
 
-/* ══════════════ ZOOM / EXPORT ══════════════ */
+/* ══ PAN (arrastar o gráfico) ══ */
+function initCanvasPan(){
+  const canvas=document.getElementById('orgCanvas');
+  const wrap=document.getElementById('canvasWrap');
+  let dragging=false,sx,sy,slx,sly;
+  canvas.addEventListener('mousedown',e=>{ dragging=true;sx=e.clientX;sy=e.clientY;slx=wrap.scrollLeft;sly=wrap.scrollTop;canvas.style.cursor='grabbing';e.preventDefault(); });
+  document.addEventListener('mousemove',e=>{ if(!dragging) return; wrap.scrollLeft=slx-(e.clientX-sx); wrap.scrollTop=sly-(e.clientY-sy); });
+  document.addEventListener('mouseup',()=>{ dragging=false; canvas.style.cursor='grab'; });
+  canvas.addEventListener('touchstart',e=>{ const t=e.touches[0];sx=t.clientX;sy=t.clientY;slx=wrap.scrollLeft;sly=wrap.scrollTop; },{passive:true});
+  canvas.addEventListener('touchmove',e=>{ const t=e.touches[0];wrap.scrollLeft=slx-(t.clientX-sx);wrap.scrollTop=sly-(t.clientY-sy);e.preventDefault(); },{passive:false});
+}
+
+/* ══ ZOOM / EXPORT ══ */
 function zoom(d){ _zoom=Math.min(3,Math.max(0.2,_zoom+d)); drawChart(); }
 function resetZoom(){ _zoom=1; drawChart(); }
 function exportPNG(){
-  const c=document.getElementById('orgCanvas');
-  if(!c||!people.length) return;
-  const a=document.createElement('a');a.download='organograma.png';a.href=c.toDataURL('image/png');a.click();
+  const canvas=document.getElementById('orgCanvas');
+  if(!canvas||!people.length) return;
+  const titulo=(curOrg()?.nome||'Organograma');
+  const titleH=44;
+  const tc=document.createElement('canvas');
+  tc.width=canvas.width; tc.height=canvas.height+titleH;
+  const ctx=tc.getContext('2d');
+  ctx.fillStyle='#fff'; ctx.fillRect(0,0,tc.width,tc.height);
+  ctx.fillStyle='#1f2937'; ctx.font='700 16px "Space Grotesk",sans-serif';
+  ctx.textAlign='center'; ctx.fillText(titulo,tc.width/2,28); ctx.textAlign='left';
+  ctx.drawImage(canvas,0,titleH);
+  const a=document.createElement('a');
+  a.download=`${titulo.replace(/[^a-z0-9]/gi,'_').toLowerCase()}.png`;
+  a.href=tc.toDataURL('image/png'); a.click();
 }
 
-/* ══════════════ RENDER ALL ══════════════ */
+/* ══ RENDER ALL ══ */
 function renderAll(){ renderCadastro(); renderTable(); drawChart(); }
 
-/* ══════════════ PERSISTENCE ══════════════ */
+/* ══ PERSISTENCE ══ */
 function saveLocal(){
-  localStorage.setItem('org5_f',JSON.stringify(funcoes));
-  localStorage.setItem('org5_g',JSON.stringify(grupos));
-  localStorage.setItem('org5_p',JSON.stringify(people));
-  localStorage.setItem('org5_gid',_gid);
-  localStorage.setItem('org5_pid',_pid);
+  saveCurrentPeople();
+  localStorage.setItem('org6_f',JSON.stringify(funcoes));
+  localStorage.setItem('org6_g',JSON.stringify(grupos));
+  localStorage.setItem('org6_gid',_gid);
+  localStorage.setItem('org6_orgs',JSON.stringify(orgs));
+  localStorage.setItem('org6_cur',_currentOrgId);
+  localStorage.setItem('org6_oid',_oid);
 }
 function loadLocal(){
   try{
-    const f=localStorage.getItem('org5_f'),g=localStorage.getItem('org5_g'),p=localStorage.getItem('org5_p');
-    if(f)funcoes=JSON.parse(f);
-    if(g){grupos=JSON.parse(g);_gid=Number(localStorage.getItem('org5_gid')||1);}
-    if(p){people=JSON.parse(p);_pid=Number(localStorage.getItem('org5_pid')||1);}
+    const f=localStorage.getItem('org6_f'),g=localStorage.getItem('org6_g'),o=localStorage.getItem('org6_orgs');
+    if(f) funcoes=JSON.parse(f);
+    if(g){ grupos=JSON.parse(g); _gid=Number(localStorage.getItem('org6_gid')||1); }
+    if(o){ orgs=JSON.parse(o); _oid=Number(localStorage.getItem('org6_oid')||1); }
+    const cur=localStorage.getItem('org6_cur');
+    if(cur) _currentOrgId=Number(cur);
   }catch(e){}
+  // migrar org5 → org6
+  if(!orgs.length){
+    try{
+      const f5=localStorage.getItem('org5_f'),g5=localStorage.getItem('org5_g'),p5=localStorage.getItem('org5_p');
+      if(f5&&!funcoes.length) funcoes=JSON.parse(f5);
+      if(g5&&!grupos.length){ grupos=JSON.parse(g5); _gid=Number(localStorage.getItem('org5_gid')||1); }
+      const ppl=p5?JSON.parse(p5):[];
+      const pid=Number(localStorage.getItem('org5_pid')||1);
+      orgs=[{id:1,nome:'Organograma 1',people:ppl,_pid:pid}];
+      _oid=2; _currentOrgId=1;
+    }catch(e){}
+  }
 }
 
-function showErr(el,msg){ el.textContent=msg;el.classList.add('on'); }
+function showErr(el,msg){ el.textContent=msg; el.classList.add('on'); }
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-/* ══════════════ INIT ══════════════ */
+/* ══ INIT ══ */
 loadLocal();
 if(!funcoes.length) funcoes=[...DEF_FUNC];
-// migrate: convert any all-caps function names to "First letter uppercase" format
-funcoes=funcoes.map(f=> f===f.toUpperCase() ? f.charAt(0).toUpperCase()+f.slice(1).toLowerCase() : f);
+// migrar all-caps → primeira letra maiúscula
+funcoes=funcoes.map(f=>f===f.toUpperCase()?f.charAt(0).toUpperCase()+f.slice(1).toLowerCase():f);
 sortFuncoes();
 if(!grupos.length) DEF_GRUPOS.forEach(g=>grupos.push({id:_gid++,nome:g.nome,palIdx:g.palIdx}));
+if(!orgs.length){ orgs=[{id:_oid++,nome:'Organograma 1',people:[],_pid:1}]; }
+if(!_currentOrgId||!orgs.find(o=>o.id===_currentOrgId)) _currentOrgId=orgs[0].id;
+const _initOrg=orgs.find(o=>o.id===_currentOrgId)||orgs[0];
+people=[..._initOrg.people]; _pid=_initOrg._pid||1;
+document.getElementById('orgTitle').value=_initOrg?.nome||'';
 initSwatches();
+initCanvasPan();
+renderOrgBar();
 renderAll();
 </script>
 </body>
