@@ -962,10 +962,11 @@ function drawChart(){
   const corpPpl=people.filter(p=>p.tipo==='corp');
   const allNonCorp=people.filter(p=>p.tipo!=='corp');
 
-  // Separate orphans (no superior, nivel > root nivel) from tree
+  // Nivel=1 + no superior = tree root. Nivel>1 + no superior = orphan (right column at nivel Y).
+  // If nobody is nivel=1 (unusual), fall back to all no-sup as roots.
   const noSupNonCorp=allNonCorp.filter(p=>!p.superiorId);
-  const minNvl=noSupNonCorp.length?Math.min(...noSupNonCorp.map(p=>p.nivel||1)):1;
-  const orphanPpl=noSupNonCorp.filter(p=>(p.nivel||1)>minNvl);
+  const hasN1Root=noSupNonCorp.some(p=>(p.nivel||1)===1);
+  const orphanPpl=hasN1Root ? noSupNonCorp.filter(p=>(p.nivel||1)>1) : [];
   const orphanIds=new Set(orphanPpl.map(p=>p.id));
   const treePpl=allNonCorp.filter(p=>!orphanIds.has(p.id));
 
@@ -1068,8 +1069,8 @@ function renderLegend(){
       }).join('')+'</div></div>';
   }
   const noSupNonCorp2=people.filter(p=>!p.superiorId&&p.tipo!=='corp');
-  const minNvl2=noSupNonCorp2.length?Math.min(...noSupNonCorp2.map(p=>p.nivel||1)):1;
-  const hasOrphan=noSupNonCorp2.some(p=>(p.nivel||1)>minNvl2);
+  const hasN1Root2=noSupNonCorp2.some(p=>(p.nivel||1)===1);
+  const hasOrphan=hasN1Root2&&noSupNonCorp2.some(p=>(p.nivel||1)>1);
   if(hasCorp||hasSupport||hasOrphan){
     html+=`<div class="leg-block"><div class="leg-title">Legenda visual</div><div class="leg-grid">`;
     if(hasCorp) html+=`<div class="leg-item"><div style="width:28px;height:22px;border:1.5px dashed #94a3b8;border-radius:4px;background:#f8fafc;flex-shrink:0"></div><div class="leg-info"><div class="lc">Corporativo</div><div class="ln">Card tracejado cinza, sem linha vertical</div></div></div>`;
