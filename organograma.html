@@ -732,6 +732,10 @@ function removeGrupo(id){
   grupos=grupos.filter(g=>g.id!==id);
   renderCadastro(); renderAll(); saveLocal();
 }
+function changeGrupoColor(id,palIdx){
+  const g=grupos.find(x=>x.id===id); if(!g) return;
+  g.palIdx=palIdx; renderCadastro(); drawChart(); saveLocal();
+}
 function moveGrupo(id,dir){
   const i=grupos.findIndex(g=>g.id===id), j=i+dir;
   if(j<0||j>=grupos.length) return;
@@ -760,6 +764,7 @@ function renderCadastro(){
           </div>
           <span class="ord-num" style="color:${p.label}">${i+1}</span>
           <span style="font-size:.8rem;font-weight:600;color:${p.label};flex:1">${esc(g.nome)}</span>
+          <div style="display:flex;gap:3px;flex-wrap:wrap;max-width:124px">${SW_HEX.map((c,si)=>`<div class="sw${si===g.palIdx?' sel':''}" style="background:${c};width:16px;height:16px;border-radius:3px;cursor:pointer;" onclick="changeGrupoColor(${g.id},${si})"></div>`).join('')}</div>
           <button class="tag-x" onclick="removeGrupo(${g.id})" style="color:${p.label}">✕</button>
         </div>`;}).join('')
     : '<p style="color:var(--subtle);font-size:.8rem;font-style:italic">Nenhum grupo cadastrado.</p>';
