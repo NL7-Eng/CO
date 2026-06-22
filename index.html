@@ -903,8 +903,11 @@ document.addEventListener('click',e=>{ if(!e.target.closest('.ac-wrap')) closeAC
 /* ====================================================================
    CÁLCULO DE JORNADA
    ==================================================================== */
-let improdList = [];  // [{id, nome, horas}]
-let _improdId  = 0;
+let improdList = [
+  {id:1, nome:'DDS e Doc. Segurança', horas:0.25},
+  {id:2, nome:'Deslocamentos',        horas:0.5},
+];
+let _improdId  = 2;
 
 // Parse "8", "8.5", "8,5", "8:30", "1:45" → decimal hours
 function parseHora(str){
@@ -2035,7 +2038,7 @@ function limpar(){
   customHols=[]; renderCustomList();
   fases=[]; _faseId=0; renderFasesList();
   periodoMes={}; periodoPerc={umido:100,transicao:80,seco:60}; pluvioMes={}; impactoMes={};
-  improdList=[]; _improdId=0; renderImprodList(); calcJornada();
+  improdList=[{id:1,nome:'DDS e Doc. Segurança',horas:0.25},{id:2,nome:'Deslocamentos',horas:0.5}]; _improdId=2; renderImprodList(); calcJornada();
   renderPeriodoGrid();
   hasCalcResult=false;
   document.getElementById('recalcNotice').classList.remove('on');
@@ -2106,6 +2109,7 @@ if(!loadState()){
   document.getElementById('dataOS').value='01/06/2026';
   document.getElementById('prazo').value='180';
   renderPeriodoGrid();
+  renderImprodList();
   calcJornada();
 }
 </script>
