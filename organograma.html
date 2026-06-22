@@ -736,7 +736,7 @@ function changeGrupoColor(id,palIdx){
   const g=grupos.find(x=>x.id===id); if(!g) return;
   g.palIdx=palIdx; renderCadastro(); drawChart(); saveLocal();
 }
-  const i=grupos.findIndex(g=>g.id===id), j=i+dir;
+function moveGrupo(id,dir){
   if(j<0||j>=grupos.length) return;
   [grupos[i],grupos[j]]=[grupos[j],grupos[i]];
   renderCadastro(); drawChart(); saveLocal();
