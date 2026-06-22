@@ -109,8 +109,12 @@
     .jornada-improd-hdr span { font-size: .82rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
     .jornada-improd-list { display: flex; flex-direction: column; gap: 5px; }
     .jornada-improd-item { display: flex; align-items: center; gap: 8px; background: #f9fafb; border: 1px solid var(--border-l); border-radius: 6px; padding: 6px 10px; font-size: .88rem; }
-    .jornada-improd-item input[type=text]   { flex: 1; border: none; background: transparent; font-size: .88rem; font-family: var(--fb); color: var(--text); outline: none; }
-    .jornada-improd-item input[type=number] { width: 52px; border: 1px solid var(--border); border-radius: 4px; padding: 3px 5px; font-size: .88rem; font-family: var(--fb); text-align: center; }
+    .jornada-improd-item input[type=text]   { flex: 1; border: none; background: transparent; font-size: .88rem; font-family: var(--fb); color: var(--text); outline: none; min-width:0; }
+    .jornada-improd-item input[type=number] { border: 1px solid var(--border); border-radius: 4px; padding: 3px 5px; font-size: .88rem; font-family: var(--fb); }
+    .imp-mode-btn { font-size:.68rem; font-weight:700; padding:2px 6px; border:1px solid var(--border); border-radius:4px; background:#f3f4f6; color:var(--muted); cursor:pointer; white-space:nowrap; flex-shrink:0; }
+    .imp-mode-btn.imp-mode-active { background:#dbeafe; color:#1e3a8a; border-color:#93c5fd; }
+    .imp-sep { font-size:.82rem; color:var(--muted); flex-shrink:0; }
+    .imp-total { font-size:.82rem; font-weight:700; color:var(--text); white-space:nowrap; flex-shrink:0; }
     .jornada-result { font-size: .88rem; color: var(--muted); margin-top: 2px; }
     .jornada-result strong { color: var(--text); font-size: 1rem; }
 
@@ -904,8 +908,8 @@ document.addEventListener('click',e=>{ if(!e.target.closest('.ac-wrap')) closeAC
    CÁLCULO DE JORNADA
    ==================================================================== */
 let improdList = [
-  {id:1, nome:'DDS e Doc. Segurança', horas:0.25},
-  {id:2, nome:'Deslocamentos',        horas:0.5},
+  {id:1, nome:'DDS e Doc. Segurança', modo:'total', horas:0.25},
+  {id:2, nome:'Deslocamentos',        modo:'qtd',   qtd:4, unitH:0.125},
 ];
 let _improdId  = 2;
 
@@ -934,7 +938,7 @@ function jornadaUtil(){
   return parseHora(document.getElementById('jornadaUtil')?.value);
 }
 function jornadaProdutiva(){
-  const total = improdList.reduce((s,i)=>s+(i.horas||0), 0);
+  const total = improdList.reduce((s,i)=>s+improdHoras(i), 0);
   return Math.max(0, jornadaUtil() - total);
 }
 function calcJornada(){
@@ -943,11 +947,13 @@ function calcJornada(){
   if(el) el.textContent = fmtHora(jp)+'/dia';
   if(typeof renderPeriodoCards==='function') renderPeriodoCards();
 }
+function improdHoras(i){
+  return i.modo==='qtd' ? (i.qtd||0)*(i.unitH||0) : (i.horas||0);
+}
 function addImprod(){
   const id = ++_improdId;
-  improdList.push({id, nome:'', horas:0});
+  improdList.push({id, nome:'', modo:'total', horas:0});
   renderImprodList(); saveState();
-  // focus on the newly added name input
   setTimeout(()=>document.getElementById('imp-n-'+id)?.focus(), 50);
 }
 function removeImprod(id){
@@ -957,8 +963,26 @@ function removeImprod(id){
 }
 function updateImprod(id, field, val){
   const item = improdList.find(i=>i.id===id);
-  if(item){ item[field] = field==='horas' ? parseHora(val) : val; }
-  calcJornada();
+  if(!item) return;
+  if(field==='horas')  item.horas  = parseHora(val);
+  else if(field==='unitH') item.unitH = parseHora(val);
+  else if(field==='qtd')   item.qtd   = parseFloat(val)||0;
+  else item[field] = val;
+  calcJornada(); saveState();
+}
+function toggleImprodModo(id){
+  const item = improdList.find(i=>i.id===id);
+  if(!item) return;
+  if(item.modo==='qtd'){
+    item.horas = +improdHoras(item).toFixed(3);
+    item.modo='total';
+  } else {
+    // convert current horas to qtd×unitH defaults
+    item.qtd   = item.qtd   || 1;
+    item.unitH = item.unitH || item.horas || 0;
+    item.modo='qtd';
+  }
+  renderImprodList(); calcJornada(); saveState();
 }
 function renderImprodList(){
   const el = document.getElementById('improdList');
@@ -966,15 +990,29 @@ function renderImprodList(){
     el.innerHTML='<span style="color:var(--subtle);font-size:.82rem;font-style:italic;">Nenhum tempo improdutivo cadastrado.</span>';
     calcJornada(); return;
   }
-  el.innerHTML = improdList.map(i=>`
-    <div class="jornada-improd-item">
-      <input type="text" id="imp-n-${i.id}" placeholder="Ex: Deslocamento" value="${i.nome}"
+  el.innerHTML = improdList.map(i=>{
+    const isQtd = i.modo==='qtd';
+    const total = +improdHoras(i).toFixed(3);
+    const modeBtn=`<button class="imp-mode-btn${isQtd?' imp-mode-active':''}" onclick="toggleImprodModo(${i.id})" title="${isQtd?'Mudar para total':'Mudar para qtd × unitário'}">qtd×</button>`;
+    const fields = isQtd
+      ? `<input type="number" id="imp-q-${i.id}" value="${i.qtd??1}" min="1" step="1"
+            style="width:44px;text-align:center;" oninput="updateImprod(${i.id},'qtd',this.value)" />
+         <span class="imp-sep">×</span>
+         <input type="text" id="imp-u-${i.id}" value="${i.unitH||''}" placeholder="0:07"
+            style="width:52px;text-align:center;" oninput="updateImprod(${i.id},'unitH',this.value)" />
+         <span class="imp-sep">h =</span>
+         <span class="imp-total">${fmtHora(total)} h/dia</span>`
+      : `<input type="text" id="imp-h-${i.id}" value="${i.horas||''}" placeholder="0,25"
+            style="width:70px;" oninput="updateImprod(${i.id},'horas',this.value)" />
+         <span style="font-size:.75rem;color:var(--muted);">h/dia</span>`;
+    return `<div class="jornada-improd-item">
+      ${modeBtn}
+      <input type="text" id="imp-n-${i.id}" placeholder="Descrição" value="${i.nome}"
         oninput="updateImprod(${i.id},'nome',this.value)" />
-      <input type="text" id="imp-h-${i.id}" value="${i.horas||''}"
-        placeholder="1 ou 1:30" style="width:80px;" oninput="updateImprod(${i.id},'horas',this.value)" />
-      <span style="font-size:.75rem;color:var(--muted);">h/dia</span>
+      ${fields}
       <button class="remove-btn" onclick="removeImprod(${i.id})">Remover</button>
-    </div>`).join('');
+    </div>`;
+  }).join('');
   calcJornada();
 }
 
@@ -2038,7 +2076,7 @@ function limpar(){
   customHols=[]; renderCustomList();
   fases=[]; _faseId=0; renderFasesList();
   periodoMes={}; periodoPerc={umido:100,transicao:80,seco:60}; pluvioMes={}; impactoMes={};
-  improdList=[{id:1,nome:'DDS e Doc. Segurança',horas:0.25},{id:2,nome:'Deslocamentos',horas:0.5}]; _improdId=2; renderImprodList(); calcJornada();
+  improdList=[{id:1,nome:'DDS e Doc. Segurança',modo:'total',horas:0.25},{id:2,nome:'Deslocamentos',modo:'qtd',qtd:4,unitH:0.125}]; _improdId=2; renderImprodList(); calcJornada();
   renderPeriodoGrid();
   hasCalcResult=false;
   document.getElementById('recalcNotice').classList.remove('on');
