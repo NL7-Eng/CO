@@ -23,8 +23,8 @@
     .back-link:hover{background:#374151;color:#fff}
     .wrap{max-width:1060px;margin:0 auto;padding:0 16px 80px}
 
-    /* ORG SELECTOR BAR */
-    .org-bar{display:flex;gap:4px;align-items:flex-end;margin-top:24px;flex-wrap:wrap;border-bottom:2px solid var(--border-l);padding-bottom:0}
+    /* ORG BAR */
+    .org-bar{display:flex;gap:4px;align-items:flex-end;margin-top:24px;flex-wrap:wrap;border-bottom:2px solid var(--border-l)}
     .org-pill{font-family:var(--fd);font-size:.78rem;font-weight:600;color:var(--muted);padding:7px 14px 8px;cursor:pointer;
       border-radius:var(--r) var(--r) 0 0;border:1px solid transparent;border-bottom:none;
       display:inline-flex;align-items:center;gap:6px;background:#f3f4f6;margin-bottom:-2px;transition:all .15s}
@@ -53,7 +53,7 @@
     /* CADASTRO */
     .cad-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
     @media(max-width:680px){.cad-grid{grid-template-columns:1fr}}
-    .tag-wrap{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;min-height:32px;margin-bottom:14px;align-content:start;max-height:320px;overflow-y:auto}
+    .tag-wrap{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;margin-bottom:14px;align-content:start;max-height:320px;overflow-y:auto}
     .func-tag{display:flex;align-items:center;justify-content:space-between;gap:5px;font-size:.76rem;font-weight:500;
       padding:4px 8px;border-radius:6px;background:#f9fafb;border:1px solid var(--border-l);color:var(--text)}
     .grp-list-row{display:flex;align-items:center;gap:8px;padding:5px 10px 5px 8px;border-radius:6px;border:1px solid rgba(0,0,0,.06);margin-bottom:4px}
@@ -69,7 +69,7 @@
     .sw.sel{border-color:#1f2937}
 
     /* FORM */
-    .fg{display:flex;flex-direction:column;gap:4px;margin-bottom:0}
+    .fg{display:flex;flex-direction:column;gap:4px}
     .fg label{font-size:.7rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
     input[type=text],select{border:1px solid var(--border);border-radius:var(--r);padding:8px 10px;
       font-family:var(--fb);font-size:.88rem;color:var(--text);outline:none;
@@ -77,6 +77,20 @@
     input:focus,select:focus{border-color:#6b7280;box-shadow:0 0 0 3px rgba(107,114,128,.12)}
     .input-row{display:flex;gap:7px;align-items:flex-end}
     .input-row .fg{flex:1}
+
+    /* TIPO TOGGLE */
+    .tipo-toggle{display:flex;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;width:100%}
+    .tipo-btn{flex:1;padding:7px 4px;font-family:var(--fd);font-size:.74rem;font-weight:600;cursor:pointer;
+      border:none;background:#fff;color:var(--muted);transition:all .15s;text-align:center}
+    .tipo-btn.on{background:#1f2937;color:#fff}
+    .tipo-btn.on-corp{background:#64748b;color:#fff}
+
+    /* SUPORTA TAGS */
+    .suporta-tags{display:flex;flex-wrap:wrap;gap:4px;min-height:24px;margin-bottom:6px}
+    .suporta-tag{display:inline-flex;align-items:center;gap:4px;font-size:.72rem;font-weight:600;
+      padding:2px 8px 2px 6px;border-radius:20px;background:#e0e7ff;border:1px solid #a5b4fc;color:#3730a3}
+    .suporta-tag button{background:none;border:none;cursor:pointer;color:#6366f1;font-size:.65rem;padding:0 1px;line-height:1}
+    .suporta-tag button:hover{color:#b91c1c}
 
     /* BUTTONS */
     .btn{font-family:var(--fd);font-size:.8rem;font-weight:600;padding:8px 18px;
@@ -102,9 +116,10 @@
     .drawer.open{display:block}
     .drawer-title{font-family:var(--fd);font-size:.82rem;font-weight:700;color:var(--text);
       margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
-    .drawer-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
-    .drawer-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px}
-    @media(max-width:580px){.drawer-grid,.drawer-grid-3{grid-template-columns:1fr}}
+    .dg2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+    .dg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px}
+    .dg4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:12px}
+    @media(max-width:600px){.dg2,.dg3,.dg4{grid-template-columns:1fr}}
 
     /* SEARCH */
     .search-row{margin-bottom:12px}
@@ -118,13 +133,14 @@
       border-bottom:2px solid var(--border);text-align:left;background:#fafafa;white-space:nowrap}
     .org-table td{padding:9px 12px;border-bottom:1px solid var(--border-l);vertical-align:middle}
     .org-table tr:last-child td{border-bottom:none}
-    .org-table tbody tr:hover td{background:#f9fafb}
+    .org-table tbody tr:hover:not(.level-row):not(.ie-row) td{background:#f9fafb}
     .td-nome{font-weight:700;font-size:.82rem;color:var(--text);text-transform:uppercase;white-space:nowrap}
     .td-cargo{font-size:.72rem;color:var(--muted);margin-top:2px;white-space:nowrap}
     .grp-chip{display:inline-flex;align-items:center;gap:5px;font-size:.7rem;font-weight:600;
       padding:3px 9px 3px 6px;border-radius:20px;border:1.5px solid;white-space:nowrap}
     .chip-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
     .no-grp-chip{font-size:.7rem;color:#9a3412;background:#fff7ed;border:1px solid #fed7aa;border-radius:20px;padding:2px 9px}
+    .corp-badge{font-family:var(--fd);font-size:.66rem;font-weight:700;color:#475569;background:#f1f5f9;border:1px solid #cbd5e1;border-radius:20px;padding:1px 7px;letter-spacing:.3px}
     .lvl-badge{font-family:var(--fd);font-size:.7rem;font-weight:700;
       background:#f3f4f6;color:var(--muted);border:1px solid var(--border-l);border-radius:20px;padding:2px 8px;white-space:nowrap}
     .sup-txt{font-size:.74rem;color:var(--muted);white-space:nowrap;max-width:130px;overflow:hidden;text-overflow:ellipsis;display:inline-block}
@@ -132,18 +148,20 @@
     .iBtn{background:none;border:none;cursor:pointer;color:var(--muted);padding:4px 6px;border-radius:4px;font-size:.8rem;transition:background .1s}
     .iBtn:hover{background:#e5e7eb;color:var(--text)}
     .iBtn.del:hover{background:#fee2e2;color:#b91c1c}
-    .empty-row td{text-align:center;color:var(--subtle);font-style:italic;padding:24px}
-    .org-table td.editing input[type=text],.org-table td.editing select{font-size:.82rem;padding:4px 7px;border-radius:5px;width:100%;min-width:90px}
-    .org-table td.editing{padding:5px 8px}
-    .org-table tr.is-editing td{background:#fffbf0!important}
+    .empty-row td,.ie-row td{text-align:center;color:var(--subtle);font-style:italic;padding:24px}
+    /* inline edit */
+    .ie-row td{text-align:left;font-style:normal;padding:0}
+    .ie-inner{background:#fffbf0;border-top:2px solid #fbbf24;padding:14px 14px 10px}
+    .ie-inner .dg2,.ie-inner .dg3,.ie-inner .dg4{margin-bottom:10px}
+    .ie-inner input[type=text],.ie-inner select{font-size:.82rem;padding:5px 8px}
+    @keyframes saved-flash{0%{background:#dcfce7}100%{background:transparent}}
+    .org-table tbody tr.saved-flash td{animation:saved-flash .8s ease-out}
     .no-group-row td:first-child{border-left:3px solid #f97316}
     .level-row td{background:#f9fafb;font-family:var(--fd);font-size:.7rem;font-weight:700;
       color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding:5px 12px;
       border-bottom:1px solid var(--border-l);border-top:1px solid var(--border-l)}
-    @keyframes saved-flash{0%{background:#dcfce7}100%{background:transparent}}
-    .org-table tbody tr.saved-flash td{animation:saved-flash .8s ease-out}
 
-    /* WARN BAR */
+    /* WARN */
     .warn-bar{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:var(--r);padding:8px 14px;font-size:.8rem;margin:8px 0}
 
     /* CHART */
@@ -174,8 +192,7 @@
 
     @media print{
       header p,.main-tabs,.org-bar,.chart-toolbar,.back-link,.brow,.drawer,.search-row{display:none!important}
-      body{background:#fff}
-      .card{box-shadow:none;border:none;padding:0}
+      body{background:#fff}.card{box-shadow:none;border:none;padding:0}
       *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
     }
   </style>
@@ -192,28 +209,25 @@
 </header>
 
 <div class="wrap">
-
-  <!-- SELETOR DE ORGANOGRAMAS -->
   <div class="org-bar" id="orgBar"></div>
 
-  <!-- ABAS PRINCIPAIS -->
   <div class="main-tabs">
     <div class="main-tab on" id="mtab-cad" onclick="showMain('cad')">Cadastro</div>
     <div class="main-tab"   id="mtab-org" onclick="showMain('org')">Organograma</div>
   </div>
 
-  <!-- ABA 1: CADASTRO -->
+  <!-- ABA CADASTRO -->
   <div class="main-pane on" id="mpane-cad">
     <div class="cad-grid">
       <div class="card">
         <div class="card-title">Funções</div>
         <div class="tag-wrap" id="funcTags"></div>
         <div class="input-row">
-          <div class="fg">
+          <div class="fg" style="flex:1">
             <label for="newFunc">Nova função</label>
             <input type="text" id="newFunc" placeholder="Ex: Analista de dados" />
           </div>
-          <button class="btn btn-primary btn-sm" onclick="addFuncao()" style="align-self:flex-end;">+ Adicionar</button>
+          <button class="btn btn-primary btn-sm" onclick="addFuncao()" style="align-self:flex-end">+ Adicionar</button>
         </div>
         <div class="alert alert-err" id="aFuncErr"></div>
       </div>
@@ -221,7 +235,7 @@
       <div class="card">
         <div class="card-title">Grupos / Setores</div>
         <div id="grpList" style="margin-bottom:8px;max-height:300px;overflow-y:auto;"></div>
-        <div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end;">
+        <div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end">
           <div class="fg">
             <label for="newGrp">Nome do grupo</label>
             <input type="text" id="newGrp" placeholder="Ex: Jurídico" />
@@ -231,7 +245,7 @@
             <div class="sw-row" id="grpSwatches"></div>
           </div>
         </div>
-        <div class="brow" style="margin-top:8px;">
+        <div class="brow" style="margin-top:8px">
           <button class="btn btn-primary btn-sm" onclick="addGrupo()">+ Adicionar grupo</button>
         </div>
         <div class="alert alert-err" id="aGrpErr"></div>
@@ -239,41 +253,45 @@
     </div>
   </div>
 
-  <!-- ABA 2: ORGANOGRAMA -->
+  <!-- ABA ORGANOGRAMA -->
   <div class="main-pane" id="mpane-org">
     <div class="card">
 
-      <!-- TÍTULO DO ORGANOGRAMA -->
       <div class="org-title-row">
         <input type="text" id="orgTitle" class="org-title-input" placeholder="Nome do organograma…" oninput="saveOrgTitle()" />
         <span id="countBadge" style="font-size:.76rem;color:var(--subtle);white-space:nowrap;"></span>
       </div>
 
-      <!-- DRAWER: adicionar pessoa -->
+      <!-- DRAWER -->
       <div class="drawer" id="drawer">
         <div class="drawer-title">
           <span id="drawerTitle">Nova pessoa</span>
           <button class="iBtn" onclick="closeDrawer()">✕</button>
         </div>
-        <div class="drawer-grid">
+
+        <div class="dg2">
           <div class="fg"><label>Nome completo</label>
             <input type="text" id="dNome" placeholder="Ex: João Silva" /></div>
           <div class="fg"><label>Cargo / Função</label>
             <select id="dCargo" onchange="onDCargoChange()"></select></div>
         </div>
-        <div class="fg" id="dCustomWrap" style="display:none;margin-bottom:12px;">
+        <div class="fg" id="dCustomWrap" style="display:none;margin-bottom:12px">
           <label>Cargo personalizado</label>
           <input type="text" id="dCargoCustom" placeholder="Digite o cargo" />
         </div>
-        <div class="drawer-grid-3">
+
+        <div class="dg4">
           <div class="fg"><label>Grupo / Setor</label>
             <select id="dGrupo"></select></div>
+          <div class="fg"><label>Tipo</label>
+            <div class="tipo-toggle">
+              <button class="tipo-btn on" id="dTipoNormal" onclick="setDTipo('normal')">Normal</button>
+              <button class="tipo-btn" id="dTipoCorp" onclick="setDTipo('corp')">Corporativo</button>
+            </div></div>
           <div class="fg"><label>Reporta a</label>
-            <select id="dSuperior" onchange="onDSuperiorChange()">
-              <option value="">— Sem superior (topo) —</option>
-            </select></div>
+            <select id="dSuperior" onchange="onDSuperiorChange()"><option value="">— Sem superior (topo) —</option></select></div>
           <div class="fg"><label>Nível</label>
-            <select id="dNivel" onchange="onDNivelChange()">
+            <select id="dNivel">
               <option value="1">Nível 1 — Topo</option>
               <option value="2">Nível 2</option>
               <option value="3">Nível 3</option>
@@ -281,6 +299,15 @@
               <option value="5">Nível 5</option>
             </select></div>
         </div>
+
+        <div class="fg" style="margin-bottom:12px">
+          <label>Dá suporte a (conexões tracejadas no gráfico)</label>
+          <div class="suporta-tags" id="dSuportaTags"></div>
+          <select id="dSuportaAdd" onchange="dAddSuporta(this)">
+            <option value="">+ Adicionar conexão de suporte…</option>
+          </select>
+        </div>
+
         <div class="alert alert-err" id="aDErr"></div>
         <div class="brow">
           <button class="btn btn-ghost btn-sm" onclick="closeDrawer()">Cancelar</button>
@@ -289,12 +316,12 @@
       </div>
 
       <!-- CONTROLES -->
-      <div class="brow" style="margin-bottom:12px;">
+      <div class="brow" style="margin-bottom:12px">
         <button class="btn btn-primary btn-sm" onclick="openDrawerAdd()">+ Adicionar pessoa</button>
         <button class="btn btn-ghost btn-sm" onclick="loadExample()">Carregar exemplo</button>
         <span style="flex:1"></span>
-        <button class="btn btn-ghost btn-sm" onclick="exportJSON()" title="Salvar JSON no computador">⬇ Exportar</button>
-        <label class="btn btn-ghost btn-sm" style="cursor:pointer;" title="Carregar de arquivo JSON">⬆ Importar<input type="file" accept=".json" style="display:none" onchange="importJSON(event)"/></label>
+        <button class="btn btn-ghost btn-sm" onclick="exportJSON()">⬇ Exportar</button>
+        <label class="btn btn-ghost btn-sm" style="cursor:pointer">⬆ Importar<input type="file" accept=".json" style="display:none" onchange="importJSON(event)"/></label>
         <button class="btn btn-danger btn-xs" onclick="clearPeople()">Limpar equipe</button>
       </div>
 
@@ -303,10 +330,7 @@
         <input type="text" class="search-input" id="searchInput" placeholder="🔍 Buscar por nome, cargo ou grupo…" oninput="onSearch()" />
       </div>
 
-      <!-- AVISO SEM GRUPO -->
-      <div class="warn-bar" id="noGroupWarn" style="display:none;">
-        ⚠ Há pessoas sem grupo atribuído — elas aparecerão sem cor no organograma.
-      </div>
+      <div class="warn-bar" id="noGroupWarn" style="display:none">⚠ Há pessoas sem grupo — elas não terão cor no gráfico.</div>
 
       <!-- TABELA -->
       <div class="org-table-wrap">
@@ -318,15 +342,15 @@
         </table>
       </div>
 
-      <!-- ORGANOGRAMA (GRÁFICO) -->
-      <div class="chart-section" id="chartSection" style="display:none;">
-        <div class="card-title" style="border-bottom:none;margin-bottom:0;padding-bottom:0;">Organograma</div>
+      <!-- GRÁFICO -->
+      <div class="chart-section" id="chartSection" style="display:none">
+        <div class="card-title" style="border-bottom:none;margin-bottom:0;padding-bottom:0">Organograma</div>
         <div class="chart-toolbar">
           <label>Zoom:</label>
           <button class="zb" onclick="zoom(-.15)">−</button>
           <button class="zb" onclick="zoom(+.15)">+</button>
           <button class="zb" onclick="resetZoom()">Ajustar</button>
-          <button class="btn btn-ghost btn-sm" style="margin-left:auto;" onclick="exportPNG()">Exportar PNG</button>
+          <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="exportPNG()">Exportar PNG</button>
           <button class="btn btn-ghost btn-sm" onclick="window.print()">Imprimir</button>
         </div>
         <div class="canvas-wrap" id="canvasWrap">
@@ -338,7 +362,6 @@
 
     </div>
   </div>
-
 </div>
 
 <script>
@@ -382,30 +405,21 @@ const DEF_GRUPOS=[
 let funcoes=[], grupos=[], orgs=[], people=[];
 let _gid=1,_pid=1,_oid=1,_currentOrgId=null;
 let _zoom=1,_editId=null,_swColor=0,_drawerMode='add',_inlineEditId=null,_searchQ='';
+let _dTipo='normal', _dSuportaIds=[];
 
 /* ══ ORG MANAGEMENT ══ */
 function curOrg(){ return orgs.find(o=>o.id===_currentOrgId)||orgs[0]; }
-
-function saveCurrentPeople(){
-  const org=curOrg(); if(!org) return;
-  org.people=[...people]; org._pid=_pid;
-}
-
+function saveCurrentPeople(){ const org=curOrg(); if(!org) return; org.people=[...people]; org._pid=_pid; }
 function switchOrg(id){
-  if(_inlineEditId) { _inlineEditId=null; }
-  saveCurrentPeople();
-  _currentOrgId=id;
+  if(_inlineEditId) cancelInlineEdit();
+  saveCurrentPeople(); _currentOrgId=id;
   const org=curOrg();
-  if(org){ people=[...org.people]; _pid=org._pid||1; }
-  else { people=[]; _pid=1; }
-  const ti=document.getElementById('orgTitle');
-  if(ti) ti.value=org?.nome||'';
-  const si=document.getElementById('searchInput');
-  if(si) si.value='';
-  _searchQ='';
+  if(org){ people=[...org.people]; _pid=org._pid||1; } else { people=[]; _pid=1; }
+  migratePeople();
+  document.getElementById('orgTitle').value=org?.nome||'';
+  const si=document.getElementById('searchInput'); if(si) si.value=''; _searchQ='';
   renderOrgBar(); renderAll(); saveLocal();
 }
-
 function addOrg(){
   saveCurrentPeople();
   const nome='Organograma '+(orgs.length+1);
@@ -413,34 +427,25 @@ function addOrg(){
   orgs.push({id,nome,people:[],_pid:1});
   _currentOrgId=id; people=[]; _pid=1;
   renderOrgBar(); renderAll(); saveLocal();
-  const ti=document.getElementById('orgTitle');
-  if(ti){ ti.value=nome; ti.select(); ti.focus(); }
+  const ti=document.getElementById('orgTitle'); if(ti){ ti.value=nome; ti.select(); ti.focus(); }
 }
-
 function deleteOrg(id){
   if(orgs.length<=1){ alert('Não é possível remover o único organograma.'); return; }
-  if(!confirm('Remover este organograma e toda a sua equipe?')) return;
+  if(!confirm('Remover este organograma?')) return;
   orgs=orgs.filter(o=>o.id!==id);
-  if(_currentOrgId===id){
-    _currentOrgId=orgs[0].id;
-    const org=curOrg();
-    people=[...org.people]; _pid=org._pid||1;
-  }
+  if(_currentOrgId===id){ _currentOrgId=orgs[0].id; const org=curOrg(); people=[...org.people]; _pid=org._pid||1; }
   renderOrgBar(); renderAll(); saveLocal();
 }
-
 function saveOrgTitle(){
   const org=curOrg(); if(!org) return;
   org.nome=document.getElementById('orgTitle').value||'Organograma';
   renderOrgBar(); saveLocal();
 }
-
 function renderOrgBar(){
-  const bar=document.getElementById('orgBar');
-  bar.innerHTML=orgs.map(o=>`
-    <div class="org-pill${o.id===_currentOrgId?' on':''}" onclick="switchOrg(${o.id})">
+  document.getElementById('orgBar').innerHTML=
+    orgs.map(o=>`<div class="org-pill${o.id===_currentOrgId?' on':''}" onclick="switchOrg(${o.id})">
       <span>${esc(o.nome)}</span>
-      ${orgs.length>1?`<button class="org-pill-del" onclick="event.stopPropagation();deleteOrg(${o.id})" title="Remover">✕</button>`:''}
+      ${orgs.length>1?`<button class="org-pill-del" onclick="event.stopPropagation();deleteOrg(${o.id})">✕</button>`:''}
     </div>`).join('')+
     `<button class="org-add-btn" onclick="addOrg()">+ Novo</button>`;
 }
@@ -454,12 +459,19 @@ function showMain(id){
   if(id==='org') drawChart();
 }
 
-/* ══ COMPUTED NIVEL ══ */
-function getNivel(pid,vis=new Set()){
-  if(!pid||vis.has(pid)) return 1;
-  vis.add(pid);
+/* ══ NIVEL (stored explicitly — independent of hierarchy) ══ */
+function getNivel(id){ const p=people.find(x=>x.id===id); return p?.nivel||1; }
+function computeNivelFromTree(pid,vis=new Set()){
+  if(!pid||vis.has(pid)) return 1; vis.add(pid);
   const p=people.find(x=>x.id===pid);
-  return p&&p.superiorId ? getNivel(p.superiorId,vis)+1 : 1;
+  return p&&p.superiorId ? computeNivelFromTree(p.superiorId,vis)+1 : 1;
+}
+function migratePeople(){
+  people.forEach(p=>{
+    if(!p.nivel) p.nivel=computeNivelFromTree(p.id);
+    if(!p.tipo) p.tipo='normal';
+    if(!p.suportaIds) p.suportaIds=[];
+  });
 }
 
 /* ══ SELECT HELPERS ══ */
@@ -475,33 +487,77 @@ function fillGrupoSel(selId,cur=''){
     grupos.map(g=>`<option value="${g.id}"${String(g.id)===String(cur)?' selected':''}>${esc(g.nome)}</option>`).join('');
 }
 function fillAllSupSel(selId,excludeId=null,curSup=''){
-  // shows ALL people as potential superiors (no nivel filter)
   const s=document.getElementById(selId); if(!s) return;
-  const opts=people.filter(p=>p.id!==excludeId);
   s.innerHTML='<option value="">— Sem superior (topo) —</option>'+
-    opts.map(p=>`<option value="${p.id}"${String(p.id)===String(curSup)?' selected':''}>${esc(p.nome)} · N${getNivel(p.id)}</option>`).join('');
+    people.filter(p=>p.id!==excludeId).map(p=>`<option value="${p.id}"${String(p.id)===String(curSup)?' selected':''}>${esc(p.nome)} · N${getNivel(p.id)}</option>`).join('');
+}
+function fillSuportaSel(selId,excludeIds=[]){
+  const s=document.getElementById(selId); if(!s) return;
+  s.innerHTML='<option value="">+ Adicionar conexão de suporte…</option>'+
+    people.filter(p=>!excludeIds.includes(p.id)).map(p=>`<option value="${p.id}">${esc(p.nome)} · ${esc(p.cargo)}</option>`).join('');
 }
 function getCargoVal(selId,custId){
   const v=document.getElementById(selId)?.value;
-  if(v==='__OUTRO__'){
-    const raw=(document.getElementById(custId)?.value||'').trim();
-    return raw ? raw.charAt(0).toUpperCase()+raw.slice(1) : '';
-  }
+  if(v==='__OUTRO__'){ const r=(document.getElementById(custId)?.value||'').trim(); return r?r.charAt(0).toUpperCase()+r.slice(1):''; }
   return v||'';
 }
 
-/* ══ DRAWER ══ */
+/* ══ TIPO TOGGLE ══ */
+function setDTipo(t){
+  _dTipo=t;
+  document.getElementById('dTipoNormal').className='tipo-btn'+(t==='normal'?' on':'');
+  document.getElementById('dTipoCorp').className='tipo-btn'+(t==='corp'?' on-corp':'');
+}
+
+/* ══ DRAWER SUPORTA ══ */
+function renderDSuportaTags(){
+  document.getElementById('dSuportaTags').innerHTML=_dSuportaIds.map(id=>{
+    const p=people.find(x=>x.id===id); if(!p) return '';
+    return `<span class="suporta-tag">${esc(p.nome)}<button onclick="dRemSuporta(${id})">✕</button></span>`;
+  }).join('');
+  fillSuportaSel('dSuportaAdd',_dSuportaIds);
+}
+function dAddSuporta(sel){
+  const v=Number(sel.value); if(!v) return;
+  if(!_dSuportaIds.includes(v)) _dSuportaIds.push(v);
+  sel.value=''; renderDSuportaTags();
+}
+function dRemSuporta(id){ _dSuportaIds=_dSuportaIds.filter(x=>x!==id); renderDSuportaTags(); }
+
+/* ══ DRAWER (ADD / EDIT) ══ */
 function openDrawerAdd(){
-  _drawerMode='add'; _editId=null;
+  _drawerMode='add'; _editId=null; _dTipo='normal'; _dSuportaIds=[];
   document.getElementById('drawerTitle').textContent='Nova pessoa';
   document.getElementById('dSaveBtn').textContent='Adicionar';
   document.getElementById('dNome').value='';
   document.getElementById('dCargoCustom').value='';
   document.getElementById('dCustomWrap').style.display='none';
   document.getElementById('aDErr').classList.remove('on');
+  setDTipo('normal');
   fillCargoSel('dCargo'); fillGrupoSel('dGrupo');
   fillAllSupSel('dSuperior',null,'');
   document.getElementById('dNivel').value='1';
+  renderDSuportaTags();
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('dNome').focus();
+}
+function openDrawerEdit(id){
+  const p=people.find(x=>x.id===id); if(!p) return;
+  _drawerMode='edit'; _editId=id; _dTipo=p.tipo||'normal'; _dSuportaIds=[...(p.suportaIds||[])];
+  document.getElementById('drawerTitle').textContent='Editar pessoa';
+  document.getElementById('dSaveBtn').textContent='Salvar';
+  document.getElementById('dNome').value=p.nome;
+  const isCustom=!funcoes.includes(p.cargo);
+  fillCargoSel('dCargo',isCustom?'__OUTRO__':p.cargo);
+  document.getElementById('dCustomWrap').style.display=isCustom?'':'none';
+  if(isCustom) document.getElementById('dCargoCustom').value=p.cargo;
+  document.getElementById('aDErr').classList.remove('on');
+  setDTipo(_dTipo);
+  fillGrupoSel('dGrupo',p.grupoId);
+  fillAllSupSel('dSuperior',id,p.superiorId);
+  document.getElementById('dNivel').value=String(p.nivel||1);
+  renderDSuportaTags();
+  if(_inlineEditId) cancelInlineEdit();
   document.getElementById('drawer').classList.add('open');
   document.getElementById('dNome').focus();
 }
@@ -511,36 +567,24 @@ function onDCargoChange(){
     document.getElementById('dCargo').value==='__OUTRO__'?'':'none';
 }
 function onDSuperiorChange(){
-  const supId=document.getElementById('dSuperior').value;
-  if(supId){
-    const lvl=Math.min(getNivel(Number(supId))+1,5);
-    document.getElementById('dNivel').value=String(lvl);
-  } else {
-    document.getElementById('dNivel').value='1';
-  }
-}
-function onDNivelChange(){
-  // when nivel manually set to 1, clear superior
-  if(document.getElementById('dNivel').value==='1'){
-    document.getElementById('dSuperior').value='';
-  }
+  // nível NÃO muda automaticamente — usuário controla independentemente
 }
 function saveDrawer(){
   const nome=document.getElementById('dNome').value.trim().toUpperCase();
   const cargo=getCargoVal('dCargo','dCargoCustom');
   const grupoId=document.getElementById('dGrupo').value||null;
   const nivel=Number(document.getElementById('dNivel').value||1);
-  const supId=nivel>1?(document.getElementById('dSuperior').value||null):null;
+  const supId=document.getElementById('dSuperior').value||null;
   const err=document.getElementById('aDErr');
   if(!nome){showErr(err,'Informe o nome.');return;}
   if(!cargo){showErr(err,'Informe o cargo.');return;}
-  if(nivel>1&&!supId){showErr(err,'Selecione a quem esta pessoa reporta.');return;}
   err.classList.remove('on');
+  const obj={nivel,tipo:_dTipo,grupoId:grupoId?Number(grupoId):null,superiorId:supId?Number(supId):null,suportaIds:[..._dSuportaIds]};
   if(_drawerMode==='add'){
-    people.push({id:_pid++,nome,cargo,grupoId:grupoId?Number(grupoId):null,superiorId:supId?Number(supId):null});
+    people.push({id:_pid++,nome,cargo,...obj});
   } else {
     const p=people.find(x=>x.id===_editId);
-    if(p){ p.nome=nome;p.cargo=cargo;p.grupoId=grupoId?Number(grupoId):null;p.superiorId=supId?Number(supId):null; fixCircular(_editId); }
+    if(p){ Object.assign(p,{nome,cargo,...obj}); fixCircular(_editId); }
   }
   closeDrawer(); renderAll(); saveLocal();
 }
@@ -552,73 +596,76 @@ function openInlineEdit(id){
   _inlineEditId=id;
   const p=people.find(x=>x.id===id); if(!p) return;
   const tr=document.querySelector(`tr[data-pid="${id}"]`); if(!tr) return;
-  tr.classList.add('is-editing');
-  const lvl=getNivel(id);
 
-  function supOpts(){
-    const above=people.filter(x=>x.id!==id);
-    return '<option value="">— Sem superior (topo) —</option>'+
-      above.map(x=>`<option value="${x.id}"${String(x.id)===String(p.superiorId)?' selected':''}>${esc(x.nome)} · N${getNivel(x.id)}</option>`).join('');
-  }
   const cargoOpts=funcoes.map(f=>`<option value="${esc(f)}"${p.cargo===f?' selected':''}>${esc(f)}</option>`).join('')+
     `<option value="__OUTRO__"${!funcoes.includes(p.cargo)?' selected':''}>Outro…</option>`;
   const grpOpts='<option value="">— Sem grupo —</option>'+
     grupos.map(g=>`<option value="${g.id}"${String(g.id)===String(p.grupoId)?' selected':''}>${esc(g.nome)}</option>`).join('');
-  const lvlOpts=[1,2,3,4,5].map(n=>`<option value="${n}"${n===lvl?' selected':''}>N${n}</option>`).join('');
+  const lvlOpts=[1,2,3,4,5].map(n=>`<option value="${n}"${n===(p.nivel||1)?' selected':''}>N${n}</option>`).join('');
+  const supOpts='<option value="">— Sem superior (topo) —</option>'+
+    people.filter(x=>x.id!==id).map(x=>`<option value="${x.id}"${String(x.id)===String(p.superiorId)?' selected':''}>${esc(x.nome)} · N${getNivel(x.id)}</option>`).join('');
 
-  tr.innerHTML=`
-    <td class="editing">
-      <input type="text" id="ie_nome" value="${esc(p.nome)}" placeholder="Nome" />
-      <select id="ie_cargo" onchange="onIECargoChange()" style="margin-top:4px;">${cargoOpts}</select>
-      <input type="text" id="ie_cargo_custom" value="${!funcoes.includes(p.cargo)?esc(p.cargo):''}"
-        placeholder="Cargo personalizado" style="margin-top:4px;display:${funcoes.includes(p.cargo)?'none':'block'};" />
-    </td>
-    <td class="editing"><select id="ie_grupo">${grpOpts}</select></td>
-    <td class="editing"><select id="ie_nivel" onchange="onIENivelChange()">${lvlOpts}</select></td>
-    <td class="editing"><select id="ie_superior" onchange="onIESuperiorChange()">${supOpts()}</select></td>
-    <td><div class="act-cell">
-      <button class="btn btn-primary btn-xs" onclick="saveInlineEdit(${id})">✓ Salvar</button>
-      <button class="btn btn-ghost btn-xs" onclick="cancelInlineEdit()">✕</button>
-      <button class="iBtn del" onclick="event.stopPropagation();deletePerson(${id})" title="Remover">🗑</button>
-    </div></td>`;
+  tr.innerHTML=`<td colspan="5" style="padding:0;">
+    <div class="ie-inner">
+      <div class="dg4" style="margin-bottom:10px">
+        <div class="fg"><label>Nome</label>
+          <input type="text" id="ie_nome" value="${esc(p.nome)}" /></div>
+        <div class="fg"><label>Cargo</label>
+          <select id="ie_cargo" onchange="onIECargoChange()">${cargoOpts}</select>
+          <input type="text" id="ie_cargo_custom" value="${!funcoes.includes(p.cargo)?esc(p.cargo):''}"
+            placeholder="Cargo personalizado" style="margin-top:4px;display:${funcoes.includes(p.cargo)?'none':'block'}" /></div>
+        <div class="fg"><label>Grupo</label>
+          <select id="ie_grupo">${grpOpts}</select></div>
+        <div class="fg"><label>Tipo</label>
+          <div class="tipo-toggle">
+            <button class="tipo-btn${(p.tipo||'normal')==='normal'?' on':''}" onclick="ieSetTipo('normal')">Normal</button>
+            <button class="tipo-btn${p.tipo==='corp'?' on-corp':''}" onclick="ieSetTipo('corp')">Corp</button>
+          </div></div>
+      </div>
+      <div class="dg2" style="margin-bottom:10px">
+        <div class="fg"><label>Reporta a</label>
+          <select id="ie_superior">${supOpts}</select></div>
+        <div class="fg"><label>Nível hierárquico</label>
+          <select id="ie_nivel">${lvlOpts}</select></div>
+      </div>
+      <div class="brow">
+        <button class="btn btn-primary btn-xs" onclick="saveInlineEdit(${id})">✓ Salvar</button>
+        <button class="btn btn-ghost btn-xs" onclick="cancelInlineEdit()">✕ Cancelar</button>
+        <button class="btn btn-ghost btn-xs" onclick="openDrawerEdit(${id})">✦ Editar conexões de suporte</button>
+        <span style="flex:1"></span>
+        <button class="btn btn-danger btn-xs" onclick="deletePerson(${id})">Remover</button>
+      </div>
+    </div>
+  </td>`;
 }
 function onIECargoChange(){
   const v=document.getElementById('ie_cargo').value;
   const c=document.getElementById('ie_cargo_custom');
   if(c) c.style.display=v==='__OUTRO__'?'block':'none';
 }
-function onIENivelChange(){
-  if(document.getElementById('ie_nivel')?.value==='1'){
-    const sel=document.getElementById('ie_superior');
-    if(sel) sel.value='';
-  }
-}
-function onIESuperiorChange(){
-  const supId=document.getElementById('ie_superior')?.value;
-  if(supId){
-    const lvl=Math.min(getNivel(Number(supId))+1,5);
-    const ns=document.getElementById('ie_nivel');
-    if(ns) ns.value=String(lvl);
-  } else {
-    const ns=document.getElementById('ie_nivel');
-    if(ns) ns.value='1';
-  }
+function ieSetTipo(t){
+  document.querySelectorAll('.ie-inner .tipo-btn').forEach((b,i)=>{
+    b.className='tipo-btn'+(i===0&&t==='normal'?' on':i===1&&t==='corp'?' on-corp':'');
+  });
+  document.querySelector('.ie-inner .tipo-btn')?.dataset && (document.querySelector('.ie-inner .tipo-toggle').dataset.tipo=t);
 }
 function saveInlineEdit(id){
   const nome=(document.getElementById('ie_nome')?.value||'').trim().toUpperCase();
   const cargoSel=document.getElementById('ie_cargo')?.value||'';
-  const cargoRaw=cargoSel==='__OUTRO__'
-    ?(document.getElementById('ie_cargo_custom')?.value||'').trim()
-    :cargoSel;
+  const cargoRaw=cargoSel==='__OUTRO__'?(document.getElementById('ie_cargo_custom')?.value||'').trim():cargoSel;
   const cargo=cargoSel==='__OUTRO__'?(cargoRaw.charAt(0).toUpperCase()+cargoRaw.slice(1)):cargoRaw;
   const grupoId=document.getElementById('ie_grupo')?.value||null;
   const nivel=Number(document.getElementById('ie_nivel')?.value||1);
-  const supId=nivel>1?(document.getElementById('ie_superior')?.value||null):null;
+  const supId=document.getElementById('ie_superior')?.value||null;
+  // tipo from toggle buttons
+  const tipoBtns=document.querySelectorAll('.ie-inner .tipo-btn');
+  const tipo=tipoBtns[1]?.classList.contains('on-corp')?'corp':'normal';
   if(!nome||!cargo){ alert('Preencha o nome e o cargo.'); return; }
-  if(nivel>1&&!supId){ alert('Selecione a quem esta pessoa reporta.'); return; }
   const p=people.find(x=>x.id===id); if(!p) return;
   p.nome=nome; p.cargo=cargo;
   p.grupoId=grupoId?Number(grupoId):null;
+  p.nivel=nivel;
+  p.tipo=tipo;
   p.superiorId=supId?Number(supId):null;
   fixCircular(id);
   _inlineEditId=null;
@@ -632,16 +679,14 @@ function cancelInlineEdit(){ _inlineEditId=null; renderTable(); drawChart(); }
 
 /* ══ PERSON UTILS ══ */
 function deletePerson(id){
-  if(!confirm('Remover esta pessoa do organograma?')) return;
+  if(!confirm('Remover esta pessoa?')) return;
   const p=people.find(x=>x.id===id);
-  people.filter(x=>x.superiorId===id).forEach(x=>x.superiorId=p?p.superiorId:null);
+  people.filter(x=>x.superiorId===id).forEach(x=>x.superiorId=p?.superiorId||null);
+  people.forEach(x=>{ if(x.suportaIds) x.suportaIds=x.suportaIds.filter(s=>s!==id); });
   people=people.filter(x=>x.id!==id);
   _inlineEditId=null; renderAll(); saveLocal();
 }
-function clearPeople(){
-  if(!confirm('Limpar toda a equipe deste organograma?')) return;
-  people=[]; _pid=1; _inlineEditId=null; renderAll(); saveLocal();
-}
+function clearPeople(){ if(!confirm('Limpar toda a equipe?')) return; people=[]; _pid=1; _inlineEditId=null; renderAll(); saveLocal(); }
 function fixCircular(id){
   function desc(pid){ const ch=people.filter(p=>p.superiorId===pid).map(p=>p.id); return ch.concat(ch.flatMap(c=>desc(c))); }
   const self=people.find(p=>p.id===id);
@@ -649,10 +694,7 @@ function fixCircular(id){
 }
 
 /* ══ SEARCH ══ */
-function onSearch(){
-  _searchQ=(document.getElementById('searchInput')?.value||'').toLowerCase().trim();
-  renderTable();
-}
+function onSearch(){ _searchQ=(document.getElementById('searchInput')?.value||'').toLowerCase().trim(); renderTable(); }
 
 /* ══ FUNCOES CRUD ══ */
 function sortFuncoes(){ funcoes.sort((a,b)=>a.localeCompare(b,'pt',{sensitivity:'base'})); }
@@ -669,15 +711,14 @@ function addFuncao(){
 }
 function removeFuncao(nome){
   if(people.some(p=>p.cargo===nome)&&!confirm(`"${nome}" está em uso. Remover?`)) return;
-  funcoes=funcoes.filter(f=>f!==nome);
-  renderCadastro(); saveLocal();
+  funcoes=funcoes.filter(f=>f!==nome); renderCadastro(); saveLocal();
 }
 
 /* ══ GRUPOS CRUD ══ */
 function addGrupo(){
   const nome=document.getElementById('newGrp').value.trim();
   const err=document.getElementById('aGrpErr');
-  if(!nome){showErr(err,'Informe o nome do grupo.');return;}
+  if(!nome){showErr(err,'Informe o nome.');return;}
   if(grupos.find(g=>g.nome.toLowerCase()===nome.toLowerCase())){showErr(err,'Já existe.');return;}
   err.classList.remove('on');
   grupos.push({id:_gid++,nome,palIdx:_swColor});
@@ -708,26 +749,21 @@ function renderCadastro(){
   const ft=document.getElementById('funcTags');
   ft.innerHTML=funcoes.length
     ? funcoes.map(f=>`<span class="func-tag">${esc(f)}<button class="tag-x" onclick="removeFuncao('${esc(f).replace(/'/g,"\\'")}')">✕</button></span>`).join('')
-    : '<span style="color:var(--subtle);font-size:.8rem;font-style:italic;grid-column:1/-1;">Nenhuma função cadastrada.</span>';
+    : '<span style="color:var(--subtle);font-size:.8rem;font-style:italic;grid-column:1/-1">Nenhuma função cadastrada.</span>';
   const gl=document.getElementById('grpList');
-  if(!grupos.length){
-    gl.innerHTML='<p style="color:var(--subtle);font-size:.8rem;font-style:italic;margin-bottom:6px;">Nenhum grupo cadastrado.</p>';
-  } else {
-    gl.innerHTML=grupos.map((g,i)=>{
-      const p=PAL[g.palIdx%PAL.length];
-      return `<div class="grp-list-row" style="border-left:4px solid ${p.border};background:${p.fill};">
-        <div style="display:flex;flex-direction:column;gap:1px;">
-          <button class="ord-btn" onclick="moveGrupo(${g.id},-1)" ${i===0?'disabled':''}>▲</button>
-          <button class="ord-btn" onclick="moveGrupo(${g.id},+1)" ${i===grupos.length-1?'disabled':''}>▼</button>
-        </div>
-        <span class="ord-num" style="color:${p.label};">${i+1}</span>
-        <span style="font-size:.8rem;font-weight:600;color:${p.label};flex:1;">${esc(g.nome)}</span>
-        <button class="tag-x" onclick="removeGrupo(${g.id})" style="color:${p.label};font-size:.8rem;">✕</button>
-      </div>`;
-    }).join('');
-  }
-  fillCargoSel('dCargo');
-  fillGrupoSel('dGrupo');
+  gl.innerHTML=grupos.length
+    ? grupos.map((g,i)=>{ const p=PAL[g.palIdx%PAL.length];
+        return `<div class="grp-list-row" style="border-left:4px solid ${p.border};background:${p.fill};">
+          <div style="display:flex;flex-direction:column;gap:1px;">
+            <button class="ord-btn" onclick="moveGrupo(${g.id},-1)" ${i===0?'disabled':''}>▲</button>
+            <button class="ord-btn" onclick="moveGrupo(${g.id},+1)" ${i===grupos.length-1?'disabled':''}>▼</button>
+          </div>
+          <span class="ord-num" style="color:${p.label}">${i+1}</span>
+          <span style="font-size:.8rem;font-weight:600;color:${p.label};flex:1">${esc(g.nome)}</span>
+          <button class="tag-x" onclick="removeGrupo(${g.id})" style="color:${p.label}">✕</button>
+        </div>`;}).join('')
+    : '<p style="color:var(--subtle);font-size:.8rem;font-style:italic">Nenhum grupo cadastrado.</p>';
+  fillCargoSel('dCargo'); fillGrupoSel('dGrupo');
 }
 
 /* ══ RENDER TABLE ══ */
@@ -735,43 +771,34 @@ function renderTable(){
   const tbody=document.getElementById('orgTbody');
   document.getElementById('countBadge').textContent=people.length?`${people.length} pessoa${people.length!==1?'s':''}` : '';
   document.getElementById('noGroupWarn').style.display=people.some(p=>!p.grupoId)?'':'none';
-
-  if(!people.length){
-    tbody.innerHTML='<tr class="empty-row"><td colspan="5">Nenhuma pessoa cadastrada. Clique em "+ Adicionar pessoa".</td></tr>';
-    return;
-  }
+  if(!people.length){ tbody.innerHTML='<tr class="empty-row"><td colspan="5">Nenhuma pessoa cadastrada. Clique em "+ Adicionar pessoa".</td></tr>'; return; }
 
   const q=_searchQ;
-  const filtered=q
-    ? people.filter(p=>{ const g=grupos.find(x=>x.id===p.grupoId); return p.nome.toLowerCase().includes(q)||p.cargo.toLowerCase().includes(q)||(g&&g.nome.toLowerCase().includes(q)); })
-    : people;
+  const filtered=q ? people.filter(p=>{ const g=grupos.find(x=>x.id===p.grupoId);
+    return p.nome.toLowerCase().includes(q)||p.cargo.toLowerCase().includes(q)||(g&&g.nome.toLowerCase().includes(q)); }) : people;
+  if(!filtered.length){ tbody.innerHTML='<tr class="empty-row"><td colspan="5">Nenhum resultado para a busca.</td></tr>'; return; }
 
-  if(!filtered.length){
-    tbody.innerHTML='<tr class="empty-row"><td colspan="5">Nenhum resultado para a busca.</td></tr>';
-    return;
-  }
-
-  const byLvl={};
-  filtered.forEach(p=>{ const n=getNivel(p.id); (byLvl[n]=byLvl[n]||[]).push(p); });
+  const byLvl={}; filtered.forEach(p=>{ const n=p.nivel||1; (byLvl[n]=byLvl[n]||[]).push(p); });
   const levels=Object.keys(byLvl).map(Number).sort((a,b)=>a-b);
   const NIVEL_LABEL={1:'Nível 1 — Liderança',2:'Nível 2 — Gerência / Coordenação',
     3:'Nível 3 — Supervisão / Técnico Sr.',4:'Nível 4 — Técnico / Analista',5:'Nível 5 — Operacional'};
 
   tbody.innerHTML=levels.flatMap(lvl=>{
     const cnt=byLvl[lvl].length;
-    const hdr=`<tr class="level-row"><td colspan="5">${NIVEL_LABEL[lvl]||('Nível '+lvl)} <span style="font-weight:400;opacity:.6;">(${cnt})</span></td></tr>`;
+    const hdr=`<tr class="level-row"><td colspan="5">${NIVEL_LABEL[lvl]||('Nível '+lvl)} <span style="font-weight:400;opacity:.6">(${cnt})</span></td></tr>`;
     const rows=byLvl[lvl].map(p=>{
       const g=grupos.find(x=>x.id===p.grupoId);
       const pal=g?PAL[g.palIdx%PAL.length]:null;
-      const chip=g
-        ?`<span class="grp-chip" style="background:${pal.fill};border-color:${pal.border};color:${pal.label};"><span class="chip-dot" style="background:${pal.border};"></span>${esc(g.nome)}</span>`
-        :'<span class="no-grp-chip">Sem grupo</span>';
+      const chip=g?`<span class="grp-chip" style="background:${pal.fill};border-color:${pal.border};color:${pal.label}"><span class="chip-dot" style="background:${pal.border}"></span>${esc(g.nome)}</span>`:'<span class="no-grp-chip">Sem grupo</span>';
       const sup=p.superiorId?people.find(x=>x.id===p.superiorId):null;
-      const supTxt=sup?`<span class="sup-txt" title="${esc(sup.nome)}">${esc(sup.nome)}</span>`:'<span style="color:var(--subtle);font-size:.72rem;">—</span>';
-      return `<tr data-pid="${p.id}" onclick="openInlineEdit(${p.id})" style="cursor:pointer;"${!p.grupoId?' class="no-group-row"':''}>
-        <td><div class="td-nome">${esc(p.nome)}</div><div class="td-cargo">${esc(p.cargo)}</div></td>
+      const supTxt=sup?`<span class="sup-txt" title="${esc(sup.nome)}">${esc(sup.nome)}</span>`:'<span style="color:var(--subtle);font-size:.72rem">—</span>';
+      const corpBadge=p.tipo==='corp'?'<span class="corp-badge" style="margin-left:4px">CORP</span>':'';
+      const suportaCount=(p.suportaIds||[]).length;
+      const suportaHint=suportaCount?`<span style="font-size:.67rem;color:#6366f1;margin-left:4px">⤳ ${suportaCount} suporte${suportaCount>1?'s':''}</span>`:'';
+      return `<tr data-pid="${p.id}" onclick="openInlineEdit(${p.id})" style="cursor:pointer"${!p.grupoId?' class="no-group-row"':''}>
+        <td><div class="td-nome">${esc(p.nome)}${corpBadge}</div><div class="td-cargo">${esc(p.cargo)}${suportaHint}</div></td>
         <td>${chip}</td>
-        <td><span class="lvl-badge">N${getNivel(p.id)}</span></td>
+        <td><span class="lvl-badge">N${p.nivel||1}</span></td>
         <td>${supTxt}</td>
         <td><div class="act-cell">
           <button class="iBtn del" onclick="event.stopPropagation();deletePerson(${p.id})" title="Remover">🗑</button>
@@ -784,28 +811,33 @@ function renderTable(){
 
 /* ══ EXAMPLE ══ */
 function loadExample(){
-  if(people.length&&!confirm('Substituir equipe atual pelo exemplo?')) return;
+  if(people.length&&!confirm('Substituir equipe atual?')) return;
   people=[]; _pid=1;
   const g=n=>grupos.find(x=>x.nome===n)?.id||null;
-  const add=(nome,cargo,grp,sup)=>{ people.push({id:_pid++,nome:nome.toUpperCase(),cargo,grupoId:g(grp),superiorId:sup}); return _pid-1; };
-  const dir=add('Carlos Andrade','Gerente de contratos','Gestão Contratual',null);
-  const gp =add('Mariana Costa','Engenheiro de obras','Produção',dir);
-  const gpl=add('Felipe Souza','Engenheiro de planejamento','Planejamento / Medição',dir);
-  const gq =add('Renata Alves','Laboratorista','Qualidade / Laboratório',dir);
-  const gs =add('Paula Nunes','Engenheiro seg do trabalho','SSMA',dir);
-  const ga =add('Roberto Dias','Gerente administrativo','Administração',dir);
-       add('Ana Lima','Supervisor de obras','Produção',gp);
-       add('João Mendes','Mestre de obra','Produção',gp);
-       add('Camila Torres','Encarregado de obras','Produção',gp);
-       add('Lucas Barbosa','Técnico de planejamento','Planejamento / Medição',gpl);
-       add('Sandra Oliveira','Técnico seg do trabalho','SSMA',gs);
-       add('Thiago Ramos','Analista de meio ambiente','SSMA',gs);
-       add('Isabela Freitas','Auxiliar de laboratorista','Qualidade / Laboratório',gq);
-       add('Luisa Ferreira','Auxiliar administrativo','Administração',ga);
+  const add=(nome,cargo,grp,sup,nivel,tipo='normal')=>{
+    const id=_pid++;
+    people.push({id,nome:nome.toUpperCase(),cargo,grupoId:g(grp),superiorId:sup,nivel,tipo,suportaIds:[]});
+    return id;
+  };
+  const dir=add('Carlos Andrade','Gerente de contratos','Gestão Contratual',null,1);
+  const corpEng=add('Eng. Corporativo de Planejamento','Engenheiro de planejamento','Planejamento / Medição',null,2,'corp');
+  const gp =add('Mariana Costa','Engenheiro de obras','Produção',dir,2);
+  const gpl=add('Felipe Souza','Engenheiro de planejamento','Planejamento / Medição',dir,2);
+  const gq =add('Renata Alves','Laboratorista','Qualidade / Laboratório',dir,2);
+  const gs =add('Paula Nunes','Engenheiro seg do trabalho','SSMA',dir,2);
+  const ga =add('Roberto Dias','Gerente administrativo','Administração',dir,2);
+  add('Ana Lima','Supervisor de obras','Produção',gp,3);
+  add('João Mendes','Mestre de obra','Produção',gp,3);
+  add('Lucas Barbosa','Técnico de planejamento','Planejamento / Medição',gpl,3);
+  add('Sandra Oliveira','Técnico seg do trabalho','SSMA',gs,3);
+  add('Isabela Freitas','Auxiliar de laboratorista','Qualidade / Laboratório',gq,3);
+  add('Luisa Ferreira','Auxiliar administrativo','Administração',ga,3);
+  // corp supports the project planning engineer
+  const corpP=people.find(p=>p.id===corpEng); if(corpP) corpP.suportaIds=[gpl];
   renderAll(); saveLocal();
 }
 
-/* ══ EXPORT / IMPORT JSON ══ */
+/* ══ EXPORT / IMPORT ══ */
 function exportJSON(){
   const org=curOrg();
   const data={versao:'org6',titulo:org?.nome||'Organograma',funcoes,grupos,people,exportadoEm:new Date().toISOString()};
@@ -821,17 +853,16 @@ function importJSON(ev){
     try{
       const data=JSON.parse(e.target.result);
       if(!data.people||!Array.isArray(data.people)) throw new Error('Formato inválido');
-      if(!confirm(`Importar "${data.titulo||'organograma'}"?\nIsso substituirá a equipe e o catálogo atuais.`)) return;
+      if(!confirm(`Importar "${data.titulo||'organograma'}"?`)) return;
       if(data.funcoes&&Array.isArray(data.funcoes)) funcoes=data.funcoes;
       if(data.grupos&&Array.isArray(data.grupos)){ grupos=data.grupos; _gid=Math.max(0,...grupos.map(g=>g.id))+1; }
       people=data.people; _pid=Math.max(0,...people.map(p=>p.id))+1;
-      const org=curOrg();
-      if(org){ org.nome=data.titulo||'Organograma'; document.getElementById('orgTitle').value=org.nome; }
+      migratePeople();
+      const org=curOrg(); if(org){ org.nome=data.titulo||'Organograma'; document.getElementById('orgTitle').value=org.nome; }
       sortFuncoes(); renderOrgBar(); renderAll(); saveLocal();
     }catch(err){ alert('Erro ao importar: '+err.message); }
   };
-  reader.readAsText(file);
-  ev.target.value='';
+  reader.readAsText(file); ev.target.value='';
 }
 
 /* ══ CHART ══ */
@@ -853,6 +884,7 @@ function layout(roots){
   let x=0;roots.forEach(r=>{sw(r);pl(r,x,0);x+=r._w+HG*2;});
   return nodes;
 }
+
 function drawChart(){
   const canvas=document.getElementById('orgCanvas');
   const cs=document.getElementById('chartSection'), ce=document.getElementById('chartEmpty');
@@ -867,8 +899,10 @@ function drawChart(){
   const ctx=canvas.getContext('2d');
   ctx.clearRect(0,0,canvas.width,canvas.height);
   ctx.save(); ctx.scale(_zoom,_zoom);
-  const ox=-minX+pad,oy=-minY+pad;
-  ctx.strokeStyle='#d1d5db';ctx.lineWidth=1.5;ctx.setLineDash([]);
+  const ox=-minX+pad, oy=-minY+pad;
+
+  // hierarchy connectors (solid)
+  ctx.strokeStyle='#d1d5db'; ctx.lineWidth=1.5; ctx.setLineDash([]);
   nodes.forEach(n=>{
     if(!n.children.length) return;
     const px=n._x+ox+NW/2,py=n._y+oy+NH,my=py+VG/2;
@@ -877,26 +911,72 @@ function drawChart(){
       ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px,my);ctx.lineTo(cx,my);ctx.lineTo(cx,cy);ctx.stroke();
     });
   });
+
+  // support lines (dashed indigo) — drawn before cards so cards render on top
+  const nodeMap={};
+  nodes.forEach(n=>nodeMap[n.id]=n);
+  ctx.setLineDash([5,4]); ctx.strokeStyle='rgba(99,102,241,0.65)'; ctx.lineWidth=1.5;
   nodes.forEach(n=>{
-    const x=n._x+ox,y=n._y+oy;
-    const g=grupos.find(g=>g.id===n.grupoId);
+    if(!(n.suportaIds||[]).length) return;
+    const sx=n._x+ox+NW/2, sy=n._y+oy+NH/2;
+    n.suportaIds.forEach(tid=>{
+      const t=nodeMap[tid]; if(!t) return;
+      const tx=t._x+ox+NW/2, ty=t._y+oy+NH/2;
+      const mx=(sx+tx)/2, my=(sy+ty)/2-30;
+      ctx.beginPath(); ctx.moveTo(sx,sy); ctx.quadraticCurveTo(mx,my,tx,ty); ctx.stroke();
+      // arrowhead
+      const angle=Math.atan2(ty-my,tx-mx);
+      const al=9;
+      ctx.setLineDash([]); ctx.beginPath();
+      ctx.moveTo(tx-al*Math.cos(angle-Math.PI/6),ty-al*Math.sin(angle-Math.PI/6));
+      ctx.lineTo(tx,ty);
+      ctx.lineTo(tx-al*Math.cos(angle+Math.PI/6),ty-al*Math.sin(angle+Math.PI/6));
+      ctx.stroke(); ctx.setLineDash([5,4]);
+    });
+  });
+  ctx.setLineDash([]);
+
+  // cards
+  nodes.forEach(n=>{
+    const x=n._x+ox, y=n._y+oy;
+    const isCorp=n.tipo==='corp';
+    const g=isCorp?null:grupos.find(g=>g.id===n.grupoId);
     const pal=g?PAL[g.palIdx%PAL.length]:null;
     const accent=pal?pal.border:'#d1d5db';
-    ctx.shadowColor='rgba(0,0,0,.09)';ctx.shadowBlur=8;ctx.shadowOffsetY=2;
-    rr(ctx,x,y,NW,NH,8);ctx.fillStyle='#fff';ctx.fill();
-    ctx.shadowColor='transparent';ctx.shadowBlur=0;ctx.shadowOffsetY=0;
-    rr(ctx,x,y,5,NH,[8,0,0,8]);ctx.fillStyle=accent;ctx.fill();
-    rr(ctx,x,y,NW,NH,8);ctx.strokeStyle='#e5e7eb';ctx.lineWidth=1;ctx.stroke();
-    const tx=x+12;
-    ctx.fillStyle='#111827';ctx.font='700 11.5px "DM Sans",sans-serif';
-    ctx.fillText(trunc(ctx,n.nome,NW-18),tx,y+22);
-    ctx.fillStyle='#6b7280';ctx.font='500 10px "DM Sans",sans-serif';
-    ctx.fillText(trunc(ctx,n.cargo,NW-18),tx,y+38);
-    if(g){ ctx.fillStyle=accent;ctx.font='600 9px "DM Sans",sans-serif'; ctx.fillText(trunc(ctx,g.nome.toUpperCase(),NW-18),tx,y+56); }
+
+    ctx.shadowColor='rgba(0,0,0,.08)'; ctx.shadowBlur=8; ctx.shadowOffsetY=2;
+    rr(ctx,x,y,NW,NH,8);
+    ctx.fillStyle=isCorp?'#f8fafc':'#fff'; ctx.fill();
+    ctx.shadowColor='transparent'; ctx.shadowBlur=0; ctx.shadowOffsetY=0;
+
+    if(isCorp){
+      // dashed gray border for corp
+      ctx.setLineDash([5,3]); ctx.strokeStyle='#94a3b8'; ctx.lineWidth=1.5;
+      rr(ctx,x,y,NW,NH,8); ctx.stroke(); ctx.setLineDash([]);
+    } else {
+      rr(ctx,x,y,5,NH,[8,0,0,8]); ctx.fillStyle=accent; ctx.fill();
+      rr(ctx,x,y,NW,NH,8); ctx.strokeStyle='#e5e7eb'; ctx.lineWidth=1; ctx.stroke();
+    }
+
+    const tx2=isCorp?x+10:x+12;
+    ctx.fillStyle=isCorp?'#475569':'#111827';
+    ctx.font=`700 11.5px "DM Sans",sans-serif`;
+    ctx.fillText(trunc(ctx,n.nome,NW-18),tx2,y+22);
+    ctx.fillStyle=isCorp?'#94a3b8':'#6b7280'; ctx.font='500 10px "DM Sans",sans-serif';
+    ctx.fillText(trunc(ctx,n.cargo,NW-18),tx2,y+38);
+    if(isCorp){
+      ctx.fillStyle='#94a3b8'; ctx.font='600 8.5px "DM Sans",sans-serif';
+      ctx.fillText('CORPORATIVO',tx2,y+56);
+    } else if(g){
+      ctx.fillStyle=accent; ctx.font='600 9px "DM Sans",sans-serif';
+      ctx.fillText(trunc(ctx,g.nome.toUpperCase(),NW-18),tx2,y+56);
+    }
   });
+
   ctx.restore();
   renderLegend();
 }
+
 function rr(ctx,x,y,w,h,r){
   if(typeof r==='number')r=[r,r,r,r];
   const[tl,tr,br,bl]=r;
@@ -906,25 +986,36 @@ function rr(ctx,x,y,w,h,r){
   ctx.lineTo(x,y+tl);ctx.quadraticCurveTo(x,y,x+tl,y);ctx.closePath();
 }
 function trunc(ctx,t,mw){ if(ctx.measureText(t).width<=mw)return t; let s=t; while(s.length>0&&ctx.measureText(s+'…').width>mw)s=s.slice(0,-1); return s+'…'; }
+
 function renderLegend(){
   const wrap=document.getElementById('legWrap');
-  const usedG=grupos.filter(g=>people.some(p=>p.grupoId===g.id));
-  if(!usedG.length){ wrap.innerHTML=''; return; }
-  wrap.innerHTML=`<div class="leg-block"><div class="leg-title">Grupos / Setores</div><div class="leg-grid">`+
-    usedG.map(g=>{ const p=PAL[g.palIdx%PAL.length]; const cnt=people.filter(x=>x.grupoId===g.id).length;
-      return `<div class="leg-item"><div class="leg-bar" style="background:${p.border};"></div>
-        <div class="leg-info"><div class="lc">${esc(g.nome)}</div><div class="ln">${cnt} pessoa${cnt!==1?'s':''}</div></div></div>`;
-    }).join('')+'</div></div>';
+  const usedG=grupos.filter(g=>people.some(p=>p.grupoId===g.id&&p.tipo!=='corp'));
+  const hasCorp=people.some(p=>p.tipo==='corp');
+  const hasSupport=people.some(p=>(p.suportaIds||[]).length>0);
+  let html='';
+  if(usedG.length){
+    html+=`<div class="leg-block"><div class="leg-title">Grupos / Setores</div><div class="leg-grid">`+
+      usedG.map(g=>{ const p=PAL[g.palIdx%PAL.length]; const cnt=people.filter(x=>x.grupoId===g.id).length;
+        return `<div class="leg-item"><div class="leg-bar" style="background:${p.border}"></div>
+          <div class="leg-info"><div class="lc">${esc(g.nome)}</div><div class="ln">${cnt} pessoa${cnt!==1?'s':''}</div></div></div>`;
+      }).join('')+'</div></div>';
+  }
+  if(hasCorp||hasSupport){
+    html+=`<div class="leg-block"><div class="leg-title">Legenda visual</div><div class="leg-grid">`;
+    if(hasCorp) html+=`<div class="leg-item"><div style="width:28px;height:22px;border:1.5px dashed #94a3b8;border-radius:4px;background:#f8fafc;flex-shrink:0"></div><div class="leg-info"><div class="lc">Corporativo</div><div class="ln">Card tracejado cinza</div></div></div>`;
+    if(hasSupport) html+=`<div class="leg-item"><div style="width:28px;height:0;border-top:2px dashed rgba(99,102,241,.7);margin-top:11px;flex-shrink:0"></div><div class="leg-info"><div class="lc">Suporte</div><div class="ln">Linha tracejada índigo</div></div></div>`;
+    html+='</div></div>';
+  }
+  wrap.innerHTML=html;
 }
 
-/* ══ PAN (arrastar o gráfico) ══ */
+/* ══ PAN ══ */
 function initCanvasPan(){
-  const canvas=document.getElementById('orgCanvas');
-  const wrap=document.getElementById('canvasWrap');
-  let dragging=false,sx,sy,slx,sly;
-  canvas.addEventListener('mousedown',e=>{ dragging=true;sx=e.clientX;sy=e.clientY;slx=wrap.scrollLeft;sly=wrap.scrollTop;canvas.style.cursor='grabbing';e.preventDefault(); });
-  document.addEventListener('mousemove',e=>{ if(!dragging) return; wrap.scrollLeft=slx-(e.clientX-sx); wrap.scrollTop=sly-(e.clientY-sy); });
-  document.addEventListener('mouseup',()=>{ dragging=false; canvas.style.cursor='grab'; });
+  const canvas=document.getElementById('orgCanvas'), wrap=document.getElementById('canvasWrap');
+  let dr=false,sx,sy,slx,sly;
+  canvas.addEventListener('mousedown',e=>{dr=true;sx=e.clientX;sy=e.clientY;slx=wrap.scrollLeft;sly=wrap.scrollTop;canvas.style.cursor='grabbing';e.preventDefault();});
+  document.addEventListener('mousemove',e=>{ if(!dr) return; wrap.scrollLeft=slx-(e.clientX-sx); wrap.scrollTop=sly-(e.clientY-sy); });
+  document.addEventListener('mouseup',()=>{ dr=false; canvas.style.cursor='grab'; });
   canvas.addEventListener('touchstart',e=>{ const t=e.touches[0];sx=t.clientX;sy=t.clientY;slx=wrap.scrollLeft;sly=wrap.scrollTop; },{passive:true});
   canvas.addEventListener('touchmove',e=>{ const t=e.touches[0];wrap.scrollLeft=slx-(t.clientX-sx);wrap.scrollTop=sly-(t.clientY-sy);e.preventDefault(); },{passive:false});
 }
@@ -933,11 +1024,9 @@ function initCanvasPan(){
 function zoom(d){ _zoom=Math.min(3,Math.max(0.2,_zoom+d)); drawChart(); }
 function resetZoom(){ _zoom=1; drawChart(); }
 function exportPNG(){
-  const canvas=document.getElementById('orgCanvas');
-  if(!canvas||!people.length) return;
-  const titulo=(curOrg()?.nome||'Organograma');
-  const titleH=44;
-  const tc=document.createElement('canvas');
+  const canvas=document.getElementById('orgCanvas'); if(!canvas||!people.length) return;
+  const titulo=curOrg()?.nome||'Organograma';
+  const titleH=44, tc=document.createElement('canvas');
   tc.width=canvas.width; tc.height=canvas.height+titleH;
   const ctx=tc.getContext('2d');
   ctx.fillStyle='#fff'; ctx.fillRect(0,0,tc.width,tc.height);
@@ -968,17 +1057,14 @@ function loadLocal(){
     if(f) funcoes=JSON.parse(f);
     if(g){ grupos=JSON.parse(g); _gid=Number(localStorage.getItem('org6_gid')||1); }
     if(o){ orgs=JSON.parse(o); _oid=Number(localStorage.getItem('org6_oid')||1); }
-    const cur=localStorage.getItem('org6_cur');
-    if(cur) _currentOrgId=Number(cur);
+    const cur=localStorage.getItem('org6_cur'); if(cur) _currentOrgId=Number(cur);
   }catch(e){}
-  // migrar org5 → org6
   if(!orgs.length){
     try{
       const f5=localStorage.getItem('org5_f'),g5=localStorage.getItem('org5_g'),p5=localStorage.getItem('org5_p');
       if(f5&&!funcoes.length) funcoes=JSON.parse(f5);
       if(g5&&!grupos.length){ grupos=JSON.parse(g5); _gid=Number(localStorage.getItem('org5_gid')||1); }
-      const ppl=p5?JSON.parse(p5):[];
-      const pid=Number(localStorage.getItem('org5_pid')||1);
+      const ppl=p5?JSON.parse(p5):[], pid=Number(localStorage.getItem('org5_pid')||1);
       orgs=[{id:1,nome:'Organograma 1',people:ppl,_pid:pid}];
       _oid=2; _currentOrgId=1;
     }catch(e){}
@@ -991,7 +1077,6 @@ function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').rep
 /* ══ INIT ══ */
 loadLocal();
 if(!funcoes.length) funcoes=[...DEF_FUNC];
-// migrar all-caps → primeira letra maiúscula
 funcoes=funcoes.map(f=>f===f.toUpperCase()?f.charAt(0).toUpperCase()+f.slice(1).toLowerCase():f);
 sortFuncoes();
 if(!grupos.length) DEF_GRUPOS.forEach(g=>grupos.push({id:_gid++,nome:g.nome,palIdx:g.palIdx}));
@@ -999,11 +1084,9 @@ if(!orgs.length){ orgs=[{id:_oid++,nome:'Organograma 1',people:[],_pid:1}]; }
 if(!_currentOrgId||!orgs.find(o=>o.id===_currentOrgId)) _currentOrgId=orgs[0].id;
 const _initOrg=orgs.find(o=>o.id===_currentOrgId)||orgs[0];
 people=[..._initOrg.people]; _pid=_initOrg._pid||1;
+migratePeople();
 document.getElementById('orgTitle').value=_initOrg?.nome||'';
-initSwatches();
-initCanvasPan();
-renderOrgBar();
-renderAll();
+initSwatches(); initCanvasPan(); renderOrgBar(); renderAll();
 </script>
 </body>
 </html>
