@@ -732,10 +732,6 @@ function removeGrupo(id){
   grupos=grupos.filter(g=>g.id!==id);
   renderCadastro(); renderAll(); saveLocal();
 }
-function changeGrupoColor(id,palIdx){
-  const g=grupos.find(x=>x.id===id); if(!g) return;
-  g.palIdx=palIdx; renderCadastro(); drawChart(); saveLocal();
-}
 function moveGrupo(id,dir){
   const i=grupos.findIndex(g=>g.id===id), j=i+dir;
   if(j<0||j>=grupos.length) return;
@@ -757,7 +753,6 @@ function renderCadastro(){
   const gl=document.getElementById('grpList');
   gl.innerHTML=grupos.length
     ? grupos.map((g,i)=>{ const p=PAL[g.palIdx%PAL.length];
-        const swatches=SW_HEX.map((c,si)=>`<div class="sw${si===g.palIdx?' sel':''}" style="background:${c};width:16px;height:16px;border-radius:3px;" onclick="changeGrupoColor(${g.id},${si})"></div>`).join('');
         return `<div class="grp-list-row" style="border-left:4px solid ${p.border};background:${p.fill};">
           <div style="display:flex;flex-direction:column;gap:1px;">
             <button class="ord-btn" onclick="moveGrupo(${g.id},-1)" ${i===0?'disabled':''}>▲</button>
@@ -765,7 +760,6 @@ function renderCadastro(){
           </div>
           <span class="ord-num" style="color:${p.label}">${i+1}</span>
           <span style="font-size:.8rem;font-weight:600;color:${p.label};flex:1">${esc(g.nome)}</span>
-          <div style="display:flex;gap:3px;flex-wrap:wrap;max-width:120px">${swatches}</div>
           <button class="tag-x" onclick="removeGrupo(${g.id})" style="color:${p.label}">✕</button>
         </div>`;}).join('')
     : '<p style="color:var(--subtle);font-size:.8rem;font-style:italic">Nenhum grupo cadastrado.</p>';
@@ -1079,9 +1073,9 @@ function renderLegend(){
   const hasOrphan=hasN1Root2&&noSupNonCorp2.some(p=>(p.nivel||1)>1);
   if(hasCorp||hasSupport||hasOrphan){
     html+=`<div class="leg-block"><div class="leg-title">Legenda visual</div><div class="leg-grid">`;
-    if(hasCorp) html+=`<div class="leg-item"><div style="width:28px;height:22px;border:1.5px dashed #94a3b8;border-radius:4px;background:#f8fafc;flex-shrink:0"></div><div class="leg-info"><div class="lc">Corporativo</div></div></div>`;
-    if(hasOrphan) html+=`<div class="leg-item"><div style="width:28px;height:22px;border:1.5px dashed #fbbf24;border-radius:4px;background:#fffbeb;flex-shrink:0"></div><div class="leg-info"><div class="lc">Sem vínculo</div></div></div>`;
-    if(hasSupport) html+=`<div class="leg-item"><div style="width:28px;height:0;border-top:2px dashed rgba(99,102,241,.7);margin-top:11px;flex-shrink:0"></div><div class="leg-info"><div class="lc">Suporte</div></div></div>`;
+    if(hasCorp) html+=`<div class="leg-item"><div style="width:28px;height:22px;border:1.5px dashed #94a3b8;border-radius:4px;background:#f8fafc;flex-shrink:0"></div><div class="leg-info"><div class="lc">Corporativo</div><div class="ln">Card tracejado cinza, sem linha vertical</div></div></div>`;
+    if(hasOrphan) html+=`<div class="leg-item"><div style="width:28px;height:22px;border:1.5px dashed #fbbf24;border-radius:4px;background:#fffbeb;flex-shrink:0"></div><div class="leg-info"><div class="lc">Sem vínculo</div><div class="ln">Posicionado no nível correspondente</div></div></div>`;
+    if(hasSupport) html+=`<div class="leg-item"><div style="width:28px;height:0;border-top:2px dashed rgba(99,102,241,.7);margin-top:11px;flex-shrink:0"></div><div class="leg-info"><div class="lc">Suporte</div><div class="ln">Linha tracejada índigo</div></div></div>`;
     html+='</div></div>';
   }
   wrap.innerHTML=html;
