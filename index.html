@@ -169,7 +169,7 @@
 
     /* fases / marcos */
     .fases-list { display:flex; flex-direction:column; gap:5px; margin-top:10px; }
-    .fase-item  { display:grid; grid-template-columns:22px 1fr 52px auto 100px 22px; gap:8px; align-items:center;
+    .fase-item  { display:grid; grid-template-columns:22px 1fr auto 52px auto 100px 22px; gap:8px; align-items:center;
                   background:#f9fafb; border:1px solid var(--border-l); border-radius:6px; padding:6px 12px; }
     .fase-num   { font-size:.75rem; font-weight:700; color:var(--muted); text-align:center; }
     .fase-nome  { border:1px solid var(--border); border-radius:4px; padding:4px 8px; font-family:var(--fb); font-size:.88rem; width:100%; min-width:0; }
@@ -289,28 +289,6 @@
     .per-stat-val { font-weight:600; color:var(--text); }
     .per-mini-bar { height:6px; border-radius:3px; background:#f3f4f6; margin-top:10px; overflow:hidden; }
     .per-mini-fill { height:100%; border-radius:3px; background:#0000ff; }
-
-    /* ── CPU WATERFALL ── */
-    .cpu-table { width:100%; border-collapse:collapse; font-size:.88rem; }
-    .cpu-table td { padding:9px 12px; }
-    .cpu-table tr { border-bottom:1px solid var(--border-l); }
-    .cpu-table tr:last-child { border-bottom:none; }
-    .cpu-row-total   { background:#f9fafb; }
-    .cpu-row-loss    { background:#fff; }
-    .cpu-row-subtot  { background:#f3f4f6; }
-    .cpu-row-result  { background:#0000ff; color:#fff; }
-    .cpu-row-result td { padding:13px 12px; }
-    .cpu-lbl  { font-weight:600; }
-    .cpu-sub  { font-size:.78rem; color:var(--muted); margin-top:2px; }
-    .cpu-row-result .cpu-sub { color:rgba(255,255,255,.75); }
-    .cpu-hrs  { text-align:right; font-weight:700; white-space:nowrap; font-size:.95rem; }
-    .cpu-loss-hrs { text-align:right; white-space:nowrap; color:#b91c1c; font-weight:600; }
-    .cpu-pct  { text-align:right; white-space:nowrap; width:90px; font-weight:700; }
-    .cpu-pct-bar-wrap { width:160px; padding-right:12px; }
-    .cpu-pct-bar-track { background:#e5e7eb; border-radius:3px; height:8px; overflow:hidden; }
-    .cpu-pct-bar-fill  { height:100%; border-radius:3px; background:#0000ff; transition:width .4s; }
-    .cpu-arrow { color:var(--muted); font-size:.8rem; width:24px; text-align:center; }
-    .cpu-indent { padding-left:28px !important; }
 
     /* ── TIMELINE ── */
     .tl-wrap { margin-top: 18px; background: #f9fafb; border: 1px solid var(--border); border-radius: var(--r); padding: 13px 15px; overflow-x: auto; }
@@ -527,14 +505,30 @@
     <!-- MARCOS / FASES -->
     <div class="custom-section" id="fasesSection">
       <div class="custom-title">Marcos e Fases do Contrato</div>
-      <p class="custom-sub">Defina as fases sequenciais do contrato em dias corridos, conforme o contrato. Cada fase inicia onde a anterior termina, a partir da OS. O sistema converte para dias úteis automaticamente.</p>
-      <div class="custom-row" style="margin-bottom:8px;">
+      <p class="custom-sub">Defina as fases do contrato. Escolha o modo de ancoragem de cada fase: sequencial (inicia após a anterior), OS + prazo (N dias após a OS) ou data fixa de início.</p>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:8px;">
         <div class="fg" style="min-width:180px;">
           <label>Nome da fase</label>
           <input type="text" id="faseNome" placeholder="Ex: Mobilização" style="width:100%;" />
         </div>
-        <div class="fg" style="max-width:110px;">
-          <label>Dias corridos</label>
+        <div class="fg" style="max-width:140px;">
+          <label>Ancoragem</label>
+          <select id="faseTipo" onchange="onFaseTipoChange()" style="width:100%;padding:9px 8px;border:1px solid var(--border);border-radius:6px;font-size:.88rem;background:#fff;">
+            <option value="seq">Sequencial</option>
+            <option value="os">OS + dias</option>
+            <option value="data">Data fixa</option>
+          </select>
+        </div>
+        <div class="fg fase-campo-os" style="max-width:90px;display:none;">
+          <label>Dias após OS</label>
+          <input type="number" id="faseOsOffset" min="0" step="1" placeholder="0" style="width:100%;" />
+        </div>
+        <div class="fg fase-campo-data" style="max-width:130px;display:none;">
+          <label>Data início</label>
+          <input type="text" id="faseDataInicio" placeholder="DD/MM/AAAA" maxlength="10" style="width:100%;" />
+        </div>
+        <div class="fg" style="max-width:100px;">
+          <label>Duração (dias)</label>
           <input type="number" id="faseDur" min="1" step="1" placeholder="60" style="width:100%;" />
         </div>
         <button class="btn btn-add" onclick="addFase()">Adicionar</button>
@@ -592,11 +586,6 @@
       <div class="section-title">Resumo do Contrato</div>
       <div class="sum-grid" id="sumCards"></div>
       <div id="tlSection"></div>
-    </div>
-
-    <div class="card" id="cpuCard">
-      <div class="section-title">Índice de Aproveitamento — CPU</div>
-      <div id="cpuWaterfall"></div>
     </div>
 
     <div class="card" id="fasesCard" style="display:none;">
@@ -1178,13 +1167,48 @@ let customHols=[];
 let fases=[];
 let _faseId=0;
 
+function onFaseTipoChange(){
+  const t=document.getElementById('faseTipo').value;
+  document.querySelectorAll('.fase-campo-os').forEach(el=>el.style.display=t==='os'?'':'none');
+  document.querySelectorAll('.fase-campo-data').forEach(el=>el.style.display=t==='data'?'':'none');
+}
+
+// Resolve start date for each fase given ordered list and osDate
+// Returns array of {faseId, start: Date|null, end: Date|null}
+function resolveFaseDates(osDate){
+  const out=[];
+  fases.forEach((f,i)=>{
+    let start=null;
+    if(f.tipo==='os'||(!f.tipo&&i===0&&osDate)){
+      // OS + offset (default for first fase if no tipo)
+      const offset=f.osOffset||0;
+      start=osDate?add(osDate,offset):null;
+    } else if(f.tipo==='data'){
+      start=f.dataInicio?parseBR(f.dataInicio):null;
+    } else {
+      // seq (default): starts right after previous fase ends
+      const prev=out[i-1];
+      start=prev?.end?add(prev.end,1):osDate||null;
+    }
+    const end=start&&f.dur>0?add(start,f.dur-1):null;
+    out.push({faseId:f.id,start,end});
+  });
+  return out;
+}
+
 function addFase(){
   const nome=document.getElementById('faseNome').value.trim();
   const dur=parseInt(document.getElementById('faseDur').value)||0;
+  const tipo=document.getElementById('faseTipo').value;
   if(!nome||dur<1){showAlert('warn','Informe nome e duração da fase.');return;}
-  fases.push({id:++_faseId,nome,dur});
+  const fase={id:++_faseId,nome,dur,tipo};
+  if(tipo==='os') fase.osOffset=parseInt(document.getElementById('faseOsOffset').value)||0;
+  if(tipo==='data') fase.dataInicio=document.getElementById('faseDataInicio').value.trim();
+  fases.push(fase);
   document.getElementById('faseNome').value='';
   document.getElementById('faseDur').value='';
+  document.getElementById('faseOsOffset').value='';
+  document.getElementById('faseDataInicio').value='';
   renderFasesList();
   saveState();
   if(hasCalcResult&&lastResult) render(lastResult);
@@ -1197,25 +1221,33 @@ function removeFase(id){
   if(hasCalcResult&&lastResult) render(lastResult);
 }
 
+const TIPO_LBL={seq:'Seq.',os:'OS+',data:'Data'};
+const TIPO_COLOR={seq:'#e5e7eb',os:'#dbeafe',data:'#d1fae5'};
+
 function renderFasesList(){
   const el=document.getElementById('fasesList');
   if(!fases.length){
     el.innerHTML='<span style="color:var(--subtle);font-size:.82rem;font-style:italic;">Nenhuma fase cadastrada.</span>';
     return;
   }
-  // Calculate cumulative end dates from OS
   const osDate=parseBR(document.getElementById('dataOS')?.value||'');
-  let cumDias=0;
+  const resolved=resolveFaseDates(osDate);
   el.innerHTML=fases.map((f,i)=>{
-    cumDias+=f.dur;
-    const fimDt=osDate?add(osDate,cumDias-1):null;
-    const fimStr=fimDt?fBR(fimDt):'—';
+    const {start,end}=resolved[i];
+    const fimStr=end?fBR(end):'—';
+    const iniStr=start?fBR(start):'—';
+    const tipo=f.tipo||'seq';
+    const badge=`<span style="font-size:.68rem;font-weight:700;background:${TIPO_COLOR[tipo]};color:#374151;border-radius:3px;padding:1px 5px;white-space:nowrap;">${TIPO_LBL[tipo]}</span>`;
+    let ancoragem='';
+    if(tipo==='os') ancoragem=`<span style="font-size:.75rem;color:var(--muted);">OS+${f.osOffset||0}d</span>`;
+    else if(tipo==='data') ancoragem=`<span style="font-size:.75rem;color:var(--muted);">${f.dataInicio||'—'}</span>`;
     return `<div class="fase-item">
       <span class="fase-num">${i+1}</span>
       <input class="fase-nome" value="${f.nome}" onchange="fases[${i}].nome=this.value;saveState();if(hasCalcResult&&lastResult)render(lastResult);" placeholder="Nome">
+      <span style="display:flex;align-items:center;gap:4px;">${badge}${ancoragem}</span>
       <input class="fase-dur" type="number" min="1" value="${f.dur}" onchange="fases[${i}].dur=parseInt(this.value)||0;renderFasesList();saveState();if(hasCalcResult&&lastResult)render(lastResult);">
       <span class="fase-dur-lbl">dias</span>
-      <span class="fase-fim">→ ${fimStr}</span>
+      <span class="fase-fim" title="Início: ${iniStr}">→ ${fimStr}</span>
       <button class="fase-del" onclick="removeFase(${f.id})" title="Remover">×</button>
     </div>`;
   }).join('');
@@ -1715,78 +1747,6 @@ function render(res){
     ${hoursCard}
   `;
 
-  // ── CPU WATERFALL ────────────────────────────────────────────────────
-  const ju2      = jornadaUtil();          // horas úteis/dia (ex: 8,8h)
-  const hImprod  = jp > 0 ? +(nU * (ju2 - jp)).toFixed(1) : 0; // horas improdutivas dos dias úteis
-  const hNaoUtil = +(nC * ju2 - nU * ju2).toFixed(1);           // horas perdidas por dias não úteis
-  const hTot     = +(nC * ju2).toFixed(1);                      // teto total
-  const hUtBrut  = +(nU * ju2).toFixed(1);                      // após remover dias não úteis
-  const hProd2   = +(nU * jp).toFixed(1);                       // após remover improdutividade
-  const hPrat2   = tHpratCard;                                   // após remover impraticabilidade
-  const hImprat  = +(hProd2 - hPrat2).toFixed(1);               // perdas climáticas
-  const idxCPU   = hTot > 0 ? +(hPrat2 / hTot * 100).toFixed(1) : 0;
-
-  const pctBar = (val, max, color='#0000ff') => {
-    const w = max > 0 ? Math.min(100, +(val/max*100).toFixed(1)) : 0;
-    return `<div class="cpu-pct-bar-track"><div class="cpu-pct-bar-fill" style="width:${w}%;background:${color};"></div></div>`;
-  };
-  const fmtH = h => `${fmt1(h)} h`;
-  const pctOf = (h, base) => base > 0 ? `−${+(h/base*100).toFixed(1)}%` : '—';
-
-  document.getElementById('cpuWaterfall').innerHTML=`
-  <table class="cpu-table">
-    <tbody>
-      <tr class="cpu-row-total">
-        <td class="cpu-lbl">Horas Totais do Marco<div class="cpu-sub">${nC} dias corridos × ${fmt1(ju2)} h/dia</div></td>
-        <td class="cpu-arrow"></td>
-        <td class="cpu-pct-bar-wrap">${pctBar(hTot,hTot)}</td>
-        <td class="cpu-hrs">${fmtH(hTot)}</td>
-        <td class="cpu-pct" style="color:var(--muted);">100%</td>
-      </tr>
-      <tr class="cpu-row-loss">
-        <td class="cpu-lbl cpu-indent">− Dias não úteis<div class="cpu-sub">${nC - nU} dias (FDS, feriados, recesso, folgas)</div></td>
-        <td class="cpu-arrow">↓</td>
-        <td class="cpu-pct-bar-wrap">${pctBar(hNaoUtil,hTot,'#e5e7eb')}</td>
-        <td class="cpu-loss-hrs">−${fmtH(hNaoUtil)}</td>
-        <td class="cpu-pct" style="color:#b91c1c;">${pctOf(hNaoUtil,hTot)}</td>
-      </tr>
-      <tr class="cpu-row-subtot">
-        <td class="cpu-lbl">Horas Úteis Brutas<div class="cpu-sub">${nU} dias úteis × ${fmt1(ju2)} h/dia</div></td>
-        <td class="cpu-arrow"></td>
-        <td class="cpu-pct-bar-wrap">${pctBar(hUtBrut,hTot)}</td>
-        <td class="cpu-hrs">${fmtH(hUtBrut)}</td>
-        <td class="cpu-pct" style="color:var(--muted);">${+(hUtBrut/hTot*100).toFixed(1)}%</td>
-      </tr>
-      <tr class="cpu-row-loss">
-        <td class="cpu-lbl cpu-indent">− Improdutividade<div class="cpu-sub">${nU} dias × ${fmt1(+(ju2-jp).toFixed(2))} h/dia (refeição, mobilização etc.)</div></td>
-        <td class="cpu-arrow">↓</td>
-        <td class="cpu-pct-bar-wrap">${pctBar(hImprod,hTot,'#e5e7eb')}</td>
-        <td class="cpu-loss-hrs">−${fmtH(hImprod)}</td>
-        <td class="cpu-pct" style="color:#b91c1c;">${pctOf(hImprod,hTot)}</td>
-      </tr>
-      <tr class="cpu-row-subtot">
-        <td class="cpu-lbl">Horas Produtivas<div class="cpu-sub">${nU} dias úteis × ${fmt1(jp)} h/dia</div></td>
-        <td class="cpu-arrow"></td>
-        <td class="cpu-pct-bar-wrap">${pctBar(hProd2,hTot)}</td>
-        <td class="cpu-hrs">${fmtH(hProd2)}</td>
-        <td class="cpu-pct" style="color:var(--muted);">${+(hProd2/hTot*100).toFixed(1)}%</td>
-      </tr>
-      <tr class="cpu-row-loss">
-        <td class="cpu-lbl cpu-indent">− Impraticabilidade climática<div class="cpu-sub">Fator médio ponderado por período (úmido/transição/seco)</div></td>
-        <td class="cpu-arrow">↓</td>
-        <td class="cpu-pct-bar-wrap">${pctBar(hImprat,hTot,'#e5e7eb')}</td>
-        <td class="cpu-loss-hrs">−${fmtH(hImprat)}</td>
-        <td class="cpu-pct" style="color:#b91c1c;">${pctOf(hImprat,hTot)}</td>
-      </tr>
-      <tr class="cpu-row-result">
-        <td class="cpu-lbl">Horas Praticáveis — Índice CPU<div class="cpu-sub">Base real para dimensionamento de equipes e quantidades</div></td>
-        <td class="cpu-arrow" style="color:rgba(255,255,255,.6);">✓</td>
-        <td class="cpu-pct-bar-wrap">${pctBar(hPrat2,hTot,'#fff')}</td>
-        <td class="cpu-hrs">${fmtH(hPrat2)}</td>
-        <td class="cpu-pct" style="font-size:1.1rem;">${idxCPU}%</td>
-      </tr>
-    </tbody>
-  </table>`;
 
   // Monthly summary table — TRANSPOSED: months as rows, metrics as columns
   const tC=mos.reduce((s,mk)=>s+monthData[mk].c,0);
@@ -1866,20 +1826,22 @@ function render(res){
 
     const faseAlertEl=document.getElementById('faseAlert');
     const truncadas=[];
-    let cur=D(start.getUTCFullYear(),start.getUTCMonth(),start.getUTCDate());
     let totFU=0,totFHprod=0,totFHprat=0;
     const PER_COLOR={umido:'#bfdbfe',transicao:'#d1fae5',seco:'#fef9c3'};
     const PER_TXT  ={umido:'#1e3a8a',transicao:'#065f46',seco:'#713f12'};
+    const resolvedDates=resolveFaseDates(start);
     const faseRows=fases.map((f,i)=>{
-      const fStart=D(cur.getUTCFullYear(),cur.getUTCMonth(),cur.getUTCDate());
-      const fEndRaw=add(cur,f.dur-1);
+      const res=resolvedDates[i];
+      if(!res.start){return '';}
+      const fStartRaw=res.start;
+      const fStart=D(fStartRaw.getUTCFullYear(),fStartRaw.getUTCMonth(),fStartRaw.getUTCDate());
+      const fEndRaw=res.end||add(fStart,f.dur-1);
       const truncada=fEndRaw.getTime()>end.getTime();
       const fEnd=truncada?D(end.getUTCFullYear(),end.getUTCMonth(),end.getUTCDate()):fEndRaw;
       if(truncada){
         const diasFalta=Math.round((fEndRaw.getTime()-end.getTime())/864e5);
         truncadas.push(`<strong>${i+1}. ${f.nome}</strong> ultrapassa o término em <strong>${diasFalta} dia${diasFalta>1?'s':''}</strong>`);
       }
-      cur=add(fEnd,1);
       const nCorr=Math.round((fEnd.getTime()-fStart.getTime())/864e5)+1;
       const {nUtil,hProd,hPrat,pct,byTipo}=rangeStats(fStart,fEnd);
       totFU+=nUtil; totFHprod+=hProd; totFHprat+=hPrat;
@@ -2007,15 +1969,13 @@ function exportarCSV(){
   if(fases&&fases.length){
     lines.push('');
     lines.push(['Fase','Início','Fim','Dias Corridos','Dias Úteis','Horas Produtivas','Horas Praticáveis','Praticab. %','Úmido - H. Prat.','Transição - H. Prat.','Seco - H. Prat.'].join(';'));
-    // Rebuild fase calcs (mirrors render logic)
-    const D2=(y,m,d)=>new Date(Date.UTC(y,m,d));
-    const add2=(d,n)=>new Date(d.getTime()+n*864e5);
-    let cur=D2(start.getUTCFullYear(),start.getUTCMonth(),start.getUTCDate());
+    const csvResolved=resolveFaseDates(start);
     fases.forEach((f,i)=>{
-      const fStart=D2(cur.getUTCFullYear(),cur.getUTCMonth(),cur.getUTCDate());
-      const fEndRaw=add2(cur,f.dur-1);
-      const fEnd=fEndRaw.getTime()>end.getTime()?D2(end.getUTCFullYear(),end.getUTCMonth(),end.getUTCDate()):fEndRaw;
-      cur=add2(fEnd,1);
+      const res=csvResolved[i];
+      if(!res.start) return;
+      const fStart=res.start;
+      const fEndRaw=res.end||fStart;
+      const fEnd=fEndRaw.getTime()>end.getTime()?new Date(Date.UTC(end.getUTCFullYear(),end.getUTCMonth(),end.getUTCDate())):fEndRaw;
       const nCorr=Math.round((fEnd.getTime()-fStart.getTime())/864e5)+1;
       let nUtil=0,hProd=0,hPrat=0;
       const byT={umido:{hprat:0},transicao:{hprat:0},seco:{hprat:0}};
