@@ -180,16 +180,20 @@
     .prat-clear-btn  { background:none; border:none; cursor:pointer; font-size:.8rem; color:#1e3a8a; padding:0; line-height:1; font-weight:700; }
 
     /* fases / marcos */
-    .fases-list { display:flex; flex-direction:column; gap:5px; margin-top:10px; }
-    .fase-item  { display:grid; grid-template-columns:22px 1fr auto 52px auto 200px 22px; gap:8px; align-items:center;
-                  background:#f9fafb; border:1px solid var(--border-l); border-radius:6px; padding:6px 12px; }
-    .fase-num   { font-size:.75rem; font-weight:700; color:var(--muted); text-align:center; }
-    .fase-nome  { border:1px solid var(--border); border-radius:4px; padding:4px 8px; font-family:var(--fb); font-size:.88rem; width:100%; min-width:0; }
-    .fase-dur   { width:100%; border:1px solid var(--border); border-radius:4px; padding:4px 6px; font-family:var(--fb); font-size:.88rem; text-align:center; min-width:0; }
-    .fase-dur-lbl { font-size:.75rem; color:var(--muted); white-space:nowrap; }
-    .fase-fim   { font-size:.82rem; color:var(--text); font-weight:600; white-space:nowrap; }
-    .fase-del   { background:none; border:none; color:var(--muted); cursor:pointer; font-size:1.1rem; padding:0; line-height:1; text-align:center; justify-self:end; }
+    .fases-list { display:flex; flex-direction:column; gap:6px; margin-top:10px; }
+    .fase-item  { background:#f9fafb; border:1px solid var(--border-l); border-radius:6px; padding:8px 12px; display:flex; flex-direction:column; gap:6px; }
+    .fase-row1  { display:flex; align-items:center; gap:8px; }
+    .fase-row2  { display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding-left:28px; }
+    .fase-num   { font-size:.75rem; font-weight:700; color:var(--muted); min-width:18px; text-align:center; flex-shrink:0; }
+    .fase-nome  { border:1px solid var(--border); border-radius:4px; padding:4px 8px; font-family:var(--fb); font-size:.88rem; flex:1; min-width:0; }
+    .fase-move  { display:flex; flex-direction:column; gap:1px; flex-shrink:0; }
+    .fase-move-btn { background:none; border:1px solid var(--border); border-radius:3px; color:var(--muted); cursor:pointer; font-size:.65rem; padding:1px 4px; line-height:1.2; }
+    .fase-move-btn:hover { background:#e5e7eb; color:var(--text); }
+    .fase-del   { background:none; border:none; color:var(--muted); cursor:pointer; font-size:1.1rem; padding:0 2px; line-height:1; flex-shrink:0; }
     .fase-del:hover { color:#b91c1c; }
+    .fase-dur   { width:54px; border:1px solid var(--border); border-radius:4px; padding:3px 5px; font-family:var(--fb); font-size:.82rem; text-align:center; }
+    .fase-dur-lbl { font-size:.75rem; color:var(--muted); white-space:nowrap; }
+    .fase-fim   { font-size:.82rem; color:var(--text); font-weight:600; white-space:nowrap; margin-left:auto; }
 
     /* tabela de fases nos resultados */
     .fase-table { width:100%; border-collapse:collapse; font-size:.82rem; }
@@ -519,20 +523,24 @@
       <div class="custom-title">Marcos e Fases do Contrato</div>
       <p class="custom-sub">Preencha os campos que se aplicam. Se informar data de início, ela será usada como âncora. Se informar OS + dias (sem data), a fase começa nesse offset. Sem nenhum dos dois, inicia após a fase anterior.</p>
       <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:8px;">
-        <div class="fg" style="min-width:180px;">
-          <label>Nome da fase</label>
+        <div class="fg" style="min-width:200px;">
+          <label>Nome da fase / marco</label>
           <input type="text" id="faseNome" placeholder="Ex: Mobilização" style="width:100%;" />
         </div>
         <div class="fg" style="max-width:130px;">
           <label>Data início <span style="font-weight:400;color:var(--muted);">(opcional)</span></label>
           <input type="text" id="faseDataInicio" placeholder="DD/MM/AAAA" maxlength="10" style="width:100%;" />
         </div>
-        <div class="fg" style="max-width:100px;">
-          <label>OS + dias <span style="font-weight:400;color:var(--muted);">(opcional)</span></label>
+        <div class="fg" style="max-width:95px;">
+          <label>OS + início <span style="font-weight:400;color:var(--muted);">(dias)</span></label>
           <input type="number" id="faseOsOffset" min="0" step="1" placeholder="0" style="width:100%;" />
         </div>
-        <div class="fg" style="max-width:100px;">
-          <label>Duração (dias)</label>
+        <div class="fg" style="max-width:95px;">
+          <label>Prazo total <span style="font-weight:400;color:var(--muted);">(OS+N)</span></label>
+          <input type="number" id="fasePrazTotal" min="1" step="1" placeholder="—" style="width:100%;" />
+        </div>
+        <div class="fg" style="max-width:95px;">
+          <label>Duração <span style="font-weight:400;color:var(--muted);">(dias)</span></label>
           <input type="number" id="faseDur" min="1" step="1" placeholder="60" style="width:100%;" />
         </div>
         <button class="btn btn-add" onclick="addFase()">Adicionar</button>
@@ -1235,42 +1243,57 @@ let customHols=[];
 let fases=[];
 let _faseId=0;
 
-// Resolve start date for each fase — infers mode from stored fields:
-// dataInicio filled → data; osOffset > 0 → os; otherwise → seq
+// Resolve start/end for each fase.
+// Priority for end: prazTotal (OS+N absolute) > dur from start.
+// Priority for start: dataInicio > osOffset > sequential.
 function resolveFaseDates(osDate){
   const out=[];
   fases.forEach((f,i)=>{
-    let start=null;
+    let start=null, end=null;
     const dataFilled = f.dataInicio && parseBR(f.dataInicio);
     const osFilled   = (f.osOffset??0) > 0;
+    const prazFilled = (f.prazTotal??0) > 0;
     if(dataFilled){
       start=dataFilled;
-    } else if(osFilled){
-      start=osDate?add(osDate,f.osOffset):null;
+      end=f.dur>0?add(start,f.dur-1):null;
+    } else if(osFilled||prazFilled){
+      start=osDate?add(osDate,(f.osOffset||0)):null;
+      if(prazFilled&&osDate) end=add(osDate,f.prazTotal-1);
+      else if(f.dur>0&&start) end=add(start,f.dur-1);
     } else {
       const prev=out[i-1];
       start=prev?.end?add(prev.end,1):osDate||null;
+      end=start&&f.dur>0?add(start,f.dur-1):null;
     }
-    const end=start&&f.dur>0?add(start,f.dur-1):null;
     out.push({faseId:f.id,start,end});
   });
   return out;
 }
 
+function moveFase(id, dir){
+  const idx=fases.findIndex(f=>f.id===id);
+  const swap=idx+dir;
+  if(swap<0||swap>=fases.length) return;
+  [fases[idx],fases[swap]]=[fases[swap],fases[idx]];
+  renderFasesList(); saveState();
+  if(hasCalcResult&&lastResult) render(lastResult);
+}
+
 function addFase(){
   const nome=document.getElementById('faseNome').value.trim();
   const dur=parseInt(document.getElementById('faseDur').value)||0;
-  if(!nome||dur<1){showAlert('warn','Informe nome e duração da fase.');return;}
+  const prazTotal=parseInt(document.getElementById('fasePrazTotal').value)||0;
+  if(!nome||(dur<1&&prazTotal<1)){showAlert('warn','Informe nome e duração (ou prazo total) da fase.');return;}
   const dataInicio=document.getElementById('faseDataInicio').value.trim();
   const osOffset=parseInt(document.getElementById('faseOsOffset').value)||0;
-  // infer tipo for badge display
-  const tipo=dataInicio?'data':osOffset>0?'os':'seq';
-  const fase={id:++_faseId,nome,dur,tipo,dataInicio,osOffset};
+  const tipo=dataInicio?'data':(osOffset>0||prazTotal>0)?'os':'seq';
+  const fase={id:++_faseId,nome,dur:dur||prazTotal,tipo,dataInicio,osOffset,prazTotal};
   fases.push(fase);
   document.getElementById('faseNome').value='';
   document.getElementById('faseDur').value='';
   document.getElementById('faseOsOffset').value='';
   document.getElementById('faseDataInicio').value='';
+  document.getElementById('fasePrazTotal').value='';
   renderFasesList();
   saveState();
   if(hasCalcResult&&lastResult) render(lastResult);
@@ -1298,19 +1321,38 @@ function renderFasesList(){
     const {start,end}=resolved[i];
     const fimStr=end?fBR(end):'—';
     const iniStr=start?fBR(start):'—';
-    const tipo=f.dataInicio?'data':(f.osOffset>0?'os':'seq');
+    const tipo=f.dataInicio?'data':((f.osOffset>0||f.prazTotal>0)?'os':'seq');
     const badge=`<span style="font-size:.68rem;font-weight:700;background:${TIPO_COLOR[tipo]};color:#374151;border-radius:3px;padding:1px 5px;white-space:nowrap;">${TIPO_LBL[tipo]}</span>`;
-    let ancoragem='';
-    if(tipo==='os') ancoragem=`<span style="font-size:.75rem;color:var(--muted);">OS+${f.osOffset||0}d</span>`;
-    else if(tipo==='data') ancoragem=`<span style="font-size:.75rem;color:var(--muted);">${f.dataInicio}</span>`;
+    let detalhe='';
+    if(tipo==='os'){
+      detalhe=f.prazTotal>0
+        ?`<span style="font-size:.75rem;color:var(--muted);">OS+${f.osOffset||0}d → OS+${f.prazTotal}d</span>`
+        :`<span style="font-size:.75rem;color:var(--muted);">OS+${f.osOffset||0}d · ${f.dur}d</span>`;
+    } else if(tipo==='data'){
+      detalhe=`<span style="font-size:.75rem;color:var(--muted);">${f.dataInicio} · ${f.dur}d</span>`;
+    } else {
+      detalhe=`<span style="font-size:.75rem;color:var(--muted);">${f.dur} dias corridos</span>`;
+    }
+    const durField=f.prazTotal>0
+      ?`<span style="font-size:.75rem;color:var(--muted);">Prazo OS+${f.prazTotal}d</span>`
+      :`<input class="fase-dur" type="number" min="1" value="${f.dur}"
+          onchange="fases[${i}].dur=parseInt(this.value)||0;renderFasesList();saveState();if(hasCalcResult&&lastResult)render(lastResult);">
+        <span class="fase-dur-lbl">dias</span>`;
     return `<div class="fase-item">
-      <span class="fase-num">${i+1}</span>
-      <input class="fase-nome" value="${f.nome}" onchange="fases[${i}].nome=this.value;saveState();if(hasCalcResult&&lastResult)render(lastResult);" placeholder="Nome">
-      <span style="display:flex;align-items:center;gap:4px;">${badge}${ancoragem}</span>
-      <input class="fase-dur" type="number" min="1" value="${f.dur}" onchange="fases[${i}].dur=parseInt(this.value)||0;renderFasesList();saveState();if(hasCalcResult&&lastResult)render(lastResult);">
-      <span class="fase-dur-lbl">dias</span>
-      <span class="fase-fim">${iniStr} → ${fimStr}</span>
-      <button class="fase-del" onclick="removeFase(${f.id})" title="Remover">×</button>
+      <div class="fase-row1">
+        <div class="fase-move">
+          <button class="fase-move-btn" onclick="moveFase(${f.id},-1)" title="Mover para cima">▲</button>
+          <button class="fase-move-btn" onclick="moveFase(${f.id},1)"  title="Mover para baixo">▼</button>
+        </div>
+        <span class="fase-num">${i+1}</span>
+        <input class="fase-nome" value="${f.nome}" onchange="fases[${i}].nome=this.value;saveState();if(hasCalcResult&&lastResult)render(lastResult);" placeholder="Nome da fase">
+        <button class="fase-del" onclick="removeFase(${f.id})" title="Remover">×</button>
+      </div>
+      <div class="fase-row2">
+        ${badge}${detalhe}
+        ${durField}
+        <span class="fase-fim">${iniStr} → ${fimStr}</span>
+      </div>
     </div>`;
   }).join('');
 }
