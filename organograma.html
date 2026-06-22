@@ -1073,9 +1073,9 @@ function renderLegend(){
   const hasOrphan=hasN1Root2&&noSupNonCorp2.some(p=>(p.nivel||1)>1);
   if(hasCorp||hasSupport||hasOrphan){
     html+=`<div class="leg-block"><div class="leg-title">Legenda visual</div><div class="leg-grid">`;
-    if(hasCorp) html+=`<div class="leg-item"><div style="width:28px;height:22px;border:1.5px dashed #94a3b8;border-radius:4px;background:#f8fafc;flex-shrink:0"></div><div class="leg-info"><div class="lc">Corporativo</div><div class="ln">Card tracejado cinza, sem linha vertical</div></div></div>`;
-    if(hasOrphan) html+=`<div class="leg-item"><div style="width:28px;height:22px;border:1.5px dashed #fbbf24;border-radius:4px;background:#fffbeb;flex-shrink:0"></div><div class="leg-info"><div class="lc">Sem vínculo</div><div class="ln">Posicionado no nível correspondente</div></div></div>`;
-    if(hasSupport) html+=`<div class="leg-item"><div style="width:28px;height:0;border-top:2px dashed rgba(99,102,241,.7);margin-top:11px;flex-shrink:0"></div><div class="leg-info"><div class="lc">Suporte</div><div class="ln">Linha tracejada índigo</div></div></div>`;
+    if(hasCorp) html+=`<div class="leg-item"><div style="width:28px;height:22px;border:1.5px dashed #94a3b8;border-radius:4px;background:#f8fafc;flex-shrink:0"></div><div class="leg-info"><div class="lc">Corporativo</div></div></div>`;
+    if(hasOrphan) html+=`<div class="leg-item"><div style="width:28px;height:22px;border:1.5px dashed #fbbf24;border-radius:4px;background:#fffbeb;flex-shrink:0"></div><div class="leg-info"><div class="lc">Sem vínculo</div></div></div>`;
+    if(hasSupport) html+=`<div class="leg-item"><div style="width:28px;height:0;border-top:2px dashed rgba(99,102,241,.7);margin-top:11px;flex-shrink:0"></div><div class="leg-info"><div class="lc">Suporte</div></div></div>`;
     html+='</div></div>';
   }
   wrap.innerHTML=html;
