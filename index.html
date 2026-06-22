@@ -181,7 +181,7 @@
 
     /* fases / marcos */
     .fases-list { display:flex; flex-direction:column; gap:5px; margin-top:10px; }
-    .fase-item  { display:grid; grid-template-columns:22px 1fr auto 52px auto 100px 22px; gap:8px; align-items:center;
+    .fase-item  { display:grid; grid-template-columns:22px 1fr auto 52px auto 200px 22px; gap:8px; align-items:center;
                   background:#f9fafb; border:1px solid var(--border-l); border-radius:6px; padding:6px 12px; }
     .fase-num   { font-size:.75rem; font-weight:700; color:var(--muted); text-align:center; }
     .fase-nome  { border:1px solid var(--border); border-radius:4px; padding:4px 8px; font-family:var(--fb); font-size:.88rem; width:100%; min-width:0; }
@@ -1323,7 +1323,7 @@ function renderFasesList(){
       <span style="display:flex;align-items:center;gap:4px;">${badge}${ancoragem}</span>
       <input class="fase-dur" type="number" min="1" value="${f.dur}" onchange="fases[${i}].dur=parseInt(this.value)||0;renderFasesList();saveState();if(hasCalcResult&&lastResult)render(lastResult);">
       <span class="fase-dur-lbl">dias</span>
-      <span class="fase-fim" title="Início: ${iniStr}">→ ${fimStr}</span>
+      <span class="fase-fim">${iniStr} → ${fimStr}</span>
       <button class="fase-del" onclick="removeFase(${f.id})" title="Remover">×</button>
     </div>`;
   }).join('');
