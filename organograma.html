@@ -346,7 +346,7 @@
       <div class="org-table-wrap">
         <table class="org-table">
           <thead><tr>
-            <th>Nome / Cargo</th><th>Grupo</th><th>Nível</th><th>Reporta a</th><th></th>
+            <th>Nome / Cargo</th><th>Nível</th><th>Reporta a</th><th></th>
           </tr></thead>
           <tbody id="orgTbody"></tbody>
         </table>
@@ -615,7 +615,7 @@ function openInlineEdit(id){
   const supOpts='<option value="">— Sem superior (topo) —</option>'+
     people.filter(x=>x.id!==id).map(x=>`<option value="${x.id}"${String(x.id)===String(p.superiorId)?' selected':''}>${esc(x.nome)} · N${getNivel(x.id)}</option>`).join('');
 
-  tr.innerHTML=`<td colspan="5" style="padding:0;">
+  tr.innerHTML=`<td colspan="4" style="padding:0;">
     <div class="ie-inner">
       <div class="dg4" style="margin-bottom:10px">
         <div class="fg"><label>Nome</label>
@@ -799,43 +799,58 @@ function renderCadastro(){
 function renderTable(){
   const tbody=document.getElementById('orgTbody');
   document.getElementById('countBadge').textContent=people.length?`${people.length} pessoa${people.length!==1?'s':''}` : '';
-  document.getElementById('noGroupWarn').style.display=people.some(p=>!p.grupoId)?'':'none';
-  if(!people.length){ tbody.innerHTML='<tr class="empty-row"><td colspan="5">Nenhuma pessoa cadastrada. Clique em "+ Adicionar pessoa".</td></tr>'; return; }
+  document.getElementById('noGroupWarn').style.display=people.some(p=>!p.grupoId&&p.tipo!=='corp')?'':'none';
+  if(!people.length){ tbody.innerHTML='<tr class="empty-row"><td colspan="4">Nenhuma pessoa cadastrada. Clique em "+ Adicionar pessoa".</td></tr>'; return; }
 
   const q=_searchQ;
   const filtered=q ? people.filter(p=>{ const g=grupos.find(x=>x.id===p.grupoId);
     return p.nome.toLowerCase().includes(q)||p.cargo.toLowerCase().includes(q)||(g&&g.nome.toLowerCase().includes(q)); }) : people;
-  if(!filtered.length){ tbody.innerHTML='<tr class="empty-row"><td colspan="5">Nenhum resultado para a busca.</td></tr>'; return; }
+  if(!filtered.length){ tbody.innerHTML='<tr class="empty-row"><td colspan="4">Nenhum resultado para a busca.</td></tr>'; return; }
 
-  const byLvl={}; filtered.forEach(p=>{ const n=p.nivel||1; (byLvl[n]=byLvl[n]||[]).push(p); });
-  const levels=Object.keys(byLvl).map(Number).sort((a,b)=>a-b);
-  const NIVEL_LABEL={1:'Nível 1 — Liderança',2:'Nível 2 — Gerência / Coordenação',
-    3:'Nível 3 — Supervisão / Técnico Sr.',4:'Nível 4 — Técnico / Analista',5:'Nível 5 — Operacional'};
+  function personRow(p){
+    const g=grupos.find(x=>x.id===p.grupoId);
+    const pal=g?PAL[g.palIdx%PAL.length]:null;
+    const sup=p.superiorId?people.find(x=>x.id===p.superiorId):null;
+    const supTxt=sup?`<span class="sup-txt" title="${esc(sup.nome)}">${esc(sup.nome)}</span>`:'<span style="color:var(--subtle);font-size:.72rem">—</span>';
+    const corpBadge=p.tipo==='corp'?'<span class="corp-badge" style="margin-left:4px">CORP</span>':'';
+    const suportaCount=(p.suportaIds||[]).length;
+    const suportaHint=suportaCount?`<span style="font-size:.67rem;color:#6366f1;margin-left:4px">⤳ ${suportaCount}</span>`:'';
+    return `<tr data-pid="${p.id}" onclick="openInlineEdit(${p.id})" style="cursor:pointer">
+      <td><div class="td-nome">${esc(p.nome)}${corpBadge}</div><div class="td-cargo">${esc(p.cargo)}${suportaHint}</div></td>
+      <td><span class="lvl-badge">N${p.nivel||1}</span></td>
+      <td>${supTxt}</td>
+      <td><div class="act-cell">
+        <button class="iBtn del" onclick="event.stopPropagation();deletePerson(${p.id})" title="Remover">🗑</button>
+      </div></td>
+    </tr>`;
+  }
 
-  tbody.innerHTML=levels.flatMap(lvl=>{
-    const cnt=byLvl[lvl].length;
-    const hdr=`<tr class="level-row"><td colspan="5">${NIVEL_LABEL[lvl]||('Nível '+lvl)} <span style="font-weight:400;opacity:.6">(${cnt})</span></td></tr>`;
-    const rows=byLvl[lvl].map(p=>{
-      const g=grupos.find(x=>x.id===p.grupoId);
-      const pal=g?PAL[g.palIdx%PAL.length]:null;
-      const chip=g?`<span class="grp-chip" style="background:${pal.fill};border-color:${pal.border};color:${pal.label}"><span class="chip-dot" style="background:${pal.border}"></span>${esc(g.nome)}</span>`:'<span class="no-grp-chip">Sem grupo</span>';
-      const sup=p.superiorId?people.find(x=>x.id===p.superiorId):null;
-      const supTxt=sup?`<span class="sup-txt" title="${esc(sup.nome)}">${esc(sup.nome)}</span>`:'<span style="color:var(--subtle);font-size:.72rem">—</span>';
-      const corpBadge=p.tipo==='corp'?'<span class="corp-badge" style="margin-left:4px">CORP</span>':'';
-      const suportaCount=(p.suportaIds||[]).length;
-      const suportaHint=suportaCount?`<span style="font-size:.67rem;color:#6366f1;margin-left:4px">⤳ ${suportaCount} suporte${suportaCount>1?'s':''}</span>`:'';
-      return `<tr data-pid="${p.id}" onclick="openInlineEdit(${p.id})" style="cursor:pointer"${!p.grupoId?' class="no-group-row"':''}>
-        <td><div class="td-nome">${esc(p.nome)}${corpBadge}</div><div class="td-cargo">${esc(p.cargo)}${suportaHint}</div></td>
-        <td>${chip}</td>
-        <td><span class="lvl-badge">N${p.nivel||1}</span></td>
-        <td>${supTxt}</td>
-        <td><div class="act-cell">
-          <button class="iBtn del" onclick="event.stopPropagation();deletePerson(${p.id})" title="Remover">🗑</button>
-        </div></td>
-      </tr>`;
-    }).join('');
-    return [hdr,rows];
-  }).join('');
+  // Group by grupo (in grupos order), then sem-grupo, then corp
+  const sections=[];
+  grupos.forEach(g=>{
+    const members=filtered.filter(p=>p.grupoId===g.id&&p.tipo!=='corp').sort((a,b)=>(a.nivel||1)-(b.nivel||1));
+    if(!members.length) return;
+    const pal=PAL[g.palIdx%PAL.length];
+    sections.push(
+      `<tr class="level-row"><td colspan="4" style="border-left:4px solid ${pal.border}">
+        <span style="color:${pal.label}">${esc(g.nome)}</span>
+        <span style="font-weight:400;opacity:.6;margin-left:6px">(${members.length})</span>
+      </td></tr>`+
+      members.map(personRow).join('')
+    );
+  });
+  const noGrp=filtered.filter(p=>!p.grupoId&&p.tipo!=='corp').sort((a,b)=>(a.nivel||1)-(b.nivel||1));
+  if(noGrp.length) sections.push(
+    `<tr class="level-row"><td colspan="4" style="border-left:4px solid #f97316"><span style="color:#c2410c">Sem grupo</span> <span style="font-weight:400;opacity:.6">(${noGrp.length})</span></td></tr>`+
+    noGrp.map(personRow).join('')
+  );
+  const corps=filtered.filter(p=>p.tipo==='corp').sort((a,b)=>(a.nivel||1)-(b.nivel||1));
+  if(corps.length) sections.push(
+    `<tr class="level-row"><td colspan="4" style="border-left:4px solid #94a3b8"><span style="color:#475569">Corporativo</span> <span style="font-weight:400;opacity:.6">(${corps.length})</span></td></tr>`+
+    corps.map(personRow).join('')
+  );
+
+  tbody.innerHTML=sections.join('') || '<tr class="empty-row"><td colspan="4">Nenhum resultado.</td></tr>';
 }
 
 /* ══ EXAMPLE ══ */
