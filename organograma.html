@@ -913,34 +913,40 @@ function layout(roots){
 
 function drawCard(ctx,n,ox,oy){
   const x=n._x+ox, y=n._y+oy;
-  const isCorp=n._isCorp;
-  const g=isCorp?null:grupos.find(g=>g.id===n.grupoId);
+  const isCorp=n._isCorp, isOrph=!!n._isOrphan;
+  const g=(isCorp||isOrph)?null:grupos.find(g=>g.id===n.grupoId);
   const pal=g?PAL[g.palIdx%PAL.length]:null;
   const accent=pal?pal.border:'#d1d5db';
 
   ctx.shadowColor='rgba(0,0,0,.08)'; ctx.shadowBlur=8; ctx.shadowOffsetY=2;
   rr(ctx,x,y,NW,NH,8);
-  ctx.fillStyle=isCorp?'#f8fafc':'#fff'; ctx.fill();
+  ctx.fillStyle=isCorp?'#f8fafc':isOrph?'#fffbeb':'#fff'; ctx.fill();
   ctx.shadowColor='transparent'; ctx.shadowBlur=0; ctx.shadowOffsetY=0;
 
   if(isCorp){
     ctx.setLineDash([5,3]); ctx.strokeStyle='#94a3b8'; ctx.lineWidth=1.5;
+    rr(ctx,x,y,NW,NH,8); ctx.stroke(); ctx.setLineDash([]);
+  } else if(isOrph){
+    ctx.setLineDash([4,3]); ctx.strokeStyle='#fbbf24'; ctx.lineWidth=1.5;
     rr(ctx,x,y,NW,NH,8); ctx.stroke(); ctx.setLineDash([]);
   } else {
     rr(ctx,x,y,5,NH,[8,0,0,8]); ctx.fillStyle=accent; ctx.fill();
     rr(ctx,x,y,NW,NH,8); ctx.strokeStyle='#e5e7eb'; ctx.lineWidth=1; ctx.stroke();
   }
 
-  const tx2=isCorp?x+10:x+12;
-  ctx.fillStyle=isCorp?'#475569':'#111827';
+  const tx2=(isCorp||isOrph)?x+10:x+12;
+  ctx.fillStyle=isCorp?'#475569':isOrph?'#92400e':'#111827';
   ctx.font='700 11.5px "DM Sans",sans-serif';
   ctx.fillText(trunc(ctx,n.nome,NW-18),tx2,y+22);
-  ctx.fillStyle=isCorp?'#94a3b8':'#6b7280';
+  ctx.fillStyle=isCorp?'#94a3b8':isOrph?'#b45309':'#6b7280';
   ctx.font='500 10px "DM Sans",sans-serif';
   ctx.fillText(trunc(ctx,n.cargo,NW-18),tx2,y+38);
   if(isCorp){
     ctx.fillStyle='#94a3b8'; ctx.font='600 8.5px "DM Sans",sans-serif';
     ctx.fillText('CORPORATIVO',tx2,y+56);
+  } else if(isOrph){
+    ctx.fillStyle='#d97706'; ctx.font='600 8.5px "DM Sans",sans-serif';
+    ctx.fillText('SEM VÍNCULO',tx2,y+56);
   } else if(g){
     ctx.fillStyle=accent; ctx.font='600 9px "DM Sans",sans-serif';
     ctx.fillText(trunc(ctx,g.nome.toUpperCase(),NW-18),tx2,y+56);
@@ -954,13 +960,38 @@ function drawChart(){
   cs.style.display=''; ce.style.display='none';
 
   const corpPpl=people.filter(p=>p.tipo==='corp');
-  const treePpl=people.filter(p=>p.tipo!=='corp');
+  const allNonCorp=people.filter(p=>p.tipo!=='corp');
+
+  // Separate orphans (no superior, nivel > root nivel) from tree
+  const noSupNonCorp=allNonCorp.filter(p=>!p.superiorId);
+  const minNvl=noSupNonCorp.length?Math.min(...noSupNonCorp.map(p=>p.nivel||1)):1;
+  const orphanPpl=noSupNonCorp.filter(p=>(p.nivel||1)>minNvl);
+  const orphanIds=new Set(orphanPpl.map(p=>p.id));
+  const treePpl=allNonCorp.filter(p=>!orphanIds.has(p.id));
+
   const roots=buildTree(treePpl,corpPpl);
-  const nodes=layout(roots);
+  const treeNodes=layout(roots);
+
+  // Place orphans to the right of the tree, at Y = (nivel-1)*(NH+VG)
+  // Multiple orphans at the same nivel stack vertically
+  const nivelCount={};
+  const orphanNodes=orphanPpl.map(p=>{
+    const nvl=p.nivel||1;
+    const idx=nivelCount[nvl]=(nivelCount[nvl]||0);
+    nivelCount[nvl]++;
+    return {...p,_x:0,_y:(nvl-1)*(NH+VG)+idx*(NH+HG),children:[],_w:NW,_isOrphan:true};
+  });
+
+  const treeMaxX=treeNodes.length?Math.max(...treeNodes.map(n=>n._x+NW)):0;
+  const COL_GAP=64;
+  orphanNodes.forEach(n=>n._x=treeMaxX+COL_GAP);
+
+  const allNodes=[...treeNodes,...orphanNodes];
+  if(!allNodes.length){ cs.style.display='none'; ce.style.display=''; return; }
 
   const pad=48;
-  const minX=Math.min(...nodes.map(n=>n._x)), minY=Math.min(...nodes.map(n=>n._y));
-  const maxX=Math.max(...nodes.map(n=>n._x+NW)), maxY=Math.max(...nodes.map(n=>n._y+NH));
+  const minX=Math.min(...allNodes.map(n=>n._x)), minY=Math.min(...allNodes.map(n=>n._y));
+  const maxX=Math.max(...allNodes.map(n=>n._x+NW)), maxY=Math.max(...allNodes.map(n=>n._y+NH));
   canvas.width=Math.max((maxX-minX+pad*2)*_zoom,200);
   canvas.height=Math.max((maxY-minY+pad*2)*_zoom,200);
   const ctx=canvas.getContext('2d');
@@ -970,7 +1001,7 @@ function drawChart(){
 
   // Hierarchy connectors — skip corp nodes (no vertical line from parent to corp)
   ctx.strokeStyle='#d1d5db'; ctx.lineWidth=1.5; ctx.setLineDash([]);
-  nodes.forEach(n=>{
+  treeNodes.forEach(n=>{
     if(!n.children.length||n._isCorp) return;
     const px=n._x+ox+NW/2,py=n._y+oy+NH,my=py+VG/2;
     n.children.forEach(c=>{
@@ -982,9 +1013,9 @@ function drawChart(){
 
   // Support lines (dashed indigo) — horizontal when same row, bezier otherwise
   const nodeMap={};
-  nodes.forEach(n=>nodeMap[n.id]=n);
+  allNodes.forEach(n=>nodeMap[n.id]=n);
   ctx.setLineDash([5,4]); ctx.strokeStyle='rgba(99,102,241,0.65)'; ctx.lineWidth=1.5;
-  nodes.forEach(n=>{
+  allNodes.forEach(n=>{
     if(!(n.suportaIds||[]).length) return;
     const sx=n._x+ox+NW/2, sy=n._y+oy+NH/2;
     n.suportaIds.forEach(tid=>{
@@ -992,12 +1023,11 @@ function drawChart(){
       const tx2=t._x+ox+NW/2, ty2=t._y+oy+NH/2;
       ctx.beginPath(); ctx.moveTo(sx,sy);
       if(Math.abs(sy-ty2)<NH){
-        ctx.lineTo(tx2,ty2); // straight horizontal
+        ctx.lineTo(tx2,ty2);
       } else {
         ctx.quadraticCurveTo((sx+tx2)/2,(sy+ty2)/2-30,tx2,ty2);
       }
       ctx.stroke();
-      // arrowhead
       const angle=Math.atan2(ty2-sy,tx2-sx), al=9;
       ctx.setLineDash([]); ctx.beginPath();
       ctx.moveTo(tx2-al*Math.cos(angle-Math.PI/6),ty2-al*Math.sin(angle-Math.PI/6));
@@ -1009,7 +1039,7 @@ function drawChart(){
   ctx.setLineDash([]);
 
   // Cards
-  nodes.forEach(n=>drawCard(ctx,n,ox,oy));
+  allNodes.forEach(n=>drawCard(ctx,n,ox,oy));
   ctx.restore();
   renderLegend();
 }
@@ -1037,9 +1067,13 @@ function renderLegend(){
           <div class="leg-info"><div class="lc">${esc(g.nome)}</div><div class="ln">${cnt} pessoa${cnt!==1?'s':''}</div></div></div>`;
       }).join('')+'</div></div>';
   }
-  if(hasCorp||hasSupport){
+  const noSupNonCorp2=people.filter(p=>!p.superiorId&&p.tipo!=='corp');
+  const minNvl2=noSupNonCorp2.length?Math.min(...noSupNonCorp2.map(p=>p.nivel||1)):1;
+  const hasOrphan=noSupNonCorp2.some(p=>(p.nivel||1)>minNvl2);
+  if(hasCorp||hasSupport||hasOrphan){
     html+=`<div class="leg-block"><div class="leg-title">Legenda visual</div><div class="leg-grid">`;
     if(hasCorp) html+=`<div class="leg-item"><div style="width:28px;height:22px;border:1.5px dashed #94a3b8;border-radius:4px;background:#f8fafc;flex-shrink:0"></div><div class="leg-info"><div class="lc">Corporativo</div><div class="ln">Card tracejado cinza, sem linha vertical</div></div></div>`;
+    if(hasOrphan) html+=`<div class="leg-item"><div style="width:28px;height:22px;border:1.5px dashed #fbbf24;border-radius:4px;background:#fffbeb;flex-shrink:0"></div><div class="leg-info"><div class="lc">Sem vínculo</div><div class="ln">Posicionado no nível correspondente</div></div></div>`;
     if(hasSupport) html+=`<div class="leg-item"><div style="width:28px;height:0;border-top:2px dashed rgba(99,102,241,.7);margin-top:11px;flex-shrink:0"></div><div class="leg-info"><div class="lc">Suporte</div><div class="ln">Linha tracejada índigo</div></div></div>`;
     html+='</div></div>';
   }
