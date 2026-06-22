@@ -943,7 +943,7 @@ function fmtHora(dec){
   const h = Math.floor(dec);
   const m = Math.round((dec-h)*60);
   const hm = m>0 ? `${h}h ${m}min` : `${h}h`;
-  const dec2 = +dec.toFixed(2);
+  const dec2 = +dec.toFixed(1);
   const decStr = String(dec2).replace('.',',');
   return `${hm} / ${decStr}h`;
 }
@@ -1114,7 +1114,7 @@ function renderPeriodoGrid(){
       let txt='—'; let fw='400'; let col='var(--muted)';
       if(impactoMes[m]!=null&&impactoMes[m]!==''){
         const pct=Math.max(0,Math.min(100,Number(impactoMes[m])/DIAS_MES_PAD[m-1]*100));
-        txt=pct.toFixed(0)+'%'; fw='700'; col='#c2410c';
+        txt=pct.toFixed(1)+'%'; fw='700'; col='#c2410c';
       }
       return `<td id="ppct-${m}" style="text-align:center;font-size:.78rem;font-weight:${fw};color:${col};">${txt}</td>`;
     }).join('')}
@@ -1143,7 +1143,7 @@ function renderPeriodoCards(){
   ];
   const MO_ABR=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 
-  const fmtH=v=>{ const h=Math.floor(v),mn=Math.round((v-h)*60); const hm=mn>0?`${h}h ${mn}min`:`${h}h`; const dec=String(+v.toFixed(2)).replace('.',','); return `${hm} (${dec}h)`; };
+  const fmtH=v=>{ const h=Math.floor(v),mn=Math.round((v-h)*60); const hm=mn>0?`${h}h ${mn}min`:`${h}h`; const dec=String(+v.toFixed(1)).replace('.',','); return `${hm} (${dec}h)`; };
 
   const cards=CARD_CFG.map(c=>{
     const meses=Array.from({length:12},(_,i)=>i+1).filter(m=>(periodoMes[m]||'seco')===c.k);
@@ -1173,8 +1173,8 @@ function renderPeriodoCards(){
     }
 
     const pPratic=+(100-pImprat).toFixed(1);
-    const hImprat=+(jp*(pImprat/100)).toFixed(2);
-    const hPratic=+(jp*(pPratic/100)).toFixed(2);
+    const hImprat=+(jp*(pImprat/100)).toFixed(1);
+    const hPratic=+(jp*(pPratic/100)).toFixed(1);
 
     return `<div class="prat-card ${c.cls}">
       <div class="prat-card-title" style="display:flex;justify-content:space-between;align-items:center;">${c.lbl}${srcLabel}</div>
@@ -1226,7 +1226,7 @@ function saveImpacto(m){
     if(val===''){ cell.textContent='—'; cell.style.fontWeight='400'; cell.style.color='var(--muted)'; }
     else{
       const pct=Math.max(0,Math.min(100,Number(val)/DIAS_MES_PAD[m-1]*100));
-      cell.textContent=pct.toFixed(0)+'%'; cell.style.fontWeight='700'; cell.style.color='#c2410c';
+      cell.textContent=pct.toFixed(1)+'%'; cell.style.fontWeight='700'; cell.style.color='#c2410c';
     }
   }
   renderPeriodoCards(); saveState();
@@ -1735,7 +1735,7 @@ function render(res){
       pImprat=100-(periodoPerc[tipo]??100); // 3. fallback
     }
     const percPratic=Math.max(0,100-pImprat);
-    const horas=+(jp*(percPratic/100)).toFixed(2);
+    const horas=+(jp*(percPratic/100)).toFixed(1);
     return {tipo,horas,perc:+percPratic.toFixed(1),daysActual};
   };
   const TAG_CLS = {umido:'tag-umido',transicao:'tag-transicao',seco:'tag-seco'};
@@ -1748,6 +1748,7 @@ function render(res){
   const tHpratCard = +(mos.reduce((s,mk)=>s+monthData[mk].u*getPer(mk).horas,0)).toFixed(1);
   const pctMedio   = tHprodCard>0 ? +(tHpratCard/tHprodCard*100).toFixed(1) : 0;
   const fmt1 = v => v%1===0?String(v):v.toFixed(1);
+  const fmtPct = v => v.toFixed(1);
 
   // Breakdown por período climático
   const byPer={umido:{u:0,hprod:0,hprat:0},transicao:{u:0,hprod:0,hprat:0},seco:{u:0,hprod:0,hprat:0}};
@@ -1768,17 +1769,17 @@ function render(res){
     <div class="bar-row">
       <span class="bar-lbl">Totais</span>
       <div class="bar-track"><div class="bar-fill bar-tot" style="width:100%;"></div></div>
-      <span class="bar-val">${fmt1(tHtotCard)} h</span>
+      <span class="bar-val">${tHtotCard.toFixed(1)} h</span>
     </div>
     <div class="bar-row">
       <span class="bar-lbl">Produtivas</span>
       <div class="bar-track"><div class="bar-fill bar-prod" style="width:${prodW}%;"></div></div>
-      <span class="bar-val">${fmt1(tHprodCard)} h &nbsp;·&nbsp; <strong>${pctProdDeTot}%</strong></span>
+      <span class="bar-val">${tHprodCard.toFixed(1)} h &nbsp;·&nbsp; <strong>${pctProdDeTot.toFixed(1)}%</strong></span>
     </div>
     <div class="bar-row">
       <span class="bar-lbl">Praticáveis</span>
       <div class="bar-track"><div class="bar-fill bar-prat" style="width:${pratW}%;"></div></div>
-      <span class="bar-val">${fmt1(tHpratCard)} h &nbsp;·&nbsp; <strong>${pctMedio}%</strong></span>
+      <span class="bar-val">${tHpratCard.toFixed(1)} h &nbsp;·&nbsp; <strong>${pctMedio.toFixed(1)}%</strong></span>
     </div>
   </div>`;
 
@@ -1820,15 +1821,15 @@ function render(res){
   // Period cards
   const periodCards=PER_CFG.map(p=>{
     const d=byPer[p.k];
-    const pctU=nU>0?Math.round(d.u/nU*100):0;
+    const pctU=nU>0?+(d.u/nU*100).toFixed(1):0;
     const hprod=+d.hprod.toFixed(1);
     const hprat=+d.hprat.toFixed(1);
-    const pratPct=hprod>0?Math.round(hprat/hprod*100):0;
+    const pratPct=hprod>0?+(hprat/hprod*100).toFixed(1):0;
     return `<div class="per-card" style="border-left-color:${p.border};">
       <div class="per-card-title">${p.lbl}</div>
       <div class="per-stat-row"><span class="per-stat-lbl">Dias úteis</span><span class="per-stat-val">${d.u} <span style="font-weight:400;color:var(--muted);font-size:.78rem;">(${pctU}% do total)</span></span></div>
-      <div class="per-stat-row"><span class="per-stat-lbl">H. produtivas</span><span class="per-stat-val">${fmt1(hprod)} h</span></div>
-      <div class="per-stat-row"><span class="per-stat-lbl">H. praticáveis</span><span class="per-stat-val">${fmt1(hprat)} h</span></div>
+      <div class="per-stat-row"><span class="per-stat-lbl">H. produtivas</span><span class="per-stat-val">${hprod.toFixed(1)} h</span></div>
+      <div class="per-stat-row"><span class="per-stat-lbl">H. praticáveis</span><span class="per-stat-val">${hprat.toFixed(1)} h</span></div>
       <div class="per-mini-bar"><div class="per-mini-fill" style="width:${pratPct}%;"></div></div>
       <div style="font-size:.72rem;color:var(--muted);margin-top:4px;text-align:right;">${pratPct}% praticabilidade</div>
     </div>`;
@@ -1947,7 +1948,7 @@ function render(res){
       const perAtivos=Object.entries(byTipo).filter(([,v])=>v.u>0);
       const climaDetail=perAtivos.map(([tipo,v])=>{
         const lbl={umido:'Úmido',transicao:'Transição',seco:'Seco'}[tipo];
-        const pp=v.hprod>0?Math.round(v.hprat/v.hprod*100):0;
+        const pp=v.hprod>0?+(v.hprat/v.hprod*100).toFixed(1):0;
         return `<span style="display:inline-flex;align-items:center;gap:4px;background:${PER_COLOR[tipo]};color:${PER_TXT[tipo]};border-radius:4px;padding:2px 7px;font-size:.74rem;font-weight:600;white-space:nowrap;">
           ${lbl}: ${v.u}d · ${v.hprat.toFixed(1)}h prat. · ${pp}%
         </span>`;
@@ -1961,7 +1962,7 @@ function render(res){
         <td class="tc">${nUtil}</td>
         <td class="tc">${hProd.toFixed(1)} h</td>
         <td class="tc">${hPrat.toFixed(1)} h</td>
-        <td class="tc">${pct.toFixed(0)}%</td>
+        <td class="tc">${pct.toFixed(1)}%</td>
       </tr>
       ${perAtivos.length?`<tr class="fase-clima-row"><td colspan="8" style="padding:4px 12px 8px;"><div style="display:flex;flex-wrap:wrap;gap:6px;">${climaDetail}</div></td></tr>`:''}`
     }).join('');
@@ -1997,7 +1998,7 @@ function render(res){
           <td class="tc">${totFU}</td>
           <td class="tc">${totFHprod.toFixed(1)} h</td>
           <td class="tc">${totFHprat.toFixed(1)} h</td>
-          <td class="tc">${totPct.toFixed(0)}%</td>
+          <td class="tc">${totPct.toFixed(1)}%</td>
         </tr>
       </tbody>`;
   } else if(fasesCard){
@@ -2032,7 +2033,7 @@ function exportarCSV(){
     else if(impratMedio[tipo]!=null) pImprat=impratMedio[tipo];
     else pImprat=100-(periodoPerc[tipo]??100);
     const percPratic=Math.max(0,100-pImprat);
-    return {tipo,horas:+(jp*(percPratic/100)).toFixed(2),perc:+percPratic.toFixed(1)};
+    return {tipo,horas:+(jp*(percPratic/100)).toFixed(1),perc:+percPratic.toFixed(1)};
   };
   const mos=Object.keys(monthData).sort();
   const lines=['﻿']; // BOM for Excel UTF-8
