@@ -1030,7 +1030,7 @@ function drawCard(ctx,n,ox,oy){
   ctx.shadowColor='transparent'; ctx.shadowBlur=0; ctx.shadowOffsetY=0;
 
   if(isCorp){
-    ctx.setLineDash([5,3]); ctx.strokeStyle='#334155'; ctx.lineWidth=1.5;
+    ctx.setLineDash([5,3]); ctx.strokeStyle='#64748b'; ctx.lineWidth=1.5;
     rr(ctx,x,y,NW,NH,8); ctx.stroke(); ctx.setLineDash([]);
   } else if(isOrph){
     ctx.setLineDash([4,3]); ctx.strokeStyle='#fbbf24'; ctx.lineWidth=1.5;
@@ -1114,7 +1114,7 @@ function drawChart(){
   const ox=-minX+pad, oy=-minY+pad;
 
   // Hierarchy connectors — skip corp nodes (no vertical line from parent to corp)
-  ctx.strokeStyle='#334155'; ctx.lineWidth=1.5; ctx.setLineDash([]);
+  ctx.strokeStyle='#64748b'; ctx.lineWidth=1.5; ctx.setLineDash([]);
   treeNodes.forEach(n=>{
     if(!n.children.length||n._isCorp) return;
     const pnv=n.nivel||1;
