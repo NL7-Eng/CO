@@ -315,12 +315,18 @@
           </div>
         </div>
 
-        <div class="fg" style="margin-bottom:12px">
+        <!-- Normal: multi-tag support connections -->
+        <div class="fg" id="dSuportaWrap" style="margin-bottom:12px">
           <label>Suporte lateral (conexões tracejadas)</label>
           <div class="suporta-tags" id="dSuportaTags"></div>
           <select id="dSuportaAdd" onchange="dAddSuporta(this)">
             <option value="">+ Adicionar conexão de suporte…</option>
           </select>
+        </div>
+        <!-- Corp: single connection -->
+        <div class="fg" id="dCorpConWrap" style="margin-bottom:12px;display:none">
+          <label>Conectado a</label>
+          <select id="dCorpCon"><option value="">— Selecione a pessoa —</option></select>
         </div>
 
         <div class="alert alert-err" id="aDErr"></div>
@@ -561,6 +567,10 @@ function setDTipo(t){
   _dTipo=t;
   document.getElementById('dTipoNormal').className='tipo-btn'+(t==='normal'?' on':'');
   document.getElementById('dTipoCorp').className='tipo-btn'+(t==='corp'?' on-corp':'');
+  const isCorp=t==='corp';
+  document.getElementById('dSuportaWrap').style.display=isCorp?'none':'';
+  document.getElementById('dCorpConWrap').style.display=isCorp?'':'none';
+  if(isCorp) fillAllSupSel('dCorpCon',_editId,'');
 }
 
 /* ══ DRAWER SUPORTA ══ */
@@ -614,7 +624,11 @@ function openDrawerEdit(id){
   fillGrupoSel('dGrupo',p.grupoId);
   fillAllSupSel('dSuperior',id,p.superiorId);
   document.getElementById('dNivel').value=String(p.nivel||1);
-  renderDSuportaTags();
+  if(p.tipo==='corp'){
+    fillAllSupSel('dCorpCon',id,(p.suportaIds||[])[0]||'');
+  } else {
+    renderDSuportaTags();
+  }
   document.getElementById('drawer').classList.add('open');
   document.getElementById('dNome').focus();
 }
@@ -696,7 +710,10 @@ function saveDrawer(){
   // Determine tipo: if editing a vaga and name is now filled, promote to normal
   const existingP=_drawerMode==='edit'?people.find(x=>x.id===_editId):null;
   const resolvedTipo=existingP?.tipo==='vaga'?(nome==='A DEFINIR'?'vaga':'normal'):_dTipo;
-  const obj={nivel,tipo:resolvedTipo,grupoId:grupoId?Number(grupoId):null,superiorId:supId?Number(supId):null,suportaIds:[..._dSuportaIds]};
+  const suportaIds=_dTipo==='corp'
+    ? (document.getElementById('dCorpCon').value ? [Number(document.getElementById('dCorpCon').value)] : [])
+    : [..._dSuportaIds];
+  const obj={nivel,tipo:resolvedTipo,grupoId:grupoId?Number(grupoId):null,superiorId:supId?Number(supId):null,suportaIds};
   if(_drawerMode==='add'){
     people.push({id:_pid++,nome,cargo,...obj});
   } else {
