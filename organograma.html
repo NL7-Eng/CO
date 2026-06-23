@@ -730,11 +730,11 @@ function saveDrawer(){
   const nivel=Number(document.getElementById('dNivel').value||1);
   const supId=document.getElementById('dSuperior').value||null;
   const err=document.getElementById('aDErr');
-  if(!nome){showErr(err,'Informe o nome.');return;}
+  const existingP=_drawerMode==='edit'?people.find(x=>x.id===_editId):null;
+  const isVagaEdit=existingP?.tipo==='vaga';
+  if(!nome && !isVagaEdit){showErr(err,'Informe o nome.');return;}
   if(!cargo){showErr(err,'Informe o cargo.');return;}
   err.classList.remove('on');
-  // Determine tipo: if editing a vaga and name is now filled, promote to normal
-  const existingP=_drawerMode==='edit'?people.find(x=>x.id===_editId):null;
   const resolvedTipo=existingP?.tipo==='vaga'?(nome==='A DEFINIR'?'vaga':'normal'):_dTipo;
   const suportaIds=_dTipo==='corp'
     ? (document.getElementById('dCorpCon').value ? [Number(document.getElementById('dCorpCon').value)] : [])
