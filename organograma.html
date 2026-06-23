@@ -159,11 +159,6 @@
     .iBtn:hover{background:#e5e7eb;color:var(--text)}
     .iBtn.del:hover{background:#fee2e2;color:#b91c1c}
     .empty-row td,.ie-row td{text-align:center;color:var(--subtle);font-style:italic;padding:24px}
-    /* inline edit */
-    .ie-row td{text-align:left;font-style:normal;padding:0}
-    .ie-inner{background:#fffbf0;border-top:2px solid #fbbf24;padding:14px 14px 10px}
-    .ie-inner .dg2,.ie-inner .dg3,.ie-inner .dg4{margin-bottom:10px}
-    .ie-inner input[type=text],.ie-inner select{font-size:.82rem;padding:5px 8px}
     @keyframes saved-flash{0%{background:#dcfce7}100%{background:transparent}}
     .org-table tbody tr.saved-flash td{animation:saved-flash .8s ease-out}
     .no-group-row td:first-child{border-left:3px solid #f97316}
@@ -289,42 +284,39 @@
           <button class="iBtn" onclick="closeDrawer()">✕</button>
         </div>
 
-        <div class="dg2">
+        <div class="dg2" style="margin-bottom:10px">
           <div class="fg"><label>Nome completo</label>
             <input type="text" id="dNome" placeholder="Ex: João Silva" /></div>
           <div class="fg"><label>Cargo / Função</label>
-            <select id="dCargo" onchange="onDCargoChange()"></select></div>
-        </div>
-        <div class="fg" id="dCustomWrap" style="display:none;margin-bottom:12px">
-          <label>Cargo personalizado</label>
-          <input type="text" id="dCargoCustom" placeholder="Digite o cargo" />
+            <select id="dCargo" onchange="onDCargoChange()"></select>
+            <input type="text" id="dCargoCustom" placeholder="Cargo personalizado" style="margin-top:4px;display:none" />
+          </div>
         </div>
 
-        <div class="dg4">
+        <div class="dg3" style="margin-bottom:10px">
           <div class="fg"><label>Grupo / Setor</label>
             <select id="dGrupo"></select></div>
-          <div class="fg"><label>Tipo</label>
-            <div class="tipo-toggle">
-              <button class="tipo-btn on" id="dTipoNormal" onclick="setDTipo('normal')">Normal</button>
-              <button class="tipo-btn" id="dTipoCorp" onclick="setDTipo('corp')">Corporativo</button>
-            </div></div>
           <div class="fg"><label>Reporta a</label>
-            <select id="dSuperior" onchange="onDSuperiorChange()"><option value="">— Sem superior (topo) —</option></select></div>
+            <select id="dSuperior" onchange="onDSuperiorChange()"><option value="">— Sem superior —</option></select></div>
           <div class="fg"><label>Nível</label>
             <select id="dNivel">
-              <option value="1">Nível 1 — Topo</option>
-              <option value="2">Nível 2</option>
-              <option value="3">Nível 3</option>
-              <option value="4">Nível 4</option>
-              <option value="5">Nível 5</option>
-              <option value="6">Nível 6</option>
-              <option value="7">Nível 7</option>
-              <option value="8">Nível 8</option>
+              <option value="1">N1 — Topo</option><option value="2">N2</option>
+              <option value="3">N3</option><option value="4">N4</option>
+              <option value="5">N5</option><option value="6">N6</option>
+              <option value="7">N7</option><option value="8">N8</option>
             </select></div>
         </div>
 
+        <div class="fg" style="margin-bottom:10px">
+          <label>Tipo</label>
+          <div class="tipo-toggle" style="max-width:220px">
+            <button class="tipo-btn on" id="dTipoNormal" onclick="setDTipo('normal')">Normal</button>
+            <button class="tipo-btn" id="dTipoCorp" onclick="setDTipo('corp')">Corporativo</button>
+          </div>
+        </div>
+
         <div class="fg" style="margin-bottom:12px">
-          <label>Dá suporte a (conexões tracejadas no gráfico)</label>
+          <label>Suporte lateral (conexões tracejadas)</label>
           <div class="suporta-tags" id="dSuportaTags"></div>
           <select id="dSuportaAdd" onchange="dAddSuporta(this)">
             <option value="">+ Adicionar conexão de suporte…</option>
@@ -333,6 +325,8 @@
 
         <div class="alert alert-err" id="aDErr"></div>
         <div class="brow">
+          <button class="btn btn-danger btn-sm" id="dDelBtn" style="display:none" onclick="deletePersonDrawer()">Remover</button>
+          <span style="flex:1"></span>
           <button class="btn btn-ghost btn-sm" onclick="closeDrawer()">Cancelar</button>
           <button class="btn btn-primary btn-sm" id="dSaveBtn" onclick="saveDrawer()">Adicionar</button>
         </div>
@@ -585,43 +579,56 @@ function dAddSuporta(sel){
 function dRemSuporta(id){ _dSuportaIds=_dSuportaIds.filter(x=>x!==id); renderDSuportaTags(); }
 
 /* ══ DRAWER (ADD / EDIT) ══ */
+function _drawerReset(){
+  document.getElementById('dCargoCustom').value='';
+  document.getElementById('dCargoCustom').style.display='none';
+  document.getElementById('aDErr').classList.remove('on');
+  document.getElementById('dNivel').value='1';
+}
 function openDrawerAdd(){
   _drawerMode='add'; _editId=null; _dTipo='normal'; _dSuportaIds=[];
   document.getElementById('drawerTitle').textContent='Nova pessoa';
   document.getElementById('dSaveBtn').textContent='Adicionar';
+  document.getElementById('dDelBtn').style.display='none';
   document.getElementById('dNome').value='';
-  document.getElementById('dCargoCustom').value='';
-  document.getElementById('dCustomWrap').style.display='none';
-  document.getElementById('aDErr').classList.remove('on');
-  setDTipo('normal');
+  _drawerReset(); setDTipo('normal');
   fillCargoSel('dCargo'); fillGrupoSel('dGrupo');
   fillAllSupSel('dSuperior',null,'');
-  document.getElementById('dNivel').value='1';
   renderDSuportaTags();
   document.getElementById('drawer').classList.add('open');
   document.getElementById('dNome').focus();
 }
 function openDrawerEdit(id){
   const p=people.find(x=>x.id===id); if(!p) return;
-  _drawerMode='edit'; _editId=id; _dTipo=p.tipo||'normal'; _dSuportaIds=[...(p.suportaIds||[])];
-  document.getElementById('drawerTitle').textContent='Editar pessoa';
+  _drawerMode='edit'; _editId=id; _dTipo=p.tipo==='corp'?'corp':'normal'; _dSuportaIds=[...(p.suportaIds||[])];
+  document.getElementById('drawerTitle').textContent=p.tipo==='vaga'?'Preencher vaga':'Editar pessoa';
   document.getElementById('dSaveBtn').textContent='Salvar';
-  document.getElementById('dNome').value=p.nome;
+  document.getElementById('dDelBtn').style.display='';
+  document.getElementById('dNome').value=p.tipo==='vaga'?'':p.nome;
+  _drawerReset();
   const isCustom=!funcoes.includes(p.cargo);
   fillCargoSel('dCargo',isCustom?'__OUTRO__':p.cargo);
-  document.getElementById('dCustomWrap').style.display=isCustom?'':'none';
+  document.getElementById('dCargoCustom').style.display=isCustom?'block':'none';
   if(isCustom) document.getElementById('dCargoCustom').value=p.cargo;
-  document.getElementById('aDErr').classList.remove('on');
   setDTipo(_dTipo);
   fillGrupoSel('dGrupo',p.grupoId);
   fillAllSupSel('dSuperior',id,p.superiorId);
   document.getElementById('dNivel').value=String(p.nivel||1);
   renderDSuportaTags();
-  if(_inlineEditId) cancelInlineEdit();
   document.getElementById('drawer').classList.add('open');
   document.getElementById('dNome').focus();
 }
 function closeDrawer(){ document.getElementById('drawer').classList.remove('open'); }
+function deletePersonDrawer(){
+  if(!_editId) return;
+  if(!confirm('Remover esta pessoa?')) return;
+  closeDrawer();
+  const p=people.find(x=>x.id===_editId);
+  people.filter(x=>x.superiorId===_editId).forEach(x=>x.superiorId=p?.superiorId||null);
+  people.forEach(x=>{ if(x.suportaIds) x.suportaIds=x.suportaIds.filter(s=>s!==_editId); });
+  people=people.filter(x=>x.id!==_editId);
+  renderAll(); saveLocal();
+}
 
 /* ══ VAGA MODAL ══ */
 function openVagaModal(){
@@ -670,8 +677,8 @@ function saveVaga(){
   renderAll(); saveLocal();
 }
 function onDCargoChange(){
-  document.getElementById('dCustomWrap').style.display=
-    document.getElementById('dCargo').value==='__OUTRO__'?'':'none';
+  document.getElementById('dCargoCustom').style.display=
+    document.getElementById('dCargo').value==='__OUTRO__'?'block':'none';
 }
 function onDSuperiorChange(){
   // nível NÃO muda automaticamente — usuário controla independentemente
@@ -686,107 +693,21 @@ function saveDrawer(){
   if(!nome){showErr(err,'Informe o nome.');return;}
   if(!cargo){showErr(err,'Informe o cargo.');return;}
   err.classList.remove('on');
-  const obj={nivel,tipo:_dTipo,grupoId:grupoId?Number(grupoId):null,superiorId:supId?Number(supId):null,suportaIds:[..._dSuportaIds]};
+  // Determine tipo: if editing a vaga and name is now filled, promote to normal
+  const existingP=_drawerMode==='edit'?people.find(x=>x.id===_editId):null;
+  const resolvedTipo=existingP?.tipo==='vaga'?(nome==='A DEFINIR'?'vaga':'normal'):_dTipo;
+  const obj={nivel,tipo:resolvedTipo,grupoId:grupoId?Number(grupoId):null,superiorId:supId?Number(supId):null,suportaIds:[..._dSuportaIds]};
   if(_drawerMode==='add'){
     people.push({id:_pid++,nome,cargo,...obj});
   } else {
-    const p=people.find(x=>x.id===_editId);
-    if(p){ Object.assign(p,{nome,cargo,...obj}); fixCircular(_editId); }
+    if(existingP){ Object.assign(existingP,{nome,cargo,...obj}); fixCircular(_editId); }
   }
   closeDrawer(); renderAll(); saveLocal();
 }
 
 /* ══ INLINE ROW EDIT ══ */
-function openInlineEdit(id){
-  if(_inlineEditId===id) return;
-  if(_inlineEditId) cancelInlineEdit();
-  _inlineEditId=id;
-  const p=people.find(x=>x.id===id); if(!p) return;
-  const tr=document.querySelector(`tr[data-pid="${id}"]`); if(!tr) return;
-
-  const cargoOpts=funcoes.map(f=>`<option value="${esc(f)}"${p.cargo===f?' selected':''}>${esc(f)}</option>`).join('')+
-    `<option value="__OUTRO__"${!funcoes.includes(p.cargo)?' selected':''}>Outro…</option>`;
-  const grpOpts='<option value="">— Sem grupo —</option>'+
-    grupos.map(g=>`<option value="${g.id}"${String(g.id)===String(p.grupoId)?' selected':''}>${esc(g.nome)}</option>`).join('');
-  const lvlOpts=[1,2,3,4,5,6,7,8].map(n=>`<option value="${n}"${n===(p.nivel||1)?' selected':''}>N${n}</option>`).join('');
-  const supOpts='<option value="">— Sem superior (topo) —</option>'+
-    people.filter(x=>x.id!==id).map(x=>`<option value="${x.id}"${String(x.id)===String(p.superiorId)?' selected':''}>${esc(x.nome)} · N${getNivel(x.id)}</option>`).join('');
-
-  tr.innerHTML=`<td colspan="4" style="padding:0;">
-    <div class="ie-inner">
-      <div class="dg4" style="margin-bottom:10px">
-        <div class="fg"><label>Nome</label>
-          <input type="text" id="ie_nome" value="${esc(p.nome)}" /></div>
-        <div class="fg"><label>Cargo</label>
-          <select id="ie_cargo" onchange="onIECargoChange()">${cargoOpts}</select>
-          <input type="text" id="ie_cargo_custom" value="${!funcoes.includes(p.cargo)?esc(p.cargo):''}"
-            placeholder="Cargo personalizado" style="margin-top:4px;display:${funcoes.includes(p.cargo)?'none':'block'}" /></div>
-        <div class="fg"><label>Grupo</label>
-          <select id="ie_grupo">${grpOpts}</select></div>
-        <div class="fg"><label>Tipo</label>
-          <div class="tipo-toggle">
-            <button class="tipo-btn${(p.tipo==='normal'||p.tipo==='vaga'||!p.tipo)?' on':''}" onclick="ieSetTipo('normal')">Normal</button>
-            <button class="tipo-btn${p.tipo==='corp'?' on-corp':''}" onclick="ieSetTipo('corp')">Corp</button>
-          </div></div>
-      </div>
-      <div class="dg2" style="margin-bottom:10px">
-        <div class="fg"><label>Reporta a</label>
-          <select id="ie_superior">${supOpts}</select></div>
-        <div class="fg"><label>Nível hierárquico</label>
-          <select id="ie_nivel">${lvlOpts}</select></div>
-      </div>
-      <div class="brow">
-        <button class="btn btn-primary btn-xs" onclick="saveInlineEdit(${id})">✓ Salvar</button>
-        <button class="btn btn-ghost btn-xs" onclick="cancelInlineEdit()">✕ Cancelar</button>
-        <button class="btn btn-ghost btn-xs" onclick="openDrawerEdit(${id})">✦ Editar conexões de suporte</button>
-        <span style="flex:1"></span>
-        <button class="btn btn-danger btn-xs" onclick="deletePerson(${id})">Remover</button>
-      </div>
-    </div>
-  </td>`;
-}
-function onIECargoChange(){
-  const v=document.getElementById('ie_cargo').value;
-  const c=document.getElementById('ie_cargo_custom');
-  if(c) c.style.display=v==='__OUTRO__'?'block':'none';
-}
-function ieSetTipo(t){
-  document.querySelectorAll('.ie-inner .tipo-btn').forEach((b,i)=>{
-    b.className='tipo-btn'+(i===0&&t==='normal'?' on':i===1&&t==='corp'?' on-corp':'');
-  });
-  document.querySelector('.ie-inner .tipo-btn')?.dataset && (document.querySelector('.ie-inner .tipo-toggle').dataset.tipo=t);
-}
-function saveInlineEdit(id){
-  const nome=(document.getElementById('ie_nome')?.value||'').trim().toUpperCase();
-  const cargoSel=document.getElementById('ie_cargo')?.value||'';
-  const cargoRaw=cargoSel==='__OUTRO__'?(document.getElementById('ie_cargo_custom')?.value||'').trim():cargoSel;
-  const cargo=cargoSel==='__OUTRO__'?(cargoRaw.charAt(0).toUpperCase()+cargoRaw.slice(1)):cargoRaw;
-  const grupoId=document.getElementById('ie_grupo')?.value||null;
-  const nivel=Number(document.getElementById('ie_nivel')?.value||1);
-  const supId=document.getElementById('ie_superior')?.value||null;
-  // tipo from toggle buttons
-  const tipoBtns=document.querySelectorAll('.ie-inner .tipo-btn');
-  const tipo=tipoBtns[1]?.classList.contains('on-corp')?'corp':'normal';
-  if(!cargo){ alert('Informe o cargo.'); return; }
-  const p=people.find(x=>x.id===id); if(!p) return;
-  if(!nome&&p.tipo!=='vaga'){ alert('Informe o nome.'); return; }
-  const resolvedNome=nome||'A DEFINIR';
-  // Auto-promote vaga to normal when name is filled
-  const resolvedTipo=(p.tipo==='vaga'&&resolvedNome!=='A DEFINIR')?'normal':p.tipo==='vaga'?'vaga':tipo;
-  p.nome=resolvedNome; p.cargo=cargo;
-  p.grupoId=grupoId?Number(grupoId):null;
-  p.nivel=nivel;
-  p.tipo=resolvedTipo;
-  p.superiorId=supId?Number(supId):null;
-  fixCircular(id);
-  _inlineEditId=null;
-  renderAll(); saveLocal();
-  requestAnimationFrame(()=>{
-    const tr=document.querySelector(`tr[data-pid="${id}"]`);
-    if(tr){ tr.classList.add('saved-flash'); setTimeout(()=>tr.classList.remove('saved-flash'),800); }
-  });
-}
-function cancelInlineEdit(){ _inlineEditId=null; renderTable(); drawChart(); }
+function openInlineEdit(id){ openDrawerEdit(id); }
+function cancelInlineEdit(){ _inlineEditId=null; }
 
 /* ══ PERSON UTILS ══ */
 function deletePerson(id){
@@ -918,14 +839,12 @@ function renderTable(){
       :p.tipo==='vaga'?'<span class="vaga-badge" style="margin-left:4px">VAGA</span>':'';
     const suportaCount=(p.suportaIds||[]).length;
     const suportaHint=suportaCount?`<span style="font-size:.67rem;color:#6366f1;margin-left:4px">⤳ ${suportaCount}</span>`:'';
-    const rowStyle=p.tipo==='vaga'?'cursor:pointer;opacity:.75':'cursor:pointer';
-    return `<tr data-pid="${p.id}" onclick="openInlineEdit(${p.id})" style="${rowStyle}">
+    const rowStyle=p.tipo==='vaga'?'cursor:pointer;opacity:.8':'cursor:pointer';
+    return `<tr data-pid="${p.id}" onclick="openDrawerEdit(${p.id})" style="${rowStyle}" title="Clique para editar">
       <td><div class="td-nome">${esc(p.nome)}${badge}</div><div class="td-cargo">${esc(p.cargo)}${suportaHint}</div></td>
       <td><span class="lvl-badge">N${p.nivel||1}</span></td>
       <td>${supTxt}</td>
-      <td><div class="act-cell">
-        <button class="iBtn del" onclick="event.stopPropagation();deletePerson(${p.id})" title="Remover">🗑</button>
-      </div></td>
+      <td></td>
     </tr>`;
   }
 
