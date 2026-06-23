@@ -1107,7 +1107,7 @@ function drawChart(){
   const ox=-minX+pad, oy=-minY+pad;
 
   // Hierarchy connectors — skip corp nodes (no vertical line from parent to corp)
-  ctx.strokeStyle='#d1d5db'; ctx.lineWidth=1.5; ctx.setLineDash([]);
+  ctx.strokeStyle='#334155'; ctx.lineWidth=1.5; ctx.setLineDash([]);
   treeNodes.forEach(n=>{
     if(!n.children.length||n._isCorp) return;
     const pnv=n.nivel||1;
