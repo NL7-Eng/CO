@@ -836,12 +836,14 @@ function renderTable(){
     const sup=p.superiorId?people.find(x=>x.id===p.superiorId):null;
     const supTxt=sup?`<span class="sup-txt" title="${esc(sup.nome)}">${esc(sup.nome)}</span>`:'<span style="color:var(--subtle);font-size:.72rem">—</span>';
     const badge=p.tipo==='corp'?'<span class="corp-badge" style="margin-left:4px">CORP</span>'
-      :p.tipo==='vaga'?'<span class="vaga-badge" style="margin-left:4px">VAGA</span>':'';
+      :p.tipo==='vaga'?'<span class="vaga-badge" style="margin-left:4px">A DEFINIR</span>':'';
     const suportaCount=(p.suportaIds||[]).length;
     const suportaHint=suportaCount?`<span style="font-size:.67rem;color:#6366f1;margin-left:4px">⤳ ${suportaCount}</span>`:'';
     const rowStyle=p.tipo==='vaga'?'cursor:pointer;opacity:.8':'cursor:pointer';
+    const displayNome=p.tipo==='vaga'?esc(p.cargo):esc(p.nome);
+    const displayCargo=p.tipo==='vaga'?'':esc(p.cargo);
     return `<tr data-pid="${p.id}" onclick="openDrawerEdit(${p.id})" style="${rowStyle}" title="Clique para editar">
-      <td><div class="td-nome">${esc(p.nome)}${badge}</div><div class="td-cargo">${esc(p.cargo)}${suportaHint}</div></td>
+      <td><div class="td-nome">${displayNome}${badge}</div><div class="td-cargo">${displayCargo}${suportaHint}</div></td>
       <td><span class="lvl-badge">N${p.nivel||1}</span></td>
       <td>${supTxt}</td>
       <td></td>
@@ -1007,11 +1009,12 @@ function drawCard(ctx,n,ox,oy){
 
   const tx2=(isCorp||isOrph||isVaga)?x+10:x+12;
   ctx.fillStyle=isCorp?'#475569':isOrph?'#92400e':isVaga?'#0369a1':'#111827';
-  ctx.font=isVaga?'400 10.5px "DM Sans",sans-serif':'700 11.5px "DM Sans",sans-serif';
-  ctx.fillText(trunc(ctx,n.nome,NW-18),tx2,y+22);
-  ctx.fillStyle=isCorp?'#94a3b8':isOrph?'#b45309':isVaga?'#0284c7':'#6b7280';
+  ctx.font='700 11.5px "DM Sans",sans-serif';
+  // Vagas: show cargo as main text (no "A DEFINIR" cluttering the chart)
+  ctx.fillText(trunc(ctx,isVaga?n.cargo:n.nome,NW-18),tx2,y+22);
+  ctx.fillStyle=isCorp?'#94a3b8':isOrph?'#b45309':isVaga?'#7dd3fc':'#6b7280';
   ctx.font='500 10px "DM Sans",sans-serif';
-  ctx.fillText(trunc(ctx,n.cargo,NW-18),tx2,y+38);
+  ctx.fillText(isVaga?'':trunc(ctx,n.cargo,NW-18),tx2,y+38);
   if(isCorp){
     ctx.fillStyle='#94a3b8'; ctx.font='600 8.5px "DM Sans",sans-serif';
     ctx.fillText('CORPORATIVO',tx2,y+56);
