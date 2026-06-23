@@ -563,12 +563,18 @@ function fillGrupoSel(selId,cur=''){
 function fillAllSupSel(selId,excludeId=null,curSup=''){
   const s=document.getElementById(selId); if(!s) return;
   s.innerHTML='<option value="">— Sem superior (topo) —</option>'+
-    people.filter(p=>p.id!==excludeId).map(p=>`<option value="${p.id}"${String(p.id)===String(curSup)?' selected':''}>${esc(p.nome)} · N${getNivel(p.id)}</option>`).join('');
+    people.filter(p=>p.id!==excludeId).map(p=>{
+      const label=p.tipo==='vaga'?`TBD · ${p.cargo}`:p.nome;
+      return `<option value="${p.id}"${String(p.id)===String(curSup)?' selected':''}>${esc(label)} · N${getNivel(p.id)}</option>`;
+    }).join('');
 }
 function fillSuportaSel(selId,excludeIds=[]){
   const s=document.getElementById(selId); if(!s) return;
   s.innerHTML='<option value="">+ Adicionar conexão de suporte…</option>'+
-    people.filter(p=>!excludeIds.includes(p.id)).map(p=>`<option value="${p.id}">${esc(p.nome)} · ${esc(p.cargo)}</option>`).join('');
+    people.filter(p=>!excludeIds.includes(p.id)).map(p=>{
+      const label=p.tipo==='vaga'?`TBD · ${p.cargo}`:p.nome;
+      return `<option value="${p.id}">${esc(label)} · ${esc(p.cargo)}</option>`;
+    }).join('');
 }
 function getCargoVal(selId,custId){
   const v=document.getElementById(selId)?.value;
