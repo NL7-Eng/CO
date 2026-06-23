@@ -877,8 +877,8 @@ function renderTable(){
     const suportaCount=(p.suportaIds||[]).length;
     const suportaHint=suportaCount?`<span style="font-size:.67rem;color:#6366f1;margin-left:4px">⤳ ${suportaCount}</span>`:'';
     const rowStyle=p.tipo==='vaga'?'cursor:pointer;opacity:.8':'cursor:pointer';
-    const displayNome=p.tipo==='vaga'?esc(p.cargo):esc(p.nome);
-    const displayCargo=p.tipo==='vaga'?'':esc(p.cargo);
+    const displayNome=p.tipo==='vaga'?'<span style="color:#9ca3af;font-weight:400;font-style:italic">TBD</span>':esc(p.nome);
+    const displayCargo=esc(p.cargo);
     return `<tr data-pid="${p.id}" onclick="openDrawerEdit(${p.id})" style="${rowStyle}" title="Clique para editar">
       <td><div class="td-nome">${displayNome}${badge}</div><div class="td-cargo">${displayCargo}${suportaHint}</div></td>
       <td><span class="lvl-badge">N${p.nivel||1}</span></td>
@@ -1041,12 +1041,19 @@ function drawCard(ctx,n,ox,oy){
   }
 
   const tx2=(isCorp||isOrph)?x+10:x+12;
-  ctx.fillStyle=isCorp?'#1e3a5f':isOrph?'#92400e':'#111827';
-  ctx.font='700 11.5px "DM Sans",sans-serif';
-  ctx.fillText(trunc(ctx,(isVaga?n.cargo:n.nome).toUpperCase(),NW-18),tx2,y+22);
+  // Nome: TBD em cinza para vagas, nome normal caso contrário
+  if(isVaga){
+    ctx.fillStyle='#9ca3af'; ctx.font='500 10.5px "DM Sans",sans-serif';
+    ctx.fillText('TBD',tx2,y+22);
+  } else {
+    ctx.fillStyle=isCorp?'#1e3a5f':isOrph?'#92400e':'#111827';
+    ctx.font='700 11.5px "DM Sans",sans-serif';
+    ctx.fillText(trunc(ctx,n.nome.toUpperCase(),NW-18),tx2,y+22);
+  }
+  // Cargo
   ctx.fillStyle=isCorp?'#334155':isOrph?'#b45309':'#6b7280';
   ctx.font='500 10px "DM Sans",sans-serif';
-  ctx.fillText(isVaga?'':trunc(ctx,n.cargo.toUpperCase(),NW-18),tx2,y+38);
+  ctx.fillText(trunc(ctx,n.cargo.toUpperCase(),NW-18),tx2,y+38);
   if(isCorp){
     ctx.fillStyle='#334155'; ctx.font='600 8.5px "DM Sans",sans-serif';
     ctx.fillText('COMPARTILHADO',tx2,y+56);
