@@ -911,10 +911,10 @@ function renderTable(){
     </tr>`;
   }
 
-  // Group by grupo (in grupos order), then sem-grupo, then corp
+  // Group by grupo (in grupos order), then sem-grupo
   const sections=[];
   grupos.forEach(g=>{
-    const members=filtered.filter(p=>p.grupoId===g.id&&p.tipo!=='corp').sort((a,b)=>(a.nivel||1)-(b.nivel||1));
+    const members=filtered.filter(p=>p.grupoId===g.id).sort((a,b)=>(a.nivel||1)-(b.nivel||1));
     if(!members.length) return;
     const pal=PAL[g.palIdx%PAL.length];
     sections.push(
@@ -925,15 +925,10 @@ function renderTable(){
       members.map(personRow).join('')
     );
   });
-  const noGrp=filtered.filter(p=>!p.grupoId&&p.tipo!=='corp').sort((a,b)=>(a.nivel||1)-(b.nivel||1));
+  const noGrp=filtered.filter(p=>!p.grupoId).sort((a,b)=>(a.nivel||1)-(b.nivel||1));
   if(noGrp.length) sections.push(
     `<tr class="level-row"><td colspan="5" style="border-left:4px solid #f97316"><span style="color:#c2410c">Sem grupo</span> <span style="font-weight:400;opacity:.6">(${noGrp.length})</span></td></tr>`+
     noGrp.map(personRow).join('')
-  );
-  const corps=filtered.filter(p=>p.tipo==='corp').sort((a,b)=>(a.nivel||1)-(b.nivel||1));
-  if(corps.length) sections.push(
-    `<tr class="level-row"><td colspan="5" style="border-left:4px solid #334155"><span style="color:#1e3a5f">Compartilhado</span> <span style="font-weight:400;opacity:.6">(${corps.length})</span></td></tr>`+
-    corps.map(personRow).join('')
   );
 
   tbody.innerHTML=sections.join('') || '<tr class="empty-row"><td colspan="5">Nenhum resultado.</td></tr>';
