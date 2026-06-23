@@ -1007,12 +1007,11 @@ function drawCard(ctx,n,ox,oy){
     rr(ctx,x,y,NW,NH,8); ctx.strokeStyle='#e5e7eb'; ctx.lineWidth=1; ctx.stroke();
   }
 
-  const tx2=(isCorp||isOrph||isVaga)?x+10:x+12;
-  ctx.fillStyle=isCorp?'#475569':isOrph?'#92400e':isVaga?'#0369a1':'#111827';
+  const tx2=(isCorp||isOrph)?x+10:x+12;
+  ctx.fillStyle=isCorp?'#475569':isOrph?'#92400e':'#111827';
   ctx.font='700 11.5px "DM Sans",sans-serif';
-  // Vagas: show cargo as main text (no "A DEFINIR" cluttering the chart)
   ctx.fillText(trunc(ctx,isVaga?n.cargo:n.nome,NW-18),tx2,y+22);
-  ctx.fillStyle=isCorp?'#94a3b8':isOrph?'#b45309':isVaga?'#7dd3fc':'#6b7280';
+  ctx.fillStyle=isCorp?'#94a3b8':isOrph?'#b45309':'#6b7280';
   ctx.font='500 10px "DM Sans",sans-serif';
   ctx.fillText(isVaga?'':trunc(ctx,n.cargo,NW-18),tx2,y+38);
   if(isCorp){
@@ -1021,9 +1020,6 @@ function drawCard(ctx,n,ox,oy){
   } else if(isOrph){
     ctx.fillStyle='#d97706'; ctx.font='600 8.5px "DM Sans",sans-serif';
     ctx.fillText('SEM VÍNCULO',tx2,y+56);
-  } else if(isVaga){
-    ctx.fillStyle='#7dd3fc'; ctx.font='700 8.5px "DM Sans",sans-serif';
-    ctx.fillText('VAGA EM ABERTO',tx2,y+56);
   } else if(g){
     ctx.fillStyle=accent; ctx.font='600 9px "DM Sans",sans-serif';
     ctx.fillText(trunc(ctx,g.nome.toUpperCase(),NW-18),tx2,y+56);
