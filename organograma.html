@@ -317,6 +317,9 @@
               <option value="3">Nível 3</option>
               <option value="4">Nível 4</option>
               <option value="5">Nível 5</option>
+              <option value="6">Nível 6</option>
+              <option value="7">Nível 7</option>
+              <option value="8">Nível 8</option>
             </select></div>
         </div>
 
@@ -354,12 +357,13 @@
             <div class="fg"><label>Grupo / Setor</label>
               <select id="vGrupo"></select></div>
             <div class="fg"><label>Reporta a</label>
-              <select id="vSuperior"></select></div>
+              <select id="vSuperior" onchange="onVSupChange()"></select></div>
             <div class="fg"><label>Nível</label>
               <select id="vNivel">
                 <option value="1">Nível 1</option><option value="2">Nível 2</option>
                 <option value="3">Nível 3</option><option value="4">Nível 4</option>
-                <option value="5">Nível 5</option>
+                <option value="5">Nível 5</option><option value="6">Nível 6</option>
+                <option value="7">Nível 7</option><option value="8">Nível 8</option>
               </select></div>
           </div>
           <div class="alert alert-err" id="vErr"></div>
@@ -633,6 +637,13 @@ function closeVagaModal(e){
   if(e&&e.target!==document.getElementById('vagaOverlay'))return;
   document.getElementById('vagaOverlay').classList.remove('open');
 }
+function onVSupChange(){
+  const supId=document.getElementById('vSuperior').value;
+  if(!supId) return;
+  const sup=people.find(p=>String(p.id)===supId); if(!sup) return;
+  const sugNivel=Math.min(8,(sup.nivel||1)+1);
+  document.getElementById('vNivel').value=String(sugNivel);
+}
 function onVCargoChange(){
   document.getElementById('vCargoCustom').style.display=
     document.getElementById('vCargo').value==='__OUTRO__'?'block':'none';
@@ -697,7 +708,7 @@ function openInlineEdit(id){
     `<option value="__OUTRO__"${!funcoes.includes(p.cargo)?' selected':''}>Outro…</option>`;
   const grpOpts='<option value="">— Sem grupo —</option>'+
     grupos.map(g=>`<option value="${g.id}"${String(g.id)===String(p.grupoId)?' selected':''}>${esc(g.nome)}</option>`).join('');
-  const lvlOpts=[1,2,3,4,5].map(n=>`<option value="${n}"${n===(p.nivel||1)?' selected':''}>N${n}</option>`).join('');
+  const lvlOpts=[1,2,3,4,5,6,7,8].map(n=>`<option value="${n}"${n===(p.nivel||1)?' selected':''}>N${n}</option>`).join('');
   const supOpts='<option value="">— Sem superior (topo) —</option>'+
     people.filter(x=>x.id!==id).map(x=>`<option value="${x.id}"${String(x.id)===String(p.superiorId)?' selected':''}>${esc(x.nome)} · N${getNivel(x.id)}</option>`).join('');
 
@@ -714,7 +725,7 @@ function openInlineEdit(id){
           <select id="ie_grupo">${grpOpts}</select></div>
         <div class="fg"><label>Tipo</label>
           <div class="tipo-toggle">
-            <button class="tipo-btn${(p.tipo||'normal')==='normal'?' on':''}" onclick="ieSetTipo('normal')">Normal</button>
+            <button class="tipo-btn${(p.tipo==='normal'||p.tipo==='vaga'||!p.tipo)?' on':''}" onclick="ieSetTipo('normal')">Normal</button>
             <button class="tipo-btn${p.tipo==='corp'?' on-corp':''}" onclick="ieSetTipo('corp')">Corp</button>
           </div></div>
       </div>
@@ -758,6 +769,7 @@ function saveInlineEdit(id){
   const tipo=tipoBtns[1]?.classList.contains('on-corp')?'corp':'normal';
   if(!cargo){ alert('Informe o cargo.'); return; }
   const p=people.find(x=>x.id===id); if(!p) return;
+  if(!nome&&p.tipo!=='vaga'){ alert('Informe o nome.'); return; }
   const resolvedNome=nome||'A DEFINIR';
   // Auto-promote vaga to normal when name is filled
   const resolvedTipo=(p.tipo==='vaga'&&resolvedNome!=='A DEFINIR')?'normal':p.tipo==='vaga'?'vaga':tipo;
@@ -887,7 +899,9 @@ function renderCadastro(){
 /* ══ RENDER TABLE ══ */
 function renderTable(){
   const tbody=document.getElementById('orgTbody');
-  document.getElementById('countBadge').textContent=people.length?`${people.length} pessoa${people.length!==1?'s':''}` : '';
+  const _pCount=people.filter(p=>p.tipo!=='vaga').length, _vCount=people.filter(p=>p.tipo==='vaga').length;
+  document.getElementById('countBadge').textContent=people.length
+    ? `${_pCount} pessoa${_pCount!==1?'s':''}${_vCount?` · ${_vCount} vaga${_vCount!==1?'s':''}`:''}` : '';
   document.getElementById('noGroupWarn').style.display=people.some(p=>!p.grupoId&&p.tipo!=='corp'&&p.tipo!=='vaga')?'':'none';
   if(!people.length){ tbody.innerHTML='<tr class="empty-row"><td colspan="4">Nenhuma pessoa cadastrada. Clique em "+ Adicionar pessoa".</td></tr>'; return; }
 
@@ -1048,7 +1062,7 @@ function layout(roots){
 
 function drawCard(ctx,n,ox,oy){
   const x=n._x+ox, y=n._y+oy;
-  const isCorp=n._isCorp, isOrph=!!n._isOrphan, isVaga=n.tipo==='vaga';
+  const isCorp=n._isCorp, isVaga=n.tipo==='vaga', isOrph=!!n._isOrphan&&!isVaga;
   const g=(isCorp||isOrph||isVaga)?null:grupos.find(g=>g.id===n.grupoId);
   const pal=g?PAL[g.palIdx%PAL.length]:null;
   const accent=pal?pal.border:'#d1d5db';
@@ -1156,12 +1170,12 @@ function drawChart(){
         const midY=n._y+oy+NH/2;
         ctx.moveTo(n._x+ox+NW,midY); ctx.lineTo(c._x+ox,midY);
       } else if(cnv>pnv){
-        // Child below → elbow from parent bottom to child top
-        const fromY=n._y+oy+NH, toY=c._y+oy, midY=fromY+VG/2;
+        // Child below → elbow at midpoint between parent bottom and child top
+        const fromY=n._y+oy+NH, toY=c._y+oy, midY=(fromY+toY)/2;
         ctx.moveTo(fromX,fromY);ctx.lineTo(fromX,midY);ctx.lineTo(toX,midY);ctx.lineTo(toX,toY);
       } else {
-        // Child above → elbow from parent top to child bottom
-        const fromY=n._y+oy, toY=c._y+oy+NH, midY=fromY-VG/2;
+        // Child above → elbow at midpoint between parent top and child bottom
+        const fromY=n._y+oy, toY=c._y+oy+NH, midY=(fromY+toY)/2;
         ctx.moveTo(fromX,fromY);ctx.lineTo(fromX,midY);ctx.lineTo(toX,midY);ctx.lineTo(toX,toY);
       }
       ctx.stroke();
