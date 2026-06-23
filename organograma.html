@@ -93,7 +93,7 @@
     .tipo-btn{flex:1;padding:7px 4px;font-family:var(--fd);font-size:.74rem;font-weight:600;cursor:pointer;
       border:none;background:#fff;color:var(--muted);transition:all .15s;text-align:center}
     .tipo-btn.on{background:#1f2937;color:#fff}
-    .tipo-btn.on-corp{background:#64748b;color:#fff}
+    .tipo-btn.on-corp{background:#334155;color:#fff}
 
     /* SUPORTA TAGS */
     .suporta-tags{display:flex;flex-wrap:wrap;gap:4px;min-height:24px;margin-bottom:6px}
@@ -157,7 +157,7 @@
       padding:3px 9px 3px 6px;border-radius:20px;border:1.5px solid;white-space:nowrap}
     .chip-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
     .no-grp-chip{font-size:.7rem;color:#9a3412;background:#fff7ed;border:1px solid #fed7aa;border-radius:20px;padding:2px 9px}
-    .corp-badge{font-family:var(--fd);font-size:.66rem;font-weight:700;color:#475569;background:#f1f5f9;border:1px solid #cbd5e1;border-radius:20px;padding:1px 7px;letter-spacing:.3px}
+    .corp-badge{font-family:var(--fd);font-size:.66rem;font-weight:700;color:#1e3a5f;background:#dbeafe;border:1px solid #93c5fd;border-radius:20px;padding:1px 7px;letter-spacing:.3px}
     .lvl-badge{font-family:var(--fd);font-size:.7rem;font-weight:700;
       background:#f3f4f6;color:var(--muted);border:1px solid var(--border-l);border-radius:20px;padding:2px 8px;white-space:nowrap}
     .sup-txt{font-size:.74rem;color:var(--muted);white-space:nowrap;max-width:130px;overflow:hidden;text-overflow:ellipsis;display:inline-block}
@@ -321,7 +321,7 @@
           <label>Tipo</label>
           <div class="tipo-toggle" style="max-width:220px">
             <button class="tipo-btn on" id="dTipoNormal" onclick="setDTipo('normal')">Normal</button>
-            <button class="tipo-btn" id="dTipoCorp" onclick="setDTipo('corp')">Corporativo</button>
+            <button class="tipo-btn" id="dTipoCorp" onclick="setDTipo('corp')">Compartilhado</button>
           </div>
         </div>
 
@@ -872,7 +872,7 @@ function renderTable(){
     const g=grupos.find(x=>x.id===p.grupoId);
     const sup=p.superiorId?people.find(x=>x.id===p.superiorId):null;
     const supTxt=sup?`<span class="sup-txt" title="${esc(sup.nome)}">${esc(sup.nome)}</span>`:'<span style="color:var(--subtle);font-size:.72rem">—</span>';
-    const badge=p.tipo==='corp'?'<span class="corp-badge" style="margin-left:4px">CORP</span>'
+    const badge=p.tipo==='corp'?'<span class="corp-badge" style="margin-left:4px">COMP</span>'
       :p.tipo==='vaga'?'<span class="vaga-badge" style="margin-left:4px">A DEFINIR</span>':'';
     const suportaCount=(p.suportaIds||[]).length;
     const suportaHint=suportaCount?`<span style="font-size:.67rem;color:#6366f1;margin-left:4px">⤳ ${suportaCount}</span>`:'';
@@ -907,7 +907,7 @@ function renderTable(){
   );
   const corps=filtered.filter(p=>p.tipo==='corp').sort((a,b)=>(a.nivel||1)-(b.nivel||1));
   if(corps.length) sections.push(
-    `<tr class="level-row"><td colspan="3" style="border-left:4px solid #94a3b8"><span style="color:#475569">Corporativo</span> <span style="font-weight:400;opacity:.6">(${corps.length})</span></td></tr>`+
+    `<tr class="level-row"><td colspan="3" style="border-left:4px solid #334155"><span style="color:#1e3a5f">Compartilhado</span> <span style="font-weight:400;opacity:.6">(${corps.length})</span></td></tr>`+
     corps.map(personRow).join('')
   );
 
@@ -1026,11 +1026,11 @@ function drawCard(ctx,n,ox,oy){
 
   ctx.shadowColor='rgba(0,0,0,.08)'; ctx.shadowBlur=8; ctx.shadowOffsetY=2;
   rr(ctx,x,y,NW,NH,8);
-  ctx.fillStyle=isCorp?'#f8fafc':isOrph?'#fffbeb':'#fff'; ctx.fill();
+  ctx.fillStyle=isCorp?'#eff6ff':isOrph?'#fffbeb':'#fff'; ctx.fill();
   ctx.shadowColor='transparent'; ctx.shadowBlur=0; ctx.shadowOffsetY=0;
 
   if(isCorp){
-    ctx.setLineDash([5,3]); ctx.strokeStyle='#94a3b8'; ctx.lineWidth=1.5;
+    ctx.setLineDash([5,3]); ctx.strokeStyle='#334155'; ctx.lineWidth=1.5;
     rr(ctx,x,y,NW,NH,8); ctx.stroke(); ctx.setLineDash([]);
   } else if(isOrph){
     ctx.setLineDash([4,3]); ctx.strokeStyle='#fbbf24'; ctx.lineWidth=1.5;
@@ -1041,15 +1041,15 @@ function drawCard(ctx,n,ox,oy){
   }
 
   const tx2=(isCorp||isOrph)?x+10:x+12;
-  ctx.fillStyle=isCorp?'#475569':isOrph?'#92400e':'#111827';
+  ctx.fillStyle=isCorp?'#1e3a5f':isOrph?'#92400e':'#111827';
   ctx.font='700 11.5px "DM Sans",sans-serif';
   ctx.fillText(trunc(ctx,(isVaga?n.cargo:n.nome).toUpperCase(),NW-18),tx2,y+22);
-  ctx.fillStyle=isCorp?'#94a3b8':isOrph?'#b45309':'#6b7280';
+  ctx.fillStyle=isCorp?'#334155':isOrph?'#b45309':'#6b7280';
   ctx.font='500 10px "DM Sans",sans-serif';
   ctx.fillText(isVaga?'':trunc(ctx,n.cargo.toUpperCase(),NW-18),tx2,y+38);
   if(isCorp){
-    ctx.fillStyle='#94a3b8'; ctx.font='600 8.5px "DM Sans",sans-serif';
-    ctx.fillText('CORPORATIVO',tx2,y+56);
+    ctx.fillStyle='#334155'; ctx.font='600 8.5px "DM Sans",sans-serif';
+    ctx.fillText('COMPARTILHADO',tx2,y+56);
   } else if(isOrph){
     ctx.fillStyle='#d97706'; ctx.font='600 8.5px "DM Sans",sans-serif';
     ctx.fillText('SEM VÍNCULO',tx2,y+56);
@@ -1195,7 +1195,7 @@ function renderLegend(){
   const hasOrphan=hasN1Root2&&noSupNonCorp2.some(p=>(p.nivel||1)>1);
   if(hasCorp||hasSupport||hasOrphan){
     html+=`<div class="leg-block"><div class="leg-title">Legenda visual</div><div class="leg-grid">`;
-    if(hasCorp) html+=`<div class="leg-item"><div style="width:28px;height:22px;border:1.5px dashed #94a3b8;border-radius:4px;background:#f8fafc;flex-shrink:0"></div><div class="leg-info"><div class="lc">Corporativo</div><div class="ln">Card tracejado cinza, sem linha vertical</div></div></div>`;
+    if(hasCorp) html+=`<div class="leg-item"><div style="width:28px;height:22px;border:1.5px dashed #334155;border-radius:4px;background:#f8fafc;flex-shrink:0"></div><div class="leg-info"><div class="lc">Compartilhado</div><div class="ln">Recurso compartilhado entre obras</div></div></div>`;
     if(hasOrphan) html+=`<div class="leg-item"><div style="width:28px;height:22px;border:1.5px dashed #fbbf24;border-radius:4px;background:#fffbeb;flex-shrink:0"></div><div class="leg-info"><div class="lc">Sem vínculo</div><div class="ln">Posicionado no nível correspondente</div></div></div>`;
     if(hasSupport) html+=`<div class="leg-item"><div style="width:28px;height:0;border-top:2px dashed rgba(99,102,241,.7);margin-top:11px;flex-shrink:0"></div><div class="leg-info"><div class="lc">Suporte</div><div class="ln">Linha tracejada índigo</div></div></div>`;
     html+='</div></div>';
@@ -1257,7 +1257,7 @@ function exportPNG(){
   const hasSupport=people.some(p=>(p.suportaIds||[]).length>0);
   const legItems=[
     ...usedG.map(g=>{ const pal=PAL[g.palIdx%PAL.length]; return {color:pal.border,label:g.nome}; }),
-    ...(hasCorp?[{color:'#94a3b8',label:'Corporativo',dashed:true}]:[]),
+    ...(hasCorp?[{color:'#334155',label:'Compartilhado',dashed:true}]:[]),
     ...(hasOrphan?[{color:'#fbbf24',label:'Sem vínculo',dashed:true}]:[]),
     ...(hasSupport?[{color:'rgba(99,102,241,0.7)',label:'Suporte lateral',dashed:true}]:[]),
   ];
