@@ -296,7 +296,7 @@
         <div class="dg3" style="margin-bottom:10px">
           <div class="fg"><label>Grupo / Setor</label>
             <select id="dGrupo"></select></div>
-          <div class="fg"><label>Reporta a</label>
+          <div class="fg" id="dSuperiorWrap"><label>Reporta a</label>
             <select id="dSuperior" onchange="onDSuperiorChange()"><option value="">— Sem superior —</option></select></div>
           <div class="fg"><label>Nível</label>
             <select id="dNivel">
@@ -570,7 +570,8 @@ function setDTipo(t){
   const isCorp=t==='corp';
   document.getElementById('dSuportaWrap').style.display=isCorp?'none':'';
   document.getElementById('dCorpConWrap').style.display=isCorp?'':'none';
-  if(isCorp) fillAllSupSel('dCorpCon',_editId,'');
+  document.getElementById('dSuperiorWrap').style.display=isCorp?'none':'';
+  if(isCorp){ fillAllSupSel('dCorpCon',_editId,''); document.getElementById('dSuperior').value=''; }
 }
 
 /* ══ DRAWER SUPORTA ══ */
