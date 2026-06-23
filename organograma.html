@@ -200,6 +200,16 @@
     .alert.on{display:block}
     .alert-err{background:#fef2f2;color:#b91c1c;border:1px solid #fecaca}
 
+    /* VAGA MODAL */
+    .vaga-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:300;align-items:center;justify-content:center}
+    .vaga-overlay.open{display:flex}
+    .vaga-box{background:#fff;border-radius:12px;padding:24px;width:min(480px,96vw);box-shadow:0 8px 32px rgba(0,0,0,.18)}
+    .vaga-box h3{margin:0 0 16px;font-size:1rem;display:flex;align-items:center;gap:8px}
+    .vaga-badge{display:inline-block;background:#e0f2fe;color:#0369a1;font-size:.65rem;font-weight:700;border-radius:4px;padding:2px 6px;letter-spacing:.5px}
+    .vaga-qty{display:flex;align-items:center;gap:8px}
+    .vaga-qty button{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:#f9fafb;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+    .vaga-qty input{width:48px;text-align:center;font-size:1rem;font-weight:700;padding:4px}
+
     @media print{
       header p,.main-tabs,.org-bar,.chart-toolbar,.back-link,.brow,.drawer,.search-row{display:none!important}
       body{background:#fff}.card{box-shadow:none;border:none;padding:0}
@@ -325,9 +335,45 @@
         </div>
       </div>
 
+      <!-- VAGA MODAL -->
+      <div class="vaga-overlay" id="vagaOverlay" onclick="closeVagaModal(event)">
+        <div class="vaga-box" onclick="event.stopPropagation()">
+          <h3>Adicionar vaga <span class="vaga-badge">A DEFINIR</span></h3>
+          <div class="dg2" style="margin-bottom:12px">
+            <div class="fg"><label>Cargo / Função</label>
+              <select id="vCargo" onchange="onVCargoChange()"></select>
+              <input type="text" id="vCargoCustom" placeholder="Cargo personalizado" style="margin-top:4px;display:none" /></div>
+            <div class="fg"><label>Quantidade de vagas</label>
+              <div class="vaga-qty">
+                <button onclick="vQtyAdj(-1)">−</button>
+                <input type="number" id="vQty" value="1" min="1" max="20" />
+                <button onclick="vQtyAdj(1)">+</button>
+              </div></div>
+          </div>
+          <div class="dg3" style="margin-bottom:14px">
+            <div class="fg"><label>Grupo / Setor</label>
+              <select id="vGrupo"></select></div>
+            <div class="fg"><label>Reporta a</label>
+              <select id="vSuperior"></select></div>
+            <div class="fg"><label>Nível</label>
+              <select id="vNivel">
+                <option value="1">Nível 1</option><option value="2">Nível 2</option>
+                <option value="3">Nível 3</option><option value="4">Nível 4</option>
+                <option value="5">Nível 5</option>
+              </select></div>
+          </div>
+          <div class="alert alert-err" id="vErr"></div>
+          <div class="brow">
+            <button class="btn btn-ghost btn-sm" onclick="closeVagaModal()">Cancelar</button>
+            <button class="btn btn-primary btn-sm" onclick="saveVaga()">Criar vagas</button>
+          </div>
+        </div>
+      </div>
+
       <!-- CONTROLES -->
       <div class="brow" style="margin-bottom:12px">
         <button class="btn btn-primary btn-sm" onclick="openDrawerAdd()">+ Adicionar pessoa</button>
+        <button class="btn btn-ghost btn-sm" onclick="openVagaModal()" style="color:#0369a1;border-color:#bae6fd">+ Vaga</button>
         <button class="btn btn-ghost btn-sm" onclick="loadExample()">Carregar exemplo</button>
         <span style="flex:1"></span>
         <button class="btn btn-ghost btn-sm" onclick="exportJSON()">⬇ Exportar</button>
@@ -572,6 +618,46 @@ function openDrawerEdit(id){
   document.getElementById('dNome').focus();
 }
 function closeDrawer(){ document.getElementById('drawer').classList.remove('open'); }
+
+/* ══ VAGA MODAL ══ */
+function openVagaModal(){
+  fillCargoSel('vCargo'); fillGrupoSel('vGrupo');
+  fillAllSupSel('vSuperior',null,'');
+  document.getElementById('vNivel').value='1';
+  document.getElementById('vQty').value='1';
+  document.getElementById('vCargoCustom').style.display='none';
+  document.getElementById('vErr').classList.remove('on');
+  document.getElementById('vagaOverlay').classList.add('open');
+}
+function closeVagaModal(e){
+  if(e&&e.target!==document.getElementById('vagaOverlay'))return;
+  document.getElementById('vagaOverlay').classList.remove('open');
+}
+function onVCargoChange(){
+  document.getElementById('vCargoCustom').style.display=
+    document.getElementById('vCargo').value==='__OUTRO__'?'block':'none';
+}
+function vQtyAdj(d){
+  const el=document.getElementById('vQty');
+  el.value=Math.max(1,Math.min(20,(Number(el.value)||1)+d));
+}
+function saveVaga(){
+  const cargo=getCargoVal('vCargo','vCargoCustom');
+  const qty=Math.max(1,Math.min(20,Number(document.getElementById('vQty').value)||1));
+  const grupoId=document.getElementById('vGrupo').value||null;
+  const nivel=Number(document.getElementById('vNivel').value||1);
+  const supId=document.getElementById('vSuperior').value||null;
+  const err=document.getElementById('vErr');
+  if(!cargo){err.textContent='Informe o cargo.';err.classList.add('on');return;}
+  err.classList.remove('on');
+  for(let i=0;i<qty;i++){
+    people.push({id:_pid++,nome:'A DEFINIR',cargo,tipo:'vaga',
+      grupoId:grupoId?Number(grupoId):null,nivel,
+      superiorId:supId?Number(supId):null,suportaIds:[]});
+  }
+  document.getElementById('vagaOverlay').classList.remove('open');
+  renderAll(); saveLocal();
+}
 function onDCargoChange(){
   document.getElementById('dCustomWrap').style.display=
     document.getElementById('dCargo').value==='__OUTRO__'?'':'none';
@@ -670,12 +756,15 @@ function saveInlineEdit(id){
   // tipo from toggle buttons
   const tipoBtns=document.querySelectorAll('.ie-inner .tipo-btn');
   const tipo=tipoBtns[1]?.classList.contains('on-corp')?'corp':'normal';
-  if(!nome||!cargo){ alert('Preencha o nome e o cargo.'); return; }
+  if(!cargo){ alert('Informe o cargo.'); return; }
   const p=people.find(x=>x.id===id); if(!p) return;
-  p.nome=nome; p.cargo=cargo;
+  const resolvedNome=nome||'A DEFINIR';
+  // Auto-promote vaga to normal when name is filled
+  const resolvedTipo=(p.tipo==='vaga'&&resolvedNome!=='A DEFINIR')?'normal':p.tipo==='vaga'?'vaga':tipo;
+  p.nome=resolvedNome; p.cargo=cargo;
   p.grupoId=grupoId?Number(grupoId):null;
   p.nivel=nivel;
-  p.tipo=tipo;
+  p.tipo=resolvedTipo;
   p.superiorId=supId?Number(supId):null;
   fixCircular(id);
   _inlineEditId=null;
@@ -799,7 +888,7 @@ function renderCadastro(){
 function renderTable(){
   const tbody=document.getElementById('orgTbody');
   document.getElementById('countBadge').textContent=people.length?`${people.length} pessoa${people.length!==1?'s':''}` : '';
-  document.getElementById('noGroupWarn').style.display=people.some(p=>!p.grupoId&&p.tipo!=='corp')?'':'none';
+  document.getElementById('noGroupWarn').style.display=people.some(p=>!p.grupoId&&p.tipo!=='corp'&&p.tipo!=='vaga')?'':'none';
   if(!people.length){ tbody.innerHTML='<tr class="empty-row"><td colspan="4">Nenhuma pessoa cadastrada. Clique em "+ Adicionar pessoa".</td></tr>'; return; }
 
   const q=_searchQ;
@@ -809,14 +898,15 @@ function renderTable(){
 
   function personRow(p){
     const g=grupos.find(x=>x.id===p.grupoId);
-    const pal=g?PAL[g.palIdx%PAL.length]:null;
     const sup=p.superiorId?people.find(x=>x.id===p.superiorId):null;
     const supTxt=sup?`<span class="sup-txt" title="${esc(sup.nome)}">${esc(sup.nome)}</span>`:'<span style="color:var(--subtle);font-size:.72rem">—</span>';
-    const corpBadge=p.tipo==='corp'?'<span class="corp-badge" style="margin-left:4px">CORP</span>':'';
+    const badge=p.tipo==='corp'?'<span class="corp-badge" style="margin-left:4px">CORP</span>'
+      :p.tipo==='vaga'?'<span class="vaga-badge" style="margin-left:4px">VAGA</span>':'';
     const suportaCount=(p.suportaIds||[]).length;
     const suportaHint=suportaCount?`<span style="font-size:.67rem;color:#6366f1;margin-left:4px">⤳ ${suportaCount}</span>`:'';
-    return `<tr data-pid="${p.id}" onclick="openInlineEdit(${p.id})" style="cursor:pointer">
-      <td><div class="td-nome">${esc(p.nome)}${corpBadge}</div><div class="td-cargo">${esc(p.cargo)}${suportaHint}</div></td>
+    const rowStyle=p.tipo==='vaga'?'cursor:pointer;opacity:.75':'cursor:pointer';
+    return `<tr data-pid="${p.id}" onclick="openInlineEdit(${p.id})" style="${rowStyle}">
+      <td><div class="td-nome">${esc(p.nome)}${badge}</div><div class="td-cargo">${esc(p.cargo)}${suportaHint}</div></td>
       <td><span class="lvl-badge">N${p.nivel||1}</span></td>
       <td>${supTxt}</td>
       <td><div class="act-cell">
@@ -958,14 +1048,14 @@ function layout(roots){
 
 function drawCard(ctx,n,ox,oy){
   const x=n._x+ox, y=n._y+oy;
-  const isCorp=n._isCorp, isOrph=!!n._isOrphan;
-  const g=(isCorp||isOrph)?null:grupos.find(g=>g.id===n.grupoId);
+  const isCorp=n._isCorp, isOrph=!!n._isOrphan, isVaga=n.tipo==='vaga';
+  const g=(isCorp||isOrph||isVaga)?null:grupos.find(g=>g.id===n.grupoId);
   const pal=g?PAL[g.palIdx%PAL.length]:null;
   const accent=pal?pal.border:'#d1d5db';
 
   ctx.shadowColor='rgba(0,0,0,.08)'; ctx.shadowBlur=8; ctx.shadowOffsetY=2;
   rr(ctx,x,y,NW,NH,8);
-  ctx.fillStyle=isCorp?'#f8fafc':isOrph?'#fffbeb':'#fff'; ctx.fill();
+  ctx.fillStyle=isCorp?'#f8fafc':isOrph?'#fffbeb':isVaga?'#f0f9ff':'#fff'; ctx.fill();
   ctx.shadowColor='transparent'; ctx.shadowBlur=0; ctx.shadowOffsetY=0;
 
   if(isCorp){
@@ -974,16 +1064,19 @@ function drawCard(ctx,n,ox,oy){
   } else if(isOrph){
     ctx.setLineDash([4,3]); ctx.strokeStyle='#fbbf24'; ctx.lineWidth=1.5;
     rr(ctx,x,y,NW,NH,8); ctx.stroke(); ctx.setLineDash([]);
+  } else if(isVaga){
+    ctx.setLineDash([6,4]); ctx.strokeStyle='#7dd3fc'; ctx.lineWidth=1.5;
+    rr(ctx,x,y,NW,NH,8); ctx.stroke(); ctx.setLineDash([]);
   } else {
     rr(ctx,x,y,5,NH,[8,0,0,8]); ctx.fillStyle=accent; ctx.fill();
     rr(ctx,x,y,NW,NH,8); ctx.strokeStyle='#e5e7eb'; ctx.lineWidth=1; ctx.stroke();
   }
 
-  const tx2=(isCorp||isOrph)?x+10:x+12;
-  ctx.fillStyle=isCorp?'#475569':isOrph?'#92400e':'#111827';
-  ctx.font='700 11.5px "DM Sans",sans-serif';
+  const tx2=(isCorp||isOrph||isVaga)?x+10:x+12;
+  ctx.fillStyle=isCorp?'#475569':isOrph?'#92400e':isVaga?'#0369a1':'#111827';
+  ctx.font=isVaga?'400 10.5px "DM Sans",sans-serif':'700 11.5px "DM Sans",sans-serif';
   ctx.fillText(trunc(ctx,n.nome,NW-18),tx2,y+22);
-  ctx.fillStyle=isCorp?'#94a3b8':isOrph?'#b45309':'#6b7280';
+  ctx.fillStyle=isCorp?'#94a3b8':isOrph?'#b45309':isVaga?'#0284c7':'#6b7280';
   ctx.font='500 10px "DM Sans",sans-serif';
   ctx.fillText(trunc(ctx,n.cargo,NW-18),tx2,y+38);
   if(isCorp){
@@ -992,6 +1085,9 @@ function drawCard(ctx,n,ox,oy){
   } else if(isOrph){
     ctx.fillStyle='#d97706'; ctx.font='600 8.5px "DM Sans",sans-serif';
     ctx.fillText('SEM VÍNCULO',tx2,y+56);
+  } else if(isVaga){
+    ctx.fillStyle='#7dd3fc'; ctx.font='700 8.5px "DM Sans",sans-serif';
+    ctx.fillText('VAGA EM ABERTO',tx2,y+56);
   } else if(g){
     ctx.fillStyle=accent; ctx.font='600 9px "DM Sans",sans-serif';
     ctx.fillText(trunc(ctx,g.nome.toUpperCase(),NW-18),tx2,y+56);
