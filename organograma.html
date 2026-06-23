@@ -893,16 +893,16 @@ function renderTable(){
     const suportaHint=suportaCount?`<span style="font-size:.67rem;color:#6366f1;margin-left:4px">⤳ ${suportaCount}</span>`:'';
     const nomeTxt=p.tipo==='vaga'?'<span style="color:#9ca3af;font-style:italic">TBD</span>':esc(p.nome);
     return `<tr data-pid="${p.id}" style="${p.tipo==='vaga'?'opacity:.85':''}">
-      <td class="ie-cell" onclick="ieNome(${p.id})" title="Clique para editar nome">
+      <td class="ie-cell" data-field="nome" onclick="ieNome(${p.id})" title="Clique para editar nome">
         <div class="td-nome">${nomeTxt}${badge}</div>
       </td>
-      <td class="ie-sel-cell" onclick="ieCargo(${p.id})" title="Clique para editar função">
+      <td class="ie-sel-cell" data-field="cargo" onclick="ieCargo(${p.id})" title="Clique para editar função">
         <div class="td-cargo">${esc(p.cargo)}${suportaHint}</div>
       </td>
-      <td class="ie-sel-cell" onclick="ieNivel(${p.id})" title="Clique para editar nível" style="white-space:nowrap">
+      <td class="ie-sel-cell" data-field="nivel" onclick="ieNivel(${p.id})" title="Clique para editar nível" style="white-space:nowrap">
         <span class="lvl-badge">N${p.nivel||1}</span>
       </td>
-      <td class="ie-sel-cell" onclick="ieSup(${p.id})" title="Clique para editar vínculo">
+      <td class="ie-sel-cell" data-field="sup" onclick="ieSup(${p.id})" title="Clique para editar vínculo">
         <span class="sup-txt">${supLabel}</span>
       </td>
       <td style="text-align:right;padding:4px 8px">
@@ -1324,11 +1324,11 @@ function exportPNG(){
 }
 
 /* ══ INLINE EDIT ══ */
-function _ieCell(pid,selector){ return document.querySelector(`tr[data-pid="${pid}"] ${selector}`); }
+function _ieCell(pid,field){ return document.querySelector(`tr[data-pid="${pid}"] [data-field="${field}"]`); }
 
 function ieNome(pid){
   const p=people.find(x=>x.id===pid); if(!p) return;
-  const cell=_ieCell(pid,'td.ie-cell'); if(!cell) return;
+  const cell=_ieCell(pid,'nome'); if(!cell||cell.querySelector('input')) return;
   const cur=p.tipo==='vaga'?'':p.nome;
   cell.innerHTML=`<input class="ie-input" value="${esc(cur)}" placeholder="${p.tipo==='vaga'?'Preencher nome…':'Nome completo'}" />`;
   const inp=cell.querySelector('input');
@@ -1339,51 +1339,43 @@ function ieNome(pid){
     renderTable(); drawChart(); saveLocal();
   };
   inp.addEventListener('blur',save);
-  inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){inp.blur();} if(e.key==='Escape'){renderTable();} });
+  inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){e.preventDefault();inp.blur();} if(e.key==='Escape'){renderTable();} });
+}
+
+function _ieSelect(pid,field,opts,onSave){
+  const cell=_ieCell(pid,field); if(!cell||cell.querySelector('select')) return;
+  cell.innerHTML=`<select class="ie-select">${opts}</select>`;
+  const sel=cell.querySelector('select');
+  // Use mousedown to stop propagation so cell onclick doesn't re-trigger
+  sel.addEventListener('mousedown',e=>e.stopPropagation());
+  sel.addEventListener('change',()=>{ onSave(sel.value); });
+  // Keydown: Escape cancels
+  sel.addEventListener('keydown',e=>{ if(e.key==='Escape') renderTable(); });
+  // Open dropdown automatically
+  sel.focus();
 }
 
 function ieCargo(pid){
   const p=people.find(x=>x.id===pid); if(!p) return;
-  const cell=_ieCell(pid,'td.ie-sel-cell'); if(!cell) return;
   const opts='<option value="">— Selecione —</option>'+
     funcoes.map(f=>`<option value="${esc(f)}"${p.cargo===f?' selected':''}>${esc(f)}</option>`).join('');
-  cell.innerHTML=`<select class="ie-select">${opts}</select>`;
-  const sel=cell.querySelector('select');
-  sel.focus();
-  sel.addEventListener('change',()=>{
-    if(sel.value){ p.cargo=sel.value; renderTable(); drawChart(); saveLocal(); }
-    else renderTable();
-  });
-  sel.addEventListener('blur',()=>renderTable());
+  _ieSelect(pid,'cargo',opts,val=>{ if(val){ p.cargo=val; renderTable(); drawChart(); saveLocal(); } else renderTable(); });
 }
 
 function ieNivel(pid){
   const p=people.find(x=>x.id===pid); if(!p) return;
-  const cell=_ieCell(pid,'td.ie-sel-cell:nth-child(3)'); if(!cell) return;
   const opts=[1,2,3,4,5,6,7,8].map(n=>`<option value="${n}"${(p.nivel||1)===n?' selected':''}>N${n}</option>`).join('');
-  cell.innerHTML=`<select class="ie-select" style="width:64px">${opts}</select>`;
-  const sel=cell.querySelector('select');
-  sel.focus();
-  sel.addEventListener('change',()=>{ p.nivel=Number(sel.value); renderTable(); drawChart(); saveLocal(); });
-  sel.addEventListener('blur',()=>renderTable());
+  _ieSelect(pid,'nivel',opts,val=>{ p.nivel=Number(val); renderTable(); drawChart(); saveLocal(); });
 }
 
 function ieSup(pid){
   const p=people.find(x=>x.id===pid); if(!p) return;
-  const cell=_ieCell(pid,'td.ie-sel-cell:nth-child(4)'); if(!cell) return;
   const opts='<option value="">— Sem superior —</option>'+
     people.filter(x=>x.id!==pid).map(x=>{
       const label=x.tipo==='vaga'?`TBD · ${x.cargo}`:x.nome;
       return `<option value="${x.id}"${String(x.id)===String(p.superiorId)?' selected':''}>${esc(label)} · N${x.nivel||1}</option>`;
     }).join('');
-  cell.innerHTML=`<select class="ie-select">${opts}</select>`;
-  const sel=cell.querySelector('select');
-  sel.focus();
-  sel.addEventListener('change',()=>{
-    p.superiorId=sel.value?Number(sel.value):null;
-    fixCircular(pid); renderTable(); drawChart(); saveLocal();
-  });
-  sel.addEventListener('blur',()=>renderTable());
+  _ieSelect(pid,'sup',opts,val=>{ p.superiorId=val?Number(val):null; fixCircular(pid); renderTable(); drawChart(); saveLocal(); });
 }
 
 /* ══ RENDER ALL ══ */
