@@ -984,13 +984,13 @@ function layout(roots){
 function drawCard(ctx,n,ox,oy){
   const x=n._x+ox, y=n._y+oy;
   const isCorp=n._isCorp, isVaga=n.tipo==='vaga', isOrph=!!n._isOrphan&&!isVaga;
-  const g=(isCorp||isOrph||isVaga)?null:grupos.find(g=>g.id===n.grupoId);
+  const g=(isCorp||isOrph)?null:grupos.find(g=>g.id===n.grupoId);
   const pal=g?PAL[g.palIdx%PAL.length]:null;
   const accent=pal?pal.border:'#d1d5db';
 
   ctx.shadowColor='rgba(0,0,0,.08)'; ctx.shadowBlur=8; ctx.shadowOffsetY=2;
   rr(ctx,x,y,NW,NH,8);
-  ctx.fillStyle=isCorp?'#f8fafc':isOrph?'#fffbeb':isVaga?'#f0f9ff':'#fff'; ctx.fill();
+  ctx.fillStyle=isCorp?'#f8fafc':isOrph?'#fffbeb':'#fff'; ctx.fill();
   ctx.shadowColor='transparent'; ctx.shadowBlur=0; ctx.shadowOffsetY=0;
 
   if(isCorp){
@@ -999,12 +999,16 @@ function drawCard(ctx,n,ox,oy){
   } else if(isOrph){
     ctx.setLineDash([4,3]); ctx.strokeStyle='#fbbf24'; ctx.lineWidth=1.5;
     rr(ctx,x,y,NW,NH,8); ctx.stroke(); ctx.setLineDash([]);
-  } else if(isVaga){
-    ctx.setLineDash([6,4]); ctx.strokeStyle='#7dd3fc'; ctx.lineWidth=1.5;
-    rr(ctx,x,y,NW,NH,8); ctx.stroke(); ctx.setLineDash([]);
   } else {
+    // Vagas e pessoas normais: mesma aparência com cor do grupo
+    // Vagas: barra lateral tracejada para distinguir sutilmente
     rr(ctx,x,y,5,NH,[8,0,0,8]); ctx.fillStyle=accent; ctx.fill();
-    rr(ctx,x,y,NW,NH,8); ctx.strokeStyle='#e5e7eb'; ctx.lineWidth=1; ctx.stroke();
+    if(isVaga){
+      ctx.setLineDash([5,4]); ctx.strokeStyle=accent; ctx.lineWidth=1.5;
+      rr(ctx,x,y,NW,NH,8); ctx.stroke(); ctx.setLineDash([]);
+    } else {
+      rr(ctx,x,y,NW,NH,8); ctx.strokeStyle='#e5e7eb'; ctx.lineWidth=1; ctx.stroke();
+    }
   }
 
   const tx2=(isCorp||isOrph)?x+10:x+12;
