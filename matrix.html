@@ -4,617 +4,932 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Matriz de Prioridades</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg:      #f4f3ef;
-  --surface: #ffffff;
-  --border:  #e2dfd6;
-  --text:    #1a1a18;
-  --muted:   #7a7870;
-  --radius:  10px;
-  --shadow:  0 1px 3px rgba(0,0,0,.07), 0 2px 8px rgba(0,0,0,.04);
-  --q1: #d94f43; --q1bg: #fff8f7;
-  --q2: #3478d4; --q2bg: #f4f8ff;
-  --q3: #c97b1a; --q3bg: #fffbf2;
-  --q4: #9ca3af; --q4bg: #f9f9f8;
-  --tp: #3478d4;
-  --tm: #16a34a;
-  --tt: #c97b1a;
+  --bg:        #f0f0ed;
+  --surface:   #ffffff;
+  --border:    #e4e2da;
+  --border-md: #d0cdc4;
+  --text:      #16150f;
+  --text-2:    #5c5a54;
+  --text-3:    #9c9a94;
+  --radius:    8px;
+  --sh-card:   0 1px 2px rgba(0,0,0,.06), 0 2px 6px rgba(0,0,0,.04);
+  --sh-modal:  0 16px 48px rgba(0,0,0,.14), 0 4px 16px rgba(0,0,0,.08);
+  --font:      'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  /* quadrant accents */
+  --q1: #c0392b; --q1t: #fdf3f2;
+  --q2: #1d6fbf; --q2t: #f0f6ff;
+  --q3: #b45309; --q3t: #fdf8f0;
+  --q4: #6b7280; --q4t: #f8f8f7;
+
+  /* tag palette */
+  --tag-p: #1d6fbf;   /* Pessoal — azul */
+  --tag-m: #16864a;   /* Minha   — verde */
+  --tag-t: #b45309;   /* Time    — âmbar */
 }
 
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
-
-/* ── Header ── */
-.header {
-  background: var(--surface); border-bottom: 1px solid var(--border);
-  padding: 10px 16px; display: flex; align-items: center; gap: 12px;
-  flex-wrap: wrap; position: sticky; top: 0; z-index: 100;
-  box-shadow: 0 1px 4px rgba(0,0,0,.05);
-}
-.logo { font-size: .95rem; font-weight: 800; letter-spacing: -.02em; white-space: nowrap; }
-.logo span { color: var(--q1); }
-
-.stats { display: flex; gap: 7px; flex-wrap: wrap; flex: 1; align-items: center; }
-.chip {
-  font-size: .68rem; font-weight: 700;
-  padding: 2px 7px; border-radius: 99px; border: 1.5px solid currentColor;
+body {
+  font-family: var(--font);
+  font-size: 14px;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
 }
 
-.filters { display: flex; gap: 5px; align-items: center; }
-.flabel { font-size: .7rem; color: var(--muted); white-space: nowrap; }
-.fbtn {
-  font-size: .68rem; font-weight: 600; padding: 3px 8px;
-  border-radius: 99px; border: 1.5px solid var(--border);
-  background: none; cursor: pointer; color: var(--muted); transition: all .13s;
+/* ─── HEADER ─────────────────────────────────────────────────────── */
+.hdr {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 20px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 1px 3px rgba(0,0,0,.05);
 }
-.fbtn:hover { color: var(--text); border-color: var(--text); }
-.fbtn.on { color: #fff; border-color: transparent; }
-.fbtn[data-f="all"].on    { background: var(--text); }
-.fbtn[data-f="pessoal"].on{ background: var(--tp); }
-.fbtn[data-f="minha"].on  { background: var(--tm); }
-.fbtn[data-f="time"].on   { background: var(--tt); }
+
+.logo {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .01em;
+  color: var(--text);
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.logo-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--q1); }
+
+.hdr-divider { width: 1px; height: 24px; background: var(--border); flex-shrink: 0; }
+
+/* counters */
+.counters { display: flex; gap: 4px; flex-wrap: wrap; }
+.counter {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-2);
+  white-space: nowrap;
+}
+.counter-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.counter-num { font-weight: 700; color: var(--text); }
+
+/* filter tabs */
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: auto;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 3px;
+}
+.ftab {
+  font-size: 11.5px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 5px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--text-2);
+  transition: all .14s;
+  white-space: nowrap;
+}
+.ftab:hover { color: var(--text); background: rgba(0,0,0,.04); }
+.ftab.on { background: var(--surface); color: var(--text); font-weight: 600;
+  box-shadow: 0 1px 2px rgba(0,0,0,.08); }
 
 .arc-btn {
-  font-size: .7rem; padding: 5px 10px; border-radius: 7px;
-  border: 1.5px solid var(--border); background: var(--surface);
-  cursor: pointer; color: var(--muted); transition: all .13s; white-space: nowrap;
+  font-size: 11.5px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+  color: var(--text-2);
+  transition: all .13s;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
-.arc-btn:hover { border-color: var(--muted); color: var(--text); }
+.arc-btn:hover { border-color: var(--border-md); color: var(--text); }
 
-/* ── Matrix ── */
+/* ─── MATRIX GRID ───────────────────────────────────────────────── */
 .matrix {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 11px;
-  padding: 12px; max-width: 1300px; margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 12px;
+  max-width: 1400px;
+  margin: 0 auto;
 }
-@media (max-width: 660px) { .matrix { grid-template-columns: 1fr; } }
+@media (max-width: 680px) {
+  .matrix { grid-template-columns: 1fr; }
+  .hdr { height: auto; padding: 10px 14px; flex-wrap: wrap; gap: 8px; }
+  .filter-group { margin-left: 0; }
+}
 
-/* ── Quadrant ── */
+/* ─── QUADRANT ───────────────────────────────────────────────────── */
 .quadrant {
-  background: var(--surface); border-radius: var(--radius);
-  border: 1.5px solid var(--border);
-  display: flex; flex-direction: column;
-  min-height: 290px; max-height: calc(50vh - 44px);
-  overflow: hidden; transition: border-color .18s, box-shadow .18s;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  min-height: 300px;
+  max-height: calc(50vh - 40px);
+  overflow: hidden;
+  transition: border-color .15s, box-shadow .15s;
 }
-@media (max-width: 660px) { .quadrant { max-height: none; min-height: 200px; } }
-.quadrant[data-q="1"] { border-top: 3px solid var(--q1); background: var(--q1bg); }
-.quadrant[data-q="2"] { border-top: 3px solid var(--q2); background: var(--q2bg); }
-.quadrant[data-q="3"] { border-top: 3px solid var(--q3); background: var(--q3bg); }
-.quadrant[data-q="4"] { border-top: 3px solid var(--q4); background: var(--q4bg); }
-.quadrant.over { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,.13); }
+@media (max-width: 680px) { .quadrant { max-height: none; min-height: 220px; } }
 
-.qhdr {
-  padding: 10px 11px 7px; display: flex; align-items: center; gap: 7px;
-  border-bottom: 1px solid var(--border); flex-shrink: 0;
+.quadrant[data-q="1"] { border-left: 3px solid var(--q1); }
+.quadrant[data-q="2"] { border-left: 3px solid var(--q2); }
+.quadrant[data-q="3"] { border-left: 3px solid var(--q3); }
+.quadrant[data-q="4"] { border-left: 3px solid var(--q4); }
+.quadrant.over { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,.12); }
+
+.q-head {
+  padding: 12px 14px 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
 }
-.qicon { font-size: 1rem; line-height: 1; }
-.qinfo { flex: 1; }
-.qtitle { font-size: .8rem; font-weight: 700; }
-.qsub   { font-size: .6rem; color: var(--muted); margin-top: 1px; }
-.qcount {
-  font-size: .66rem; font-weight: 700; padding: 2px 6px;
-  border-radius: 99px; background: rgba(0,0,0,.06); color: var(--muted);
+
+.q-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
 }
-.qadd {
-  width: 24px; height: 24px; background: none; border: none; cursor: pointer;
-  color: var(--muted); font-size: 1.1rem; border-radius: 5px;
-  display: flex; align-items: center; justify-content: center; transition: all .12s;
+.q-accent {
+  width: 3px;
+  height: 28px;
+  border-radius: 2px;
+  flex-shrink: 0;
 }
-.qadd:hover { background: rgba(0,0,0,.07); color: var(--text); }
+.q-text { min-width: 0; }
+.q-title { font-size: 12.5px; font-weight: 700; letter-spacing: .01em; }
+.q-sub   { font-size: 10.5px; color: var(--text-3); margin-top: 1px; }
+
+.q-pill {
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 7px;
+  border-radius: 99px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.q-add-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: none;
+  cursor: pointer;
+  color: var(--text-3);
+  font-size: 16px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .13s;
+  flex-shrink: 0;
+}
+.q-add-btn:hover { background: var(--bg); border-color: var(--border-md); color: var(--text); }
 
 .card-list {
-  flex: 1; overflow-y: auto; padding: 6px;
-  display: flex; flex-direction: column; gap: 5px;
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
-.card-list::-webkit-scrollbar { width: 3px; }
-.card-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-.empty { text-align: center; color: var(--muted); font-size: .74rem; padding: 18px 0; opacity: .6; }
+.card-list::-webkit-scrollbar { width: 4px; }
+.card-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
-/* ── Card ── */
+.list-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  color: var(--text-3);
+  font-size: 12px;
+  padding: 24px 0;
+  letter-spacing: .01em;
+}
+
+/* ─── CARD ───────────────────────────────────────────────────────── */
 .card {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: 8px; padding: 8px 10px;
-  cursor: grab; transition: box-shadow .12s, opacity .14s; user-select: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 10px 12px;
+  cursor: grab;
+  transition: box-shadow .13s, border-color .13s, opacity .14s;
 }
-.card:hover { box-shadow: var(--shadow); }
-.card:hover .cacts { opacity: 1; }
-.card.dragging { opacity: .3; cursor: grabbing; }
-.card.done { opacity: .52; }
-.card.done .ctitle { text-decoration: line-through; color: var(--muted); }
-
-.ctop { display: flex; align-items: flex-start; gap: 6px; }
-.ccb  { width: 14px; height: 14px; flex-shrink: 0; margin-top: 2px; cursor: pointer; accent-color: #6366f1; }
-.ctitle { font-size: .78rem; font-weight: 600; flex: 1; line-height: 1.35; }
-.cacts { display: flex; gap: 2px; opacity: 0; transition: opacity .12s; }
-.cact {
-  background: none; border: none; cursor: pointer;
-  font-size: .7rem; color: var(--muted); padding: 2px 4px;
-  border-radius: 4px; transition: background .11s;
+.card:hover {
+  box-shadow: var(--sh-card);
+  border-color: var(--border-md);
 }
-.cact:hover { background: rgba(0,0,0,.07); color: var(--text); }
+.card:hover .c-edit-btn { opacity: 1; }
+.card.dragging { opacity: .25; cursor: grabbing; }
+.card.done { opacity: .5; }
+.card.done .c-title { text-decoration: line-through; color: var(--text-3); }
 
-.cdesc { font-size: .7rem; color: var(--muted); margin-top: 4px; line-height: 1.4; padding-left: 20px; }
+.c-row1 { display: flex; align-items: flex-start; gap: 8px; }
 
-.cfooter { display: flex; align-items: center; gap: 4px; margin-top: 5px; flex-wrap: wrap; }
-.badge {
-  font-size: .6rem; font-weight: 700; padding: 2px 6px;
-  border-radius: 99px; text-transform: uppercase; letter-spacing: .04em; color: #fff;
+.c-check {
+  width: 15px;
+  height: 15px;
+  margin-top: 1px;
+  flex-shrink: 0;
+  cursor: pointer;
+  accent-color: #6366f1;
+  border-radius: 3px;
 }
-.bp { background: var(--tp); }
-.bm { background: var(--tm); }
-.bt { background: var(--tt); }
-.bnone { background: #fee2e2; color: #dc2626; font-size: .6rem; font-weight: 600; padding: 2px 6px; border-radius: 99px; }
-.bhas  { background: #dcfce7; color: #16a34a; font-size: .6rem; font-weight: 600; padding: 2px 6px; border-radius: 99px; }
-.cdate { font-size: .58rem; color: var(--muted); margin-left: auto; }
 
-/* ── Overlay / Modal ── */
+.c-title {
+  font-size: 12.5px;
+  font-weight: 600;
+  flex: 1;
+  line-height: 1.4;
+  color: var(--text);
+}
+
+.c-edit-btn {
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--text-3);
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: all .12s;
+  flex-shrink: 0;
+}
+.c-edit-btn:hover { background: var(--bg); color: var(--text-2); }
+
+.c-desc {
+  font-size: 11.5px;
+  color: var(--text-2);
+  margin-top: 5px;
+  padding-left: 23px;
+  line-height: 1.5;
+}
+
+.c-meta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.tag-pill {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+  letter-spacing: .02em;
+}
+.tag-p { background: #e8f0fa; color: var(--tag-p); }
+.tag-m { background: #e6f4ec; color: var(--tag-m); }
+.tag-t { background: #fdf3e3; color: var(--tag-t); }
+
+.owner-tag {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+.owner-none { background: #fde8e8; color: #b91c1c; }
+.owner-has  { background: #e6f4ec; color: #166534; }
+
+.c-date {
+  font-size: 10px;
+  color: var(--text-3);
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── OVERLAY ────────────────────────────────────────────────────── */
 .overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,.32);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 200; padding: 16px; backdrop-filter: blur(2px);
+  position: fixed; inset: 0;
+  background: rgba(12,10,5,.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 20px;
+  backdrop-filter: blur(3px);
 }
 .overlay.hidden { display: none; }
+
 .modal {
-  background: var(--surface); border-radius: 12px; padding: 20px;
-  width: 100%; max-width: 430px; box-shadow: 0 20px 60px rgba(0,0,0,.16);
+  background: var(--surface);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 440px;
+  box-shadow: var(--sh-modal);
+  border: 1px solid var(--border);
+  overflow: hidden;
 }
-.mtitle { font-size: .92rem; font-weight: 700; margin-bottom: 14px; }
 
-.fg { margin-bottom: 11px; }
-.fg label { font-size: .68rem; font-weight: 600; color: var(--muted); display: block; margin-bottom: 3px; }
+.modal-head {
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.modal-title { font-size: 14px; font-weight: 700; }
+.modal-close {
+  width: 28px; height: 28px;
+  border-radius: 6px; border: none;
+  background: none; cursor: pointer;
+  color: var(--text-3); font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .12s;
+}
+.modal-close:hover { background: var(--bg); color: var(--text); }
+
+.modal-body { padding: 16px 20px; }
+
+.fg { margin-bottom: 13px; }
+.fg:last-child { margin-bottom: 0; }
+.fg label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-2);
+  margin-bottom: 5px;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+}
 .fg input, .fg textarea, .fg select {
-  width: 100%; font-size: .8rem; border: 1.5px solid var(--border);
-  border-radius: 7px; padding: 7px 9px; background: var(--surface);
-  color: var(--text); font-family: inherit; transition: border-color .12s;
+  width: 100%;
+  font-size: 13px;
+  font-family: var(--font);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  background: var(--surface);
+  color: var(--text);
+  transition: border-color .13s, box-shadow .13s;
+  appearance: none;
 }
-.fg input:focus, .fg textarea:focus, .fg select:focus { outline: none; border-color: #6366f1; }
-.fg textarea { resize: vertical; min-height: 60px; }
-
-.tpicker { display: flex; gap: 5px; flex-wrap: wrap; }
-.topt {
-  font-size: .72rem; font-weight: 600; cursor: pointer;
-  padding: 5px 10px; border-radius: 99px; border: 2px solid var(--border);
-  color: var(--muted); transition: all .12s; display: flex; align-items: center; gap: 4px;
+.fg input:focus, .fg textarea:focus, .fg select:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99,102,241,.1);
 }
-.topt:hover { border-color: var(--muted); }
-.topt.on-pessoal { background: var(--tp); border-color: var(--tp); color: #fff; }
-.topt.on-minha   { background: var(--tm); border-color: var(--tm); color: #fff; }
-.topt.on-time    { background: var(--tt); border-color: var(--tt); color: #fff; }
-
-.owner-row { display: flex; gap: 6px; }
-.oopt {
-  flex: 1; text-align: center; padding: 7px; border-radius: 7px;
-  border: 1.5px solid var(--border); font-size: .73rem; font-weight: 600;
-  cursor: pointer; color: var(--muted); transition: all .12s;
+.fg textarea { resize: vertical; min-height: 68px; line-height: 1.5; }
+.fg select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239c9a94' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 30px;
 }
-.oopt.on-has  { background: #dcfce7; border-color: #16a34a; color: #16a34a; }
-.oopt.on-none { background: #fee2e2; border-color: #dc2626; color: #dc2626; }
 
-.mactions { display: flex; gap: 6px; justify-content: flex-end; margin-top: 16px; }
-.btn { padding: 7px 14px; border-radius: 7px; font-size: .78rem; font-weight: 600; cursor: pointer; border: none; font-family: inherit; transition: all .12s; }
-.btn-ghost   { background: none; border: 1.5px solid var(--border); color: var(--muted); }
-.btn-ghost:hover { border-color: var(--muted); color: var(--text); }
-.btn-primary { background: #6366f1; color: #fff; }
-.btn-primary:hover { background: #4f46e5; }
+/* tag picker */
+.tag-picker { display: flex; gap: 6px; flex-wrap: wrap; }
+.tag-pick-btn {
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 5px 11px;
+  border-radius: 6px;
+  border: 1.5px solid var(--border);
+  background: none;
+  cursor: pointer;
+  color: var(--text-2);
+  transition: all .13s;
+  letter-spacing: .01em;
+}
+.tag-pick-btn:hover { border-color: var(--border-md); color: var(--text); }
+.tag-pick-btn.sel-pessoal { background: #e8f0fa; border-color: var(--tag-p); color: var(--tag-p); }
+.tag-pick-btn.sel-minha   { background: #e6f4ec; border-color: var(--tag-m); color: var(--tag-m); }
+.tag-pick-btn.sel-time    { background: #fdf3e3; border-color: var(--tag-t); color: var(--tag-t); }
+
+/* owner picker */
+.owner-picker { display: flex; gap: 6px; }
+.owner-pick-btn {
+  flex: 1;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1.5px solid var(--border);
+  background: none;
+  cursor: pointer;
+  color: var(--text-2);
+  transition: all .13s;
+}
+.owner-pick-btn:hover { border-color: var(--border-md); color: var(--text); }
+.owner-pick-btn.on-has  { background: #e6f4ec; border-color: #16864a; color: #166534; }
+.owner-pick-btn.on-none { background: #fde8e8; border-color: #dc2626; color: #b91c1c; }
+
+.modal-foot {
+  padding: 12px 20px 16px;
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+  border-top: 1px solid var(--border);
+}
+
+.btn {
+  font-family: var(--font);
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: none;
+  transition: all .13s;
+  letter-spacing: .01em;
+}
+.btn-ghost {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-2);
+}
+.btn-ghost:hover { border-color: var(--border-md); color: var(--text); }
+.btn-primary { background: #4f46e5; color: #fff; }
+.btn-primary:hover { background: #4338ca; }
 .btn-primary:disabled { opacity: .4; cursor: not-allowed; }
-.btn-danger  { background: #fee2e2; color: #dc2626; }
+.btn-danger { background: #fde8e8; color: #b91c1c; border: 1px solid #fecaca; }
 .btn-danger:hover { background: #fecaca; }
 
 /* archive list */
-.arclist { max-height: 260px; overflow-y: auto; margin: 9px 0; }
-.arcitem {
-  padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border);
-  margin-bottom: 5px; font-size: .76rem; display: flex; align-items: center; gap: 6px;
+.arc-list { max-height: 260px; overflow-y: auto; margin: 10px 0 4px; }
+.arc-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-bottom: 4px;
+  font-size: 12px;
 }
-.arcq { font-size: .6rem; font-weight: 700; padding: 1px 6px; border-radius: 99px; color: #fff; flex-shrink: 0; }
-.arctitle { flex: 1; text-decoration: line-through; color: var(--muted); }
-.arcdate  { font-size: .58rem; color: var(--muted); white-space: nowrap; }
-.arcempty { text-align: center; color: var(--muted); font-size: .78rem; padding: 18px 0; }
+.arc-q-label {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: #fff;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.arc-title { flex: 1; color: var(--text-2); text-decoration: line-through; }
+.arc-date  { font-size: 10px; color: var(--text-3); white-space: nowrap; }
+.arc-empty { text-align: center; color: var(--text-3); font-size: 12.5px; padding: 20px 0; }
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
-<div class="header">
-  <div class="logo">Matriz de <span>Prioridades</span></div>
-  <div class="stats" id="stats"></div>
-  <div class="filters">
-    <span class="flabel">Ver:</span>
-    <button class="fbtn on" data-f="all"     onclick="setFilter('all')">Todos</button>
-    <button class="fbtn"    data-f="pessoal" onclick="setFilter('pessoal')">🟦 Pessoal</button>
-    <button class="fbtn"    data-f="minha"   onclick="setFilter('minha')">🟩 Minha</button>
-    <button class="fbtn"    data-f="time"    onclick="setFilter('time')">🟧 Time</button>
+<!-- ─── HEADER ──────────────────────────────────────────────────── -->
+<div class="hdr">
+  <div class="logo">
+    <div class="logo-dot"></div>
+    Matriz de Prioridades
   </div>
-  <button class="arc-btn" onclick="openArchive()">📦 Arquivar</button>
+
+  <div class="hdr-divider"></div>
+
+  <div class="counters" id="counters"></div>
+
+  <div class="filter-group">
+    <button class="ftab on" data-f="all"     onclick="setFilter('all')">Todos</button>
+    <button class="ftab"    data-f="pessoal" onclick="setFilter('pessoal')">Pessoal</button>
+    <button class="ftab"    data-f="minha"   onclick="setFilter('minha')">Minha</button>
+    <button class="ftab"    data-f="time"    onclick="setFilter('time')">Time</button>
+  </div>
+
+  <button class="arc-btn" id="arcBtn" onclick="openArchive()">Arquivar concluídos</button>
 </div>
 
-<!-- MATRIX -->
+<!-- ─── MATRIX ──────────────────────────────────────────────────── -->
 <div class="matrix" id="matrix"></div>
 
-<!-- CARD MODAL -->
-<div class="overlay hidden" id="cardOverlay" onclick="overlayClick(event,'cardOverlay')">
+<!-- ─── CARD MODAL ──────────────────────────────────────────────── -->
+<div class="overlay hidden" id="cardOverlay" onclick="bgClose(event,'cardOverlay')">
   <div class="modal">
-    <div class="mtitle" id="mTitle">Novo item</div>
-    <div class="fg">
-      <label>Título *</label>
-      <input id="mInputTitle" placeholder="O que precisa ser feito?" oninput="checkSave()" />
+    <div class="modal-head">
+      <span class="modal-title" id="mTitle">Novo item</span>
+      <button class="modal-close" onclick="closeCard()">&#x2715;</button>
     </div>
-    <div class="fg">
-      <label>Descrição</label>
-      <textarea id="mInputDesc" placeholder="Contexto, links, observações…"></textarea>
-    </div>
-    <div class="fg">
-      <label>Quadrante</label>
-      <select id="mInputQ" onchange="onQChange()">
-        <option value="1">🔥 Fazer Agora</option>
-        <option value="2">📅 Agendar</option>
-        <option value="3">🤝 Delegar</option>
-        <option value="4">🗑️ Eliminar</option>
-      </select>
-    </div>
-    <div class="fg">
-      <label>Origem da demanda</label>
-      <div class="tpicker">
-        <div class="topt" data-tag="pessoal" onclick="toggleTag('pessoal')">🟦 Pessoal</div>
-        <div class="topt" data-tag="minha"   onclick="toggleTag('minha')">🟩 Minha</div>
-        <div class="topt" data-tag="time"    onclick="toggleTag('time')">🟧 Time</div>
+    <div class="modal-body">
+      <div class="fg">
+        <label>Título</label>
+        <input id="fTitle" placeholder="Descreva o que precisa ser feito" oninput="checkSave()" />
+      </div>
+      <div class="fg">
+        <label>Detalhamento</label>
+        <textarea id="fDesc" placeholder="Contexto, links, critérios de aceitação…"></textarea>
+      </div>
+      <div class="fg">
+        <label>Quadrante</label>
+        <select id="fQ" onchange="onQChange()">
+          <option value="1">Fazer Agora — Urgente e Importante</option>
+          <option value="2">Agendar — Importante, não Urgente</option>
+          <option value="3">Delegar — Urgente, não Importante</option>
+          <option value="4">Eliminar — Baixa prioridade</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Origem</label>
+        <div class="tag-picker">
+          <button class="tag-pick-btn" data-tag="pessoal" onclick="toggleTag('pessoal')">Pessoal</button>
+          <button class="tag-pick-btn" data-tag="minha"   onclick="toggleTag('minha')">Minha</button>
+          <button class="tag-pick-btn" data-tag="time"    onclick="toggleTag('time')">Time</button>
+        </div>
+      </div>
+      <div class="fg" id="ownerFg" style="display:none">
+        <label>Responsável</label>
+        <div class="owner-picker">
+          <button class="owner-pick-btn" id="oBtnHas"  onclick="toggleOwner('has')">Responsável definido</button>
+          <button class="owner-pick-btn" id="oBtnNone" onclick="toggleOwner('none')">Sem responsável</button>
+        </div>
       </div>
     </div>
-    <div class="fg" id="ownerFg" style="display:none">
-      <label>Responsável definido?</label>
-      <div class="owner-row">
-        <div class="oopt" id="oHas"  onclick="toggleOwner('has')">✅ Tem responsável</div>
-        <div class="oopt" id="oNone" onclick="toggleOwner('none')">⚠️ Sem dono ainda</div>
-      </div>
-    </div>
-    <div class="mactions">
-      <button class="btn btn-danger"  id="mDelBtn"  onclick="deleteItem()" style="display:none">Excluir</button>
+    <div class="modal-foot">
+      <button class="btn btn-danger"  id="mDelBtn"  onclick="deleteItem()" style="display:none;margin-right:auto">Excluir</button>
       <button class="btn btn-ghost"   onclick="closeCard()">Cancelar</button>
-      <button class="btn btn-primary" id="mSaveBtn" onclick="saveItem()" disabled>Criar</button>
+      <button class="btn btn-primary" id="mSaveBtn" onclick="saveItem()" disabled>Salvar</button>
     </div>
   </div>
 </div>
 
-<!-- ARCHIVE MODAL -->
-<div class="overlay hidden" id="arcOverlay" onclick="overlayClick(event,'arcOverlay')">
+<!-- ─── ARCHIVE MODAL ───────────────────────────────────────────── -->
+<div class="overlay hidden" id="arcOverlay" onclick="bgClose(event,'arcOverlay')">
   <div class="modal">
-    <div class="mtitle">Arquivar concluídos</div>
-    <p id="arcMsg" style="font-size:.78rem;color:var(--muted);"></p>
-    <div class="arclist" id="arcList"></div>
-    <div class="mactions">
+    <div class="modal-head">
+      <span class="modal-title">Arquivar concluídos</span>
+      <button class="modal-close" onclick="closeArchive()">&#x2715;</button>
+    </div>
+    <div class="modal-body">
+      <p id="arcMsg" style="font-size:12.5px;color:var(--text-2);line-height:1.5;"></p>
+      <div class="arc-list" id="arcList"></div>
+    </div>
+    <div class="modal-foot">
       <button class="btn btn-ghost" onclick="closeArchive()">Fechar</button>
-      <button class="btn btn-primary" id="arcConfirm" onclick="archiveDone()" style="display:none">Arquivar</button>
+      <button class="btn btn-primary" id="arcOk" onclick="archiveDone()" style="display:none">Confirmar arquivo</button>
     </div>
   </div>
 </div>
 
 <script>
-/* ─── constants ─────────────────────────────────────────────────────── */
+/* ─── DATA ───────────────────────────────────────────────────────── */
 const QUADRANTS = [
-  { id:1, icon:'🔥', title:'Fazer Agora',  sub:'Urgente + Importante',       color:'#d94f43' },
-  { id:2, icon:'📅', title:'Agendar',       sub:'Importante, não Urgente',    color:'#3478d4' },
-  { id:3, icon:'🤝', title:'Delegar',        sub:'Urgente, não Importante',    color:'#c97b1a' },
-  { id:4, icon:'🗑️', title:'Eliminar',       sub:'Nem Urgente, nem Importante',color:'#9ca3af' },
+  { id:1, title:'Fazer Agora',  sub:'Urgente · Importante',        color:'#c0392b' },
+  { id:2, title:'Agendar',      sub:'Importante · Não urgente',    color:'#1d6fbf' },
+  { id:3, title:'Delegar',      sub:'Urgente · Não importante',    color:'#b45309' },
+  { id:4, title:'Eliminar',     sub:'Baixa prioridade',            color:'#6b7280' },
 ];
 const TAGS = [
-  { id:'pessoal', label:'Pessoal', cls:'bp' },
-  { id:'minha',   label:'Minha',   cls:'bm' },
-  { id:'time',    label:'Time',    cls:'bt' },
+  { id:'pessoal', label:'Pessoal', cls:'tag-p', color:'#1d6fbf' },
+  { id:'minha',   label:'Minha',   cls:'tag-m', color:'#16864a' },
+  { id:'time',    label:'Time',    cls:'tag-t', color:'#b45309' },
 ];
 
-/* ─── state ─────────────────────────────────────────────────────────── */
-let items     = [];
-let filter    = 'all';
-let editingId = null;   // null = new item
-let mTags     = [];
-let mOwner    = null;   // null | 'has' | 'none'
+let items      = [];
+let filter     = 'all';
+let editId     = null;
+let mTags      = [];
+let mOwner     = null;
 let draggingId = null;
 
-const uid  = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
-const load = () => { try { return JSON.parse(localStorage.getItem('matrix_v1') || '[]'); } catch { return []; } };
-const persist = () => localStorage.setItem('matrix_v1', JSON.stringify(items));
-const fmtDate = s => new Date(s).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
+const uid     = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
+const persist = () => localStorage.setItem('matrix_v2', JSON.stringify(items));
+const fmtDate = s  => new Date(s).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'2-digit' });
+const esc     = s  => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
-/* ─── init ───────────────────────────────────────────────────────────── */
-items = load();
-buildMatrix();
+function loadData() {
+  // migrate from v1 if present
+  const v1 = localStorage.getItem('matrix_v1');
+  const v2 = localStorage.getItem('matrix_v2');
+  if (v2) { try { return JSON.parse(v2); } catch{} }
+  if (v1) { try { return JSON.parse(v1); } catch{} }
+  return [];
+}
+
+/* ─── BOOTSTRAP ──────────────────────────────────────────────────── */
+items = loadData();
+buildShells();
 renderAll();
 
-/* ─── build static quadrant shells ──────────────────────────────────── */
-function buildMatrix() {
-  const mat = document.getElementById('matrix');
-  mat.innerHTML = QUADRANTS.map(q => `
+/* ─── SHELLS ─────────────────────────────────────────────────────── */
+function buildShells() {
+  document.getElementById('matrix').innerHTML = QUADRANTS.map(q => `
     <div class="quadrant" data-q="${q.id}"
-      ondragover="onDragOver(event,${q.id})"
-      ondragleave="onDragLeave(event,${q.id})"
-      ondrop="onDrop(event,${q.id})">
-      <div class="qhdr">
-        <span class="qicon">${q.icon}</span>
-        <div class="qinfo">
-          <div class="qtitle">${q.title}</div>
-          <div class="qsub">${q.sub}</div>
+      ondragover="dragOver(event,${q.id})"
+      ondragleave="dragLeave(event,${q.id})"
+      ondrop="drop(event,${q.id})">
+      <div class="q-head">
+        <div class="q-label">
+          <div class="q-accent" style="background:${q.color}"></div>
+          <div class="q-text">
+            <div class="q-title">${q.title}</div>
+            <div class="q-sub">${q.sub}</div>
+          </div>
         </div>
-        <span class="qcount" id="qcount-${q.id}">0</span>
-        <button class="qadd" title="Adicionar" onclick="openNew(${q.id})">＋</button>
+        <span class="q-pill" id="qpill-${q.id}">0</span>
+        <button class="q-add-btn" title="Adicionar item" onclick="openNew(${q.id})">+</button>
       </div>
       <div class="card-list" id="qlist-${q.id}"></div>
     </div>`).join('');
 }
 
-/* ─── render ─────────────────────────────────────────────────────────── */
+/* ─── RENDER ─────────────────────────────────────────────────────── */
 function renderAll() {
-  renderStats();
+  renderCounters();
   QUADRANTS.forEach(q => renderQ(q.id));
 }
 
-function renderStats() {
-  const qColors = { 1:'#d94f43', 2:'#3478d4', 3:'#c97b1a', 4:'#9ca3af' };
-  const tColors = { pessoal:'#3478d4', minha:'#16a34a', time:'#c97b1a' };
-  const tIcons  = { pessoal:'🟦', minha:'🟩', time:'🟧' };
+function renderCounters() {
+  // quadrant pills (open items only)
+  QUADRANTS.forEach(q => {
+    const n = items.filter(i => i.quadrant === q.id && !i.done).length;
+    const el = document.getElementById(`qpill-${q.id}`);
+    if (el) el.textContent = n;
+  });
 
+  // header counters
   let html = QUADRANTS.map(q => {
     const n = items.filter(i => i.quadrant === q.id && !i.done).length;
-    return `<span class="chip" style="color:${q.color}">${q.icon} ${n}</span>`;
+    return `<span class="counter">
+      <span class="counter-dot" style="background:${q.color}"></span>
+      ${q.title}
+      <span class="counter-num">${n}</span>
+    </span>`;
   }).join('');
+  document.getElementById('counters').innerHTML = html;
 
-  html += TAGS.map(t => {
-    const n = items.filter(i => !i.done && i.tags.includes(t.id)).length;
-    return `<span class="chip" style="color:${tColors[t.id]}">${tIcons[t.id]} ${n}</span>`;
-  }).join('');
-
-  document.getElementById('stats').innerHTML = html;
-
-  // archive button count
+  // archive button
   const done = items.filter(i => i.done).length;
-  document.querySelector('.arc-btn').textContent = '📦 Arquivar' + (done > 0 ? ` (${done})` : '');
+  document.getElementById('arcBtn').textContent =
+    done > 0 ? `Arquivar concluídos (${done})` : 'Arquivar concluídos';
 }
 
 function renderQ(qid) {
-  const visible = filter === 'all'
+  const visible = (filter === 'all'
     ? items.filter(i => i.quadrant === qid)
-    : items.filter(i => i.quadrant === qid && i.tags.includes(filter));
+    : items.filter(i => i.quadrant === qid && i.tags.includes(filter)));
 
-  const count = items.filter(i => i.quadrant === qid && !i.done).length;
-  document.getElementById(`qcount-${qid}`).textContent = count;
-
-  const list = document.getElementById(`qlist-${qid}`);
+  const listEl = document.getElementById(`qlist-${qid}`);
   if (!visible.length) {
-    list.innerHTML = '<div class="empty">Sem itens aqui</div>';
+    listEl.innerHTML = '<div class="list-empty">Sem itens neste quadrante</div>';
     return;
   }
 
-  list.innerHTML = visible.map(item => {
-    const tagBadges = item.tags.map(t => {
-      const td = TAGS.find(x => x.id === t);
-      return td ? `<span class="badge ${td.cls}">${td.label}</span>` : '';
+  listEl.innerHTML = visible.map(item => {
+    const tagBadges = item.tags.map(tid => {
+      const t = TAGS.find(x => x.id === tid);
+      return t ? `<span class="tag-pill ${t.cls}">${t.label}</span>` : '';
     }).join('');
 
     let ownerBadge = '';
     if (item.quadrant === 3) {
-      if (item.owner === 'none') ownerBadge = '<span class="bnone">⚠️ Sem dono</span>';
-      if (item.owner === 'has')  ownerBadge = '<span class="bhas">✅ Delegado</span>';
+      if (item.owner === 'none') ownerBadge = '<span class="owner-tag owner-none">Sem responsável</span>';
+      if (item.owner === 'has')  ownerBadge = '<span class="owner-tag owner-has">Delegado</span>';
     }
 
     const desc = item.description
-      ? `<div class="cdesc">${esc(item.description)}</div>` : '';
+      ? `<div class="c-desc">${esc(item.description)}</div>` : '';
 
-    return `<div class="card${item.done ? ' done' : ''}" id="c-${item.id}"
-        draggable="true"
-        ondragstart="onDragStart('${item.id}')"
-        ondragend="onDragEnd()">
-      <div class="ctop">
-        <input type="checkbox" class="ccb" ${item.done ? 'checked' : ''}
+    return `
+    <div class="card${item.done?' done':''}${draggingId===item.id?' dragging':''}"
+      id="c-${item.id}" draggable="true"
+      ondragstart="dragStart('${item.id}')"
+      ondragend="dragEnd()">
+      <div class="c-row1">
+        <input type="checkbox" class="c-check" ${item.done?'checked':''}
           onchange="toggleDone('${item.id}')" onclick="event.stopPropagation()" />
-        <span class="ctitle">${esc(item.title)}</span>
-        <div class="cacts">
-          <button class="cact" onclick="openEdit('${item.id}')">✏️</button>
-        </div>
+        <span class="c-title">${esc(item.title)}</span>
+        <button class="c-edit-btn" onclick="openEdit('${item.id}')" title="Editar">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+        </button>
       </div>
       ${desc}
-      <div class="cfooter">
+      <div class="c-meta">
         ${tagBadges}${ownerBadge}
-        <span class="cdate">${fmtDate(item.createdAt)}</span>
+        <span class="c-date">${fmtDate(item.createdAt)}</span>
       </div>
     </div>`;
   }).join('');
 }
 
-function esc(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-/* ─── filter ─────────────────────────────────────────────────────────── */
+/* ─── FILTER ─────────────────────────────────────────────────────── */
 function setFilter(f) {
   filter = f;
-  document.querySelectorAll('.fbtn').forEach(b => b.classList.toggle('on', b.dataset.f === f));
+  document.querySelectorAll('.ftab').forEach(b => b.classList.toggle('on', b.dataset.f === f));
   renderAll();
 }
 
-/* ─── drag & drop ────────────────────────────────────────────────────── */
-function onDragStart(id) { draggingId = id; document.getElementById('c-' + id)?.classList.add('dragging'); }
-function onDragEnd()     { if (draggingId) document.getElementById('c-' + draggingId)?.classList.remove('dragging'); draggingId = null; }
-function onDragOver(e, qid)  { e.preventDefault(); document.querySelector(`.quadrant[data-q="${qid}"]`)?.classList.add('over'); }
-function onDragLeave(e, qid) { document.querySelector(`.quadrant[data-q="${qid}"]`)?.classList.remove('over'); }
-function onDrop(e, qid) {
+/* ─── DRAG & DROP ────────────────────────────────────────────────── */
+function dragStart(id) {
+  draggingId = id;
+  setTimeout(() => document.getElementById('c-'+id)?.classList.add('dragging'), 0);
+}
+function dragEnd() {
+  if (draggingId) document.getElementById('c-'+draggingId)?.classList.remove('dragging');
+  draggingId = null;
+}
+function dragOver(e, qid)  { e.preventDefault(); document.querySelector(`.quadrant[data-q="${qid}"]`)?.classList.add('over'); }
+function dragLeave(e, qid) { document.querySelector(`.quadrant[data-q="${qid}"]`)?.classList.remove('over'); }
+function drop(e, qid) {
   e.preventDefault();
   document.querySelector(`.quadrant[data-q="${qid}"]`)?.classList.remove('over');
   if (!draggingId) return;
   const item = items.find(x => x.id === draggingId);
-  if (item && item.quadrant !== qid) {
+  if (item) {
     item.quadrant = qid;
     if (qid !== 3) item.owner = null;
-    persist();
-    renderAll();
+    persist(); renderAll();
   }
   draggingId = null;
 }
 
-/* ─── done toggle ────────────────────────────────────────────────────── */
+/* ─── DONE ───────────────────────────────────────────────────────── */
 function toggleDone(id) {
   const item = items.find(x => x.id === id);
   if (item) { item.done = !item.done; persist(); renderAll(); }
 }
 
-/* ─── card modal ─────────────────────────────────────────────────────── */
+/* ─── CARD MODAL ─────────────────────────────────────────────────── */
 function openNew(qid) {
-  editingId = null;
-  mTags     = [];
-  mOwner    = null;
-  document.getElementById('mTitle').textContent   = 'Novo item';
-  document.getElementById('mInputTitle').value    = '';
-  document.getElementById('mInputDesc').value     = '';
-  document.getElementById('mInputQ').value        = qid;
-  document.getElementById('mSaveBtn').textContent = 'Criar';
-  document.getElementById('mSaveBtn').disabled    = true;
+  editId = null; mTags = []; mOwner = null;
+  document.getElementById('mTitle').textContent    = 'Novo item';
+  document.getElementById('fTitle').value          = '';
+  document.getElementById('fDesc').value           = '';
+  document.getElementById('fQ').value              = qid;
+  document.getElementById('mSaveBtn').disabled     = true;
+  document.getElementById('mSaveBtn').textContent  = 'Criar item';
   document.getElementById('mDelBtn').style.display = 'none';
-  syncTagUI();
-  onQChange();
+  syncTagBtns(); syncOwnerBtns(); onQChange();
   show('cardOverlay');
-  setTimeout(() => document.getElementById('mInputTitle').focus(), 50);
+  setTimeout(() => document.getElementById('fTitle').focus(), 60);
 }
 
 function openEdit(id) {
   const item = items.find(x => x.id === id);
   if (!item) return;
-  editingId = id;
-  mTags  = [...item.tags];
-  mOwner = item.owner ?? null;
-  document.getElementById('mTitle').textContent   = 'Editar item';
-  document.getElementById('mInputTitle').value    = item.title;
-  document.getElementById('mInputDesc').value     = item.description || '';
-  document.getElementById('mInputQ').value        = item.quadrant;
-  document.getElementById('mSaveBtn').textContent = 'Salvar';
-  document.getElementById('mSaveBtn').disabled    = false;
+  editId = id; mTags = [...item.tags]; mOwner = item.owner ?? null;
+  document.getElementById('mTitle').textContent    = 'Editar item';
+  document.getElementById('fTitle').value          = item.title;
+  document.getElementById('fDesc').value           = item.description || '';
+  document.getElementById('fQ').value              = item.quadrant;
+  document.getElementById('mSaveBtn').disabled     = false;
+  document.getElementById('mSaveBtn').textContent  = 'Salvar';
   document.getElementById('mDelBtn').style.display = '';
-  syncTagUI();
-  onQChange();
+  syncTagBtns(); syncOwnerBtns(); onQChange();
   show('cardOverlay');
-  setTimeout(() => document.getElementById('mInputTitle').focus(), 50);
+  setTimeout(() => document.getElementById('fTitle').focus(), 60);
 }
 
 function closeCard() { hide('cardOverlay'); }
 
 function checkSave() {
-  document.getElementById('mSaveBtn').disabled = !document.getElementById('mInputTitle').value.trim();
+  document.getElementById('mSaveBtn').disabled = !document.getElementById('fTitle').value.trim();
 }
 
 function saveItem() {
-  const title = document.getElementById('mInputTitle').value.trim();
+  const title = document.getElementById('fTitle').value.trim();
   if (!title) return;
-  const qid = Number(document.getElementById('mInputQ').value);
+  const qid = Number(document.getElementById('fQ').value);
 
-  if (editingId) {
-    const item = items.find(x => x.id === editingId);
+  if (editId) {
+    const item = items.find(x => x.id === editId);
     if (item) {
       item.title       = title;
-      item.description = document.getElementById('mInputDesc').value.trim();
+      item.description = document.getElementById('fDesc').value.trim();
       item.tags        = [...mTags];
       item.quadrant    = qid;
       item.owner       = qid === 3 ? mOwner : null;
     }
   } else {
     items.push({
-      id: uid(),
-      title,
-      description: document.getElementById('mInputDesc').value.trim(),
-      tags: [...mTags],
-      quadrant: qid,
+      id: uid(), title,
+      description: document.getElementById('fDesc').value.trim(),
+      tags: [...mTags], quadrant: qid,
       owner: qid === 3 ? mOwner : null,
-      done: false,
-      createdAt: new Date().toISOString(),
+      done: false, createdAt: new Date().toISOString(),
     });
   }
-  persist();
-  renderAll();
-  closeCard();
+  persist(); renderAll(); closeCard();
 }
 
 function deleteItem() {
-  if (!editingId) return;
-  items = items.filter(x => x.id !== editingId);
-  persist();
-  renderAll();
-  closeCard();
+  if (!editId) return;
+  items = items.filter(x => x.id !== editId);
+  persist(); renderAll(); closeCard();
 }
 
 function toggleTag(tid) {
   const i = mTags.indexOf(tid);
   if (i >= 0) mTags.splice(i, 1); else mTags.push(tid);
-  syncTagUI();
+  syncTagBtns();
 }
-
-function syncTagUI() {
-  document.querySelectorAll('.topt').forEach(el => {
-    const t = el.dataset.tag;
-    el.className = 'topt' + (mTags.includes(t) ? ' on-' + t : '');
+function syncTagBtns() {
+  document.querySelectorAll('.tag-pick-btn').forEach(b => {
+    b.className = 'tag-pick-btn' + (mTags.includes(b.dataset.tag) ? ' sel-'+b.dataset.tag : '');
   });
 }
 
 function toggleOwner(val) {
   mOwner = mOwner === val ? null : val;
-  document.getElementById('oHas').className  = 'oopt' + (mOwner === 'has'  ? ' on-has'  : '');
-  document.getElementById('oNone').className = 'oopt' + (mOwner === 'none' ? ' on-none' : '');
+  syncOwnerBtns();
+}
+function syncOwnerBtns() {
+  document.getElementById('oBtnHas').className  = 'owner-pick-btn' + (mOwner==='has'  ? ' on-has'  : '');
+  document.getElementById('oBtnNone').className = 'owner-pick-btn' + (mOwner==='none' ? ' on-none' : '');
 }
 
 function onQChange() {
-  const qid = Number(document.getElementById('mInputQ').value);
-  const fg  = document.getElementById('ownerFg');
-  fg.style.display = qid === 3 ? '' : 'none';
-  if (qid !== 3) mOwner = null;
-  document.getElementById('oHas').className  = 'oopt';
-  document.getElementById('oNone').className = 'oopt';
+  const qid = Number(document.getElementById('fQ').value);
+  document.getElementById('ownerFg').style.display = qid === 3 ? '' : 'none';
+  if (qid !== 3) { mOwner = null; syncOwnerBtns(); }
 }
 
-/* ─── archive modal ──────────────────────────────────────────────────── */
+/* ─── ARCHIVE MODAL ──────────────────────────────────────────────── */
 function openArchive() {
   const done = items.filter(i => i.done);
   document.getElementById('arcMsg').textContent = done.length === 0
-    ? 'Nenhum item marcado como concluído.'
-    : `${done.length} item(s) serão removidos da matriz e salvos no arquivo local.`;
+    ? 'Nenhum item marcado como concluído no momento.'
+    : `${done.length} item(s) serão movidos para o arquivo. Esta ação não pode ser desfeita.`;
+  document.getElementById('arcOk').style.display = done.length ? '' : 'none';
+  if (done.length) document.getElementById('arcOk').textContent = `Arquivar ${done.length} item(s)`;
 
-  document.getElementById('arcConfirm').style.display = done.length ? '' : 'none';
-  if (done.length) document.getElementById('arcConfirm').textContent = `Arquivar ${done.length}`;
+  document.getElementById('arcList').innerHTML = done.length === 0
+    ? '<div class="arc-empty">Nada para arquivar.</div>'
+    : done.map(i => {
+        const q = QUADRANTS.find(x => x.id === i.quadrant);
+        return `<div class="arc-item">
+          <span class="arc-q-label" style="background:${q.color}">${q.title}</span>
+          <span class="arc-title">${esc(i.title)}</span>
+          <span class="arc-date">${fmtDate(i.createdAt)}</span>
+        </div>`;
+      }).join('');
 
-  const list = document.getElementById('arcList');
-  if (!done.length) {
-    list.innerHTML = '<div class="arcempty">Tudo em aberto! 🎯</div>';
-  } else {
-    list.innerHTML = done.map(i => {
-      const q = QUADRANTS.find(x => x.id === i.quadrant);
-      return `<div class="arcitem">
-        <span class="arcq" style="background:${q.color}">Q${i.quadrant}</span>
-        <span class="arctitle">${esc(i.title)}</span>
-        <span class="arcdate">${fmtDate(i.createdAt)}</span>
-      </div>`;
-    }).join('');
-  }
   show('arcOverlay');
 }
-
 function closeArchive() { hide('arcOverlay'); }
-
 function archiveDone() {
-  const archive = JSON.parse(localStorage.getItem('matrix_archive_v1') || '[]');
-  localStorage.setItem('matrix_archive_v1', JSON.stringify([...archive, ...items.filter(i => i.done)]));
+  const archive = JSON.parse(localStorage.getItem('matrix_archive_v2') || '[]');
+  localStorage.setItem('matrix_archive_v2', JSON.stringify([...archive, ...items.filter(i => i.done)]));
   items = items.filter(i => !i.done);
-  persist();
-  renderAll();
-  closeArchive();
+  persist(); renderAll(); closeArchive();
 }
 
-/* ─── overlay helpers ────────────────────────────────────────────────── */
+/* ─── HELPERS ────────────────────────────────────────────────────── */
 function show(id) { document.getElementById(id).classList.remove('hidden'); }
 function hide(id) { document.getElementById(id).classList.add('hidden'); }
-function overlayClick(e, id) { if (e.target === e.currentTarget) hide(id); }
+function bgClose(e, id) { if (e.target === e.currentTarget) hide(id); }
 
-/* ─── keyboard ───────────────────────────────────────────────────────── */
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') {
-    hide('cardOverlay');
-    hide('arcOverlay');
-  }
+  if (e.key === 'Escape') { hide('cardOverlay'); hide('arcOverlay'); }
   if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
     if (!document.getElementById('cardOverlay').classList.contains('hidden')) saveItem();
   }
