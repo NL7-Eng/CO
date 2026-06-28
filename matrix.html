@@ -699,11 +699,6 @@ function loadData() {
   return [];
 }
 
-/* ─── BOOTSTRAP ──────────────────────────────────────────────────── */
-items = loadData();
-buildShells();
-renderAll();
-
 /* ─── SHELLS ─────────────────────────────────────────────────────── */
 function buildShells() {
   document.getElementById('matrix').innerHTML = QUADRANTS.map(q => `
@@ -1145,16 +1140,13 @@ document.addEventListener('keydown', e => {
 });
 
 /* ─── WATCH ──────────────────────────────────────────────────────── */
-let watchItems = [];
-let watchEditId = null;
+var watchItems = [];
+var watchEditId = null;
 
 function loadWatch() {
   try { return JSON.parse(localStorage.getItem('matrix_watch_v1') || '[]'); } catch { return []; }
 }
 function persistWatch() { localStorage.setItem('matrix_watch_v1', JSON.stringify(watchItems)); }
-
-watchItems = loadWatch();
-renderWatch();
 
 function renderWatch() {
   document.getElementById('watchCount').textContent = watchItems.length;
@@ -1266,6 +1258,13 @@ function deleteWatch() {
   watchItems = watchItems.filter(x => x.id !== watchEditId);
   persistWatch(); renderWatch(); closeWatch();
 }
+
+/* ─── BOOTSTRAP (runs last, after all functions are defined) ──────── */
+items = loadData();
+buildShells();
+renderAll();
+watchItems = loadWatch();
+renderWatch();
 </script>
 </body>
 </html>
