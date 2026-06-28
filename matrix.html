@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Matriz de Prioridades</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:      #f4f3ef;
+  --surface: #ffffff;
+  --border:  #e2dfd6;
+  --text:    #1a1a18;
+  --muted:   #7a7870;
+  --radius:  10px;
+  --shadow:  0 1px 3px rgba(0,0,0,.07), 0 2px 8px rgba(0,0,0,.04);
+  --q1: #d94f43; --q1bg: #fff8f7;
+  --q2: #3478d4; --q2bg: #f4f8ff;
+  --q3: #c97b1a; --q3bg: #fffbf2;
+  --q4: #9ca3af; --q4bg: #f9f9f8;
+  --tp: #3478d4;
+  --tm: #16a34a;
+  --tt: #c97b1a;
+}
+
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* ── Header ── */
+.header {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 10px 16px; display: flex; align-items: center; gap: 12px;
+  flex-wrap: wrap; position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 1px 4px rgba(0,0,0,.05);
+}
+.logo { font-size: .95rem; font-weight: 800; letter-spacing: -.02em; white-space: nowrap; }
+.logo span { color: var(--q1); }
+
+.stats { display: flex; gap: 7px; flex-wrap: wrap; flex: 1; align-items: center; }
+.chip {
+  font-size: .68rem; font-weight: 700;
+  padding: 2px 7px; border-radius: 99px; border: 1.5px solid currentColor;
+}
+
+.filters { display: flex; gap: 5px; align-items: center; }
+.flabel { font-size: .7rem; color: var(--muted); white-space: nowrap; }
+.fbtn {
+  font-size: .68rem; font-weight: 600; padding: 3px 8px;
+  border-radius: 99px; border: 1.5px solid var(--border);
+  background: none; cursor: pointer; color: var(--muted); transition: all .13s;
+}
+.fbtn:hover { color: var(--text); border-color: var(--text); }
+.fbtn.on { color: #fff; border-color: transparent; }
+.fbtn[data-f="all"].on    { background: var(--text); }
+.fbtn[data-f="pessoal"].on{ background: var(--tp); }
+.fbtn[data-f="minha"].on  { background: var(--tm); }
+.fbtn[data-f="time"].on   { background: var(--tt); }
+
+.arc-btn {
+  font-size: .7rem; padding: 5px 10px; border-radius: 7px;
+  border: 1.5px solid var(--border); background: var(--surface);
+  cursor: pointer; color: var(--muted); transition: all .13s; white-space: nowrap;
+}
+.arc-btn:hover { border-color: var(--muted); color: var(--text); }
+
+/* ── Matrix ── */
+.matrix {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 11px;
+  padding: 12px; max-width: 1300px; margin: 0 auto;
+}
+@media (max-width: 660px) { .matrix { grid-template-columns: 1fr; } }
+
+/* ── Quadrant ── */
+.quadrant {
+  background: var(--surface); border-radius: var(--radius);
+  border: 1.5px solid var(--border);
+  display: flex; flex-direction: column;
+  min-height: 290px; max-height: calc(50vh - 44px);
+  overflow: hidden; transition: border-color .18s, box-shadow .18s;
+}
+@media (max-width: 660px) { .quadrant { max-height: none; min-height: 200px; } }
+.quadrant[data-q="1"] { border-top: 3px solid var(--q1); background: var(--q1bg); }
+.quadrant[data-q="2"] { border-top: 3px solid var(--q2); background: var(--q2bg); }
+.quadrant[data-q="3"] { border-top: 3px solid var(--q3); background: var(--q3bg); }
+.quadrant[data-q="4"] { border-top: 3px solid var(--q4); background: var(--q4bg); }
+.quadrant.over { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,.13); }
+
+.qhdr {
+  padding: 10px 11px 7px; display: flex; align-items: center; gap: 7px;
+  border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
+.qicon { font-size: 1rem; line-height: 1; }
+.qinfo { flex: 1; }
+.qtitle { font-size: .8rem; font-weight: 700; }
+.qsub   { font-size: .6rem; color: var(--muted); margin-top: 1px; }
+.qcount {
+  font-size: .66rem; font-weight: 700; padding: 2px 6px;
+  border-radius: 99px; background: rgba(0,0,0,.06); color: var(--muted);
+}
+.qadd {
+  width: 24px; height: 24px; background: none; border: none; cursor: pointer;
+  color: var(--muted); font-size: 1.1rem; border-radius: 5px;
+  display: flex; align-items: center; justify-content: center; transition: all .12s;
+}
+.qadd:hover { background: rgba(0,0,0,.07); color: var(--text); }
+
+.card-list {
+  flex: 1; overflow-y: auto; padding: 6px;
+  display: flex; flex-direction: column; gap: 5px;
+}
+.card-list::-webkit-scrollbar { width: 3px; }
+.card-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+.empty { text-align: center; color: var(--muted); font-size: .74rem; padding: 18px 0; opacity: .6; }
+
+/* ── Card ── */
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 10px;
+  cursor: grab; transition: box-shadow .12s, opacity .14s; user-select: none;
+}
+.card:hover { box-shadow: var(--shadow); }
+.card:hover .cacts { opacity: 1; }
+.card.dragging { opacity: .3; cursor: grabbing; }
+.card.done { opacity: .52; }
+.card.done .ctitle { text-decoration: line-through; color: var(--muted); }
+
+.ctop { display: flex; align-items: flex-start; gap: 6px; }
+.ccb  { width: 14px; height: 14px; flex-shrink: 0; margin-top: 2px; cursor: pointer; accent-color: #6366f1; }
+.ctitle { font-size: .78rem; font-weight: 600; flex: 1; line-height: 1.35; }
+.cacts { display: flex; gap: 2px; opacity: 0; transition: opacity .12s; }
+.cact {
+  background: none; border: none; cursor: pointer;
+  font-size: .7rem; color: var(--muted); padding: 2px 4px;
+  border-radius: 4px; transition: background .11s;
+}
+.cact:hover { background: rgba(0,0,0,.07); color: var(--text); }
+
+.cdesc { font-size: .7rem; color: var(--muted); margin-top: 4px; line-height: 1.4; padding-left: 20px; }
+
+.cfooter { display: flex; align-items: center; gap: 4px; margin-top: 5px; flex-wrap: wrap; }
+.badge {
+  font-size: .6rem; font-weight: 700; padding: 2px 6px;
+  border-radius: 99px; text-transform: uppercase; letter-spacing: .04em; color: #fff;
+}
+.bp { background: var(--tp); }
+.bm { background: var(--tm); }
+.bt { background: var(--tt); }
+.bnone { background: #fee2e2; color: #dc2626; font-size: .6rem; font-weight: 600; padding: 2px 6px; border-radius: 99px; }
+.bhas  { background: #dcfce7; color: #16a34a; font-size: .6rem; font-weight: 600; padding: 2px 6px; border-radius: 99px; }
+.cdate { font-size: .58rem; color: var(--muted); margin-left: auto; }
+
+/* ── Overlay / Modal ── */
+.overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.32);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 200; padding: 16px; backdrop-filter: blur(2px);
+}
+.overlay.hidden { display: none; }
+.modal {
+  background: var(--surface); border-radius: 12px; padding: 20px;
+  width: 100%; max-width: 430px; box-shadow: 0 20px 60px rgba(0,0,0,.16);
+}
+.mtitle { font-size: .92rem; font-weight: 700; margin-bottom: 14px; }
+
+.fg { margin-bottom: 11px; }
+.fg label { font-size: .68rem; font-weight: 600; color: var(--muted); display: block; margin-bottom: 3px; }
+.fg input, .fg textarea, .fg select {
+  width: 100%; font-size: .8rem; border: 1.5px solid var(--border);
+  border-radius: 7px; padding: 7px 9px; background: var(--surface);
+  color: var(--text); font-family: inherit; transition: border-color .12s;
+}
+.fg input:focus, .fg textarea:focus, .fg select:focus { outline: none; border-color: #6366f1; }
+.fg textarea { resize: vertical; min-height: 60px; }
+
+.tpicker { display: flex; gap: 5px; flex-wrap: wrap; }
+.topt {
+  font-size: .72rem; font-weight: 600; cursor: pointer;
+  padding: 5px 10px; border-radius: 99px; border: 2px solid var(--border);
+  color: var(--muted); transition: all .12s; display: flex; align-items: center; gap: 4px;
+}
+.topt:hover { border-color: var(--muted); }
+.topt.on-pessoal { background: var(--tp); border-color: var(--tp); color: #fff; }
+.topt.on-minha   { background: var(--tm); border-color: var(--tm); color: #fff; }
+.topt.on-time    { background: var(--tt); border-color: var(--tt); color: #fff; }
+
+.owner-row { display: flex; gap: 6px; }
+.oopt {
+  flex: 1; text-align: center; padding: 7px; border-radius: 7px;
+  border: 1.5px solid var(--border); font-size: .73rem; font-weight: 600;
+  cursor: pointer; color: var(--muted); transition: all .12s;
+}
+.oopt.on-has  { background: #dcfce7; border-color: #16a34a; color: #16a34a; }
+.oopt.on-none { background: #fee2e2; border-color: #dc2626; color: #dc2626; }
+
+.mactions { display: flex; gap: 6px; justify-content: flex-end; margin-top: 16px; }
+.btn { padding: 7px 14px; border-radius: 7px; font-size: .78rem; font-weight: 600; cursor: pointer; border: none; font-family: inherit; transition: all .12s; }
+.btn-ghost   { background: none; border: 1.5px solid var(--border); color: var(--muted); }
+.btn-ghost:hover { border-color: var(--muted); color: var(--text); }
+.btn-primary { background: #6366f1; color: #fff; }
+.btn-primary:hover { background: #4f46e5; }
+.btn-primary:disabled { opacity: .4; cursor: not-allowed; }
+.btn-danger  { background: #fee2e2; color: #dc2626; }
+.btn-danger:hover { background: #fecaca; }
+
+/* archive list */
+.arclist { max-height: 260px; overflow-y: auto; margin: 9px 0; }
+.arcitem {
+  padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border);
+  margin-bottom: 5px; font-size: .76rem; display: flex; align-items: center; gap: 6px;
+}
+.arcq { font-size: .6rem; font-weight: 700; padding: 1px 6px; border-radius: 99px; color: #fff; flex-shrink: 0; }
+.arctitle { flex: 1; text-decoration: line-through; color: var(--muted); }
+.arcdate  { font-size: .58rem; color: var(--muted); white-space: nowrap; }
+.arcempty { text-align: center; color: var(--muted); font-size: .78rem; padding: 18px 0; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo">Matriz de <span>Prioridades</span></div>
+  <div class="stats" id="stats"></div>
+  <div class="filters">
+    <span class="flabel">Ver:</span>
+    <button class="fbtn on" data-f="all"     onclick="setFilter('all')">Todos</button>
+    <button class="fbtn"    data-f="pessoal" onclick="setFilter('pessoal')">🟦 Pessoal</button>
+    <button class="fbtn"    data-f="minha"   onclick="setFilter('minha')">🟩 Minha</button>
+    <button class="fbtn"    data-f="time"    onclick="setFilter('time')">🟧 Time</button>
+  </div>
+  <button class="arc-btn" onclick="openArchive()">📦 Arquivar</button>
+</div>
+
+<!-- MATRIX -->
+<div class="matrix" id="matrix"></div>
+
+<!-- CARD MODAL -->
+<div class="overlay hidden" id="cardOverlay" onclick="overlayClick(event,'cardOverlay')">
+  <div class="modal">
+    <div class="mtitle" id="mTitle">Novo item</div>
+    <div class="fg">
+      <label>Título *</label>
+      <input id="mInputTitle" placeholder="O que precisa ser feito?" oninput="checkSave()" />
+    </div>
+    <div class="fg">
+      <label>Descrição</label>
+      <textarea id="mInputDesc" placeholder="Contexto, links, observações…"></textarea>
+    </div>
+    <div class="fg">
+      <label>Quadrante</label>
+      <select id="mInputQ" onchange="onQChange()">
+        <option value="1">🔥 Fazer Agora</option>
+        <option value="2">📅 Agendar</option>
+        <option value="3">🤝 Delegar</option>
+        <option value="4">🗑️ Eliminar</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label>Origem da demanda</label>
+      <div class="tpicker">
+        <div class="topt" data-tag="pessoal" onclick="toggleTag('pessoal')">🟦 Pessoal</div>
+        <div class="topt" data-tag="minha"   onclick="toggleTag('minha')">🟩 Minha</div>
+        <div class="topt" data-tag="time"    onclick="toggleTag('time')">🟧 Time</div>
+      </div>
+    </div>
+    <div class="fg" id="ownerFg" style="display:none">
+      <label>Responsável definido?</label>
+      <div class="owner-row">
+        <div class="oopt" id="oHas"  onclick="toggleOwner('has')">✅ Tem responsável</div>
+        <div class="oopt" id="oNone" onclick="toggleOwner('none')">⚠️ Sem dono ainda</div>
+      </div>
+    </div>
+    <div class="mactions">
+      <button class="btn btn-danger"  id="mDelBtn"  onclick="deleteItem()" style="display:none">Excluir</button>
+      <button class="btn btn-ghost"   onclick="closeCard()">Cancelar</button>
+      <button class="btn btn-primary" id="mSaveBtn" onclick="saveItem()" disabled>Criar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ARCHIVE MODAL -->
+<div class="overlay hidden" id="arcOverlay" onclick="overlayClick(event,'arcOverlay')">
+  <div class="modal">
+    <div class="mtitle">Arquivar concluídos</div>
+    <p id="arcMsg" style="font-size:.78rem;color:var(--muted);"></p>
+    <div class="arclist" id="arcList"></div>
+    <div class="mactions">
+      <button class="btn btn-ghost" onclick="closeArchive()">Fechar</button>
+      <button class="btn btn-primary" id="arcConfirm" onclick="archiveDone()" style="display:none">Arquivar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ─── constants ─────────────────────────────────────────────────────── */
+const QUADRANTS = [
+  { id:1, icon:'🔥', title:'Fazer Agora',  sub:'Urgente + Importante',       color:'#d94f43' },
+  { id:2, icon:'📅', title:'Agendar',       sub:'Importante, não Urgente',    color:'#3478d4' },
+  { id:3, icon:'🤝', title:'Delegar',        sub:'Urgente, não Importante',    color:'#c97b1a' },
+  { id:4, icon:'🗑️', title:'Eliminar',       sub:'Nem Urgente, nem Importante',color:'#9ca3af' },
+];
+const TAGS = [
+  { id:'pessoal', label:'Pessoal', cls:'bp' },
+  { id:'minha',   label:'Minha',   cls:'bm' },
+  { id:'time',    label:'Time',    cls:'bt' },
+];
+
+/* ─── state ─────────────────────────────────────────────────────────── */
+let items     = [];
+let filter    = 'all';
+let editingId = null;   // null = new item
+let mTags     = [];
+let mOwner    = null;   // null | 'has' | 'none'
+let draggingId = null;
+
+const uid  = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
+const load = () => { try { return JSON.parse(localStorage.getItem('matrix_v1') || '[]'); } catch { return []; } };
+const persist = () => localStorage.setItem('matrix_v1', JSON.stringify(items));
+const fmtDate = s => new Date(s).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
+
+/* ─── init ───────────────────────────────────────────────────────────── */
+items = load();
+buildMatrix();
+renderAll();
+
+/* ─── build static quadrant shells ──────────────────────────────────── */
+function buildMatrix() {
+  const mat = document.getElementById('matrix');
+  mat.innerHTML = QUADRANTS.map(q => `
+    <div class="quadrant" data-q="${q.id}"
+      ondragover="onDragOver(event,${q.id})"
+      ondragleave="onDragLeave(event,${q.id})"
+      ondrop="onDrop(event,${q.id})">
+      <div class="qhdr">
+        <span class="qicon">${q.icon}</span>
+        <div class="qinfo">
+          <div class="qtitle">${q.title}</div>
+          <div class="qsub">${q.sub}</div>
+        </div>
+        <span class="qcount" id="qcount-${q.id}">0</span>
+        <button class="qadd" title="Adicionar" onclick="openNew(${q.id})">＋</button>
+      </div>
+      <div class="card-list" id="qlist-${q.id}"></div>
+    </div>`).join('');
+}
+
+/* ─── render ─────────────────────────────────────────────────────────── */
+function renderAll() {
+  renderStats();
+  QUADRANTS.forEach(q => renderQ(q.id));
+}
+
+function renderStats() {
+  const qColors = { 1:'#d94f43', 2:'#3478d4', 3:'#c97b1a', 4:'#9ca3af' };
+  const tColors = { pessoal:'#3478d4', minha:'#16a34a', time:'#c97b1a' };
+  const tIcons  = { pessoal:'🟦', minha:'🟩', time:'🟧' };
+
+  let html = QUADRANTS.map(q => {
+    const n = items.filter(i => i.quadrant === q.id && !i.done).length;
+    return `<span class="chip" style="color:${q.color}">${q.icon} ${n}</span>`;
+  }).join('');
+
+  html += TAGS.map(t => {
+    const n = items.filter(i => !i.done && i.tags.includes(t.id)).length;
+    return `<span class="chip" style="color:${tColors[t.id]}">${tIcons[t.id]} ${n}</span>`;
+  }).join('');
+
+  document.getElementById('stats').innerHTML = html;
+
+  // archive button count
+  const done = items.filter(i => i.done).length;
+  document.querySelector('.arc-btn').textContent = '📦 Arquivar' + (done > 0 ? ` (${done})` : '');
+}
+
+function renderQ(qid) {
+  const visible = filter === 'all'
+    ? items.filter(i => i.quadrant === qid)
+    : items.filter(i => i.quadrant === qid && i.tags.includes(filter));
+
+  const count = items.filter(i => i.quadrant === qid && !i.done).length;
+  document.getElementById(`qcount-${qid}`).textContent = count;
+
+  const list = document.getElementById(`qlist-${qid}`);
+  if (!visible.length) {
+    list.innerHTML = '<div class="empty">Sem itens aqui</div>';
+    return;
+  }
+
+  list.innerHTML = visible.map(item => {
+    const tagBadges = item.tags.map(t => {
+      const td = TAGS.find(x => x.id === t);
+      return td ? `<span class="badge ${td.cls}">${td.label}</span>` : '';
+    }).join('');
+
+    let ownerBadge = '';
+    if (item.quadrant === 3) {
+      if (item.owner === 'none') ownerBadge = '<span class="bnone">⚠️ Sem dono</span>';
+      if (item.owner === 'has')  ownerBadge = '<span class="bhas">✅ Delegado</span>';
+    }
+
+    const desc = item.description
+      ? `<div class="cdesc">${esc(item.description)}</div>` : '';
+
+    return `<div class="card${item.done ? ' done' : ''}" id="c-${item.id}"
+        draggable="true"
+        ondragstart="onDragStart('${item.id}')"
+        ondragend="onDragEnd()">
+      <div class="ctop">
+        <input type="checkbox" class="ccb" ${item.done ? 'checked' : ''}
+          onchange="toggleDone('${item.id}')" onclick="event.stopPropagation()" />
+        <span class="ctitle">${esc(item.title)}</span>
+        <div class="cacts">
+          <button class="cact" onclick="openEdit('${item.id}')">✏️</button>
+        </div>
+      </div>
+      ${desc}
+      <div class="cfooter">
+        ${tagBadges}${ownerBadge}
+        <span class="cdate">${fmtDate(item.createdAt)}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ─── filter ─────────────────────────────────────────────────────────── */
+function setFilter(f) {
+  filter = f;
+  document.querySelectorAll('.fbtn').forEach(b => b.classList.toggle('on', b.dataset.f === f));
+  renderAll();
+}
+
+/* ─── drag & drop ────────────────────────────────────────────────────── */
+function onDragStart(id) { draggingId = id; document.getElementById('c-' + id)?.classList.add('dragging'); }
+function onDragEnd()     { if (draggingId) document.getElementById('c-' + draggingId)?.classList.remove('dragging'); draggingId = null; }
+function onDragOver(e, qid)  { e.preventDefault(); document.querySelector(`.quadrant[data-q="${qid}"]`)?.classList.add('over'); }
+function onDragLeave(e, qid) { document.querySelector(`.quadrant[data-q="${qid}"]`)?.classList.remove('over'); }
+function onDrop(e, qid) {
+  e.preventDefault();
+  document.querySelector(`.quadrant[data-q="${qid}"]`)?.classList.remove('over');
+  if (!draggingId) return;
+  const item = items.find(x => x.id === draggingId);
+  if (item && item.quadrant !== qid) {
+    item.quadrant = qid;
+    if (qid !== 3) item.owner = null;
+    persist();
+    renderAll();
+  }
+  draggingId = null;
+}
+
+/* ─── done toggle ────────────────────────────────────────────────────── */
+function toggleDone(id) {
+  const item = items.find(x => x.id === id);
+  if (item) { item.done = !item.done; persist(); renderAll(); }
+}
+
+/* ─── card modal ─────────────────────────────────────────────────────── */
+function openNew(qid) {
+  editingId = null;
+  mTags     = [];
+  mOwner    = null;
+  document.getElementById('mTitle').textContent   = 'Novo item';
+  document.getElementById('mInputTitle').value    = '';
+  document.getElementById('mInputDesc').value     = '';
+  document.getElementById('mInputQ').value        = qid;
+  document.getElementById('mSaveBtn').textContent = 'Criar';
+  document.getElementById('mSaveBtn').disabled    = true;
+  document.getElementById('mDelBtn').style.display = 'none';
+  syncTagUI();
+  onQChange();
+  show('cardOverlay');
+  setTimeout(() => document.getElementById('mInputTitle').focus(), 50);
+}
+
+function openEdit(id) {
+  const item = items.find(x => x.id === id);
+  if (!item) return;
+  editingId = id;
+  mTags  = [...item.tags];
+  mOwner = item.owner ?? null;
+  document.getElementById('mTitle').textContent   = 'Editar item';
+  document.getElementById('mInputTitle').value    = item.title;
+  document.getElementById('mInputDesc').value     = item.description || '';
+  document.getElementById('mInputQ').value        = item.quadrant;
+  document.getElementById('mSaveBtn').textContent = 'Salvar';
+  document.getElementById('mSaveBtn').disabled    = false;
+  document.getElementById('mDelBtn').style.display = '';
+  syncTagUI();
+  onQChange();
+  show('cardOverlay');
+  setTimeout(() => document.getElementById('mInputTitle').focus(), 50);
+}
+
+function closeCard() { hide('cardOverlay'); }
+
+function checkSave() {
+  document.getElementById('mSaveBtn').disabled = !document.getElementById('mInputTitle').value.trim();
+}
+
+function saveItem() {
+  const title = document.getElementById('mInputTitle').value.trim();
+  if (!title) return;
+  const qid = Number(document.getElementById('mInputQ').value);
+
+  if (editingId) {
+    const item = items.find(x => x.id === editingId);
+    if (item) {
+      item.title       = title;
+      item.description = document.getElementById('mInputDesc').value.trim();
+      item.tags        = [...mTags];
+      item.quadrant    = qid;
+      item.owner       = qid === 3 ? mOwner : null;
+    }
+  } else {
+    items.push({
+      id: uid(),
+      title,
+      description: document.getElementById('mInputDesc').value.trim(),
+      tags: [...mTags],
+      quadrant: qid,
+      owner: qid === 3 ? mOwner : null,
+      done: false,
+      createdAt: new Date().toISOString(),
+    });
+  }
+  persist();
+  renderAll();
+  closeCard();
+}
+
+function deleteItem() {
+  if (!editingId) return;
+  items = items.filter(x => x.id !== editingId);
+  persist();
+  renderAll();
+  closeCard();
+}
+
+function toggleTag(tid) {
+  const i = mTags.indexOf(tid);
+  if (i >= 0) mTags.splice(i, 1); else mTags.push(tid);
+  syncTagUI();
+}
+
+function syncTagUI() {
+  document.querySelectorAll('.topt').forEach(el => {
+    const t = el.dataset.tag;
+    el.className = 'topt' + (mTags.includes(t) ? ' on-' + t : '');
+  });
+}
+
+function toggleOwner(val) {
+  mOwner = mOwner === val ? null : val;
+  document.getElementById('oHas').className  = 'oopt' + (mOwner === 'has'  ? ' on-has'  : '');
+  document.getElementById('oNone').className = 'oopt' + (mOwner === 'none' ? ' on-none' : '');
+}
+
+function onQChange() {
+  const qid = Number(document.getElementById('mInputQ').value);
+  const fg  = document.getElementById('ownerFg');
+  fg.style.display = qid === 3 ? '' : 'none';
+  if (qid !== 3) mOwner = null;
+  document.getElementById('oHas').className  = 'oopt';
+  document.getElementById('oNone').className = 'oopt';
+}
+
+/* ─── archive modal ──────────────────────────────────────────────────── */
+function openArchive() {
+  const done = items.filter(i => i.done);
+  document.getElementById('arcMsg').textContent = done.length === 0
+    ? 'Nenhum item marcado como concluído.'
+    : `${done.length} item(s) serão removidos da matriz e salvos no arquivo local.`;
+
+  document.getElementById('arcConfirm').style.display = done.length ? '' : 'none';
+  if (done.length) document.getElementById('arcConfirm').textContent = `Arquivar ${done.length}`;
+
+  const list = document.getElementById('arcList');
+  if (!done.length) {
+    list.innerHTML = '<div class="arcempty">Tudo em aberto! 🎯</div>';
+  } else {
+    list.innerHTML = done.map(i => {
+      const q = QUADRANTS.find(x => x.id === i.quadrant);
+      return `<div class="arcitem">
+        <span class="arcq" style="background:${q.color}">Q${i.quadrant}</span>
+        <span class="arctitle">${esc(i.title)}</span>
+        <span class="arcdate">${fmtDate(i.createdAt)}</span>
+      </div>`;
+    }).join('');
+  }
+  show('arcOverlay');
+}
+
+function closeArchive() { hide('arcOverlay'); }
+
+function archiveDone() {
+  const archive = JSON.parse(localStorage.getItem('matrix_archive_v1') || '[]');
+  localStorage.setItem('matrix_archive_v1', JSON.stringify([...archive, ...items.filter(i => i.done)]));
+  items = items.filter(i => !i.done);
+  persist();
+  renderAll();
+  closeArchive();
+}
+
+/* ─── overlay helpers ────────────────────────────────────────────────── */
+function show(id) { document.getElementById(id).classList.remove('hidden'); }
+function hide(id) { document.getElementById(id).classList.add('hidden'); }
+function overlayClick(e, id) { if (e.target === e.currentTarget) hide(id); }
+
+/* ─── keyboard ───────────────────────────────────────────────────────── */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    hide('cardOverlay');
+    hide('arcOverlay');
+  }
+  if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+    if (!document.getElementById('cardOverlay').classList.contains('hidden')) saveItem();
+  }
+});
+</script>
+</body>
+</html>
