@@ -138,6 +138,8 @@ body { font-family: var(--font); font-size: 14px; background: var(--bg); color: 
   display: flex; flex-direction: column; gap: 6px;
 }
 .card:hover { box-shadow: 0 1px 2px rgba(0,0,0,.06), 0 2px 6px rgba(0,0,0,.04); border-color: var(--bmd); }
+.card.drag-above { box-shadow: 0 -2px 0 0 #6366f1; }
+.card.drag-below { box-shadow: 0 2px 0 0 #6366f1; }
 .card.dragging { opacity: .25; cursor: grabbing; }
 .card.done .ctitle { text-decoration: line-through; color: var(--t3); opacity: .7; }
 .card.active { border-color: #6366f1; box-shadow: 0 0 0 2px rgba(99,102,241,.15); }
@@ -705,16 +707,16 @@ function renderQ(qid) {
       var pct = Math.round(prog.done / prog.total * 100);
       progHtml = '<div class="cprog-wrap"><div class="cprog-bar" style="width:' + pct + '%"></div></div>';
     }
-    /* meta row */
-    var metaHtml = owner
-      ? '<div class="cmeta">' + owner + '<span class="cdate">' + fmtDate(it.createdAt) + '</span></div>'
-      : '<div class="cmeta"><span class="cdate">' + fmtDate(it.createdAt) + '</span></div>';
+    /* meta row — only owner badge if present, no date */
+    var metaHtml = owner ? '<div class="cmeta">' + owner + '</div>' : '';
 
     html += '<div class="card' + (it.done ? ' done' : '') + (dragId === it.id ? ' dragging' : '') + (isActive ? ' active' : '') + '"'
       + ' id="c' + it.id + '" draggable="true"'
       + ' style="border-left-color:' + borderColor + '"'
       + ' ondragstart="dragStart(\'' + it.id + '\')"'
       + ' ondragend="dragEnd()"'
+      + ' ondragover="cardDragOver(event,\'' + it.id + '\')"'
+      + ' ondrop="cardDrop(event,\'' + it.id + '\')"'
       + ' onclick="openPanel(\'' + it.id + '\')">'
       + '<div class="crow">'
       + '<input type="checkbox" class="ccheck"' + (it.done ? ' checked' : '')
@@ -743,6 +745,7 @@ function dragStart(id) {
 }
 function dragEnd() {
   if (dragId) { var el = document.getElementById('c' + dragId); if (el) el.classList.remove('dragging'); }
+  clearDragIndicators();
   dragId = null;
 }
 function dragOver(e, qid)  { e.preventDefault(); var q = document.querySelector('.quadrant[data-q="' + qid + '"]'); if (q) q.classList.add('over'); }
@@ -753,6 +756,64 @@ function dragDrop(e, qid) {
   if (!dragId) return;
   var item = getItem(dragId);
   if (item) { item.quadrant = qid; if (qid !== 3) item.owner = null; }
+  saveItems(); renderAll();
+  if (panelId === dragId) refreshPanel();
+  dragId = null;
+}
+
+function clearDragIndicators() {
+  var cards = document.querySelectorAll('.card.drag-above, .card.drag-below');
+  for (var i = 0; i < cards.length; i++) {
+    cards[i].classList.remove('drag-above', 'drag-below');
+  }
+}
+
+function cardDragOver(e, targetId) {
+  e.preventDefault();
+  e.stopPropagation(); // prevent quadrant dragOver from firing
+  if (!dragId || dragId === targetId) return;
+  clearDragIndicators();
+  var el = document.getElementById('c' + targetId);
+  if (!el) return;
+  var rect = el.getBoundingClientRect();
+  var mid  = rect.top + rect.height / 2;
+  el.classList.add(e.clientY < mid ? 'drag-above' : 'drag-below');
+}
+
+function cardDrop(e, targetId) {
+  e.preventDefault();
+  e.stopPropagation();
+  clearDragIndicators();
+  if (!dragId || dragId === targetId) { dragId = null; return; }
+
+  var dragItem   = getItem(dragId);
+  var targetItem = getItem(targetId);
+  if (!dragItem || !targetItem) { dragId = null; return; }
+
+  /* move dragItem to targetItem's quadrant */
+  dragItem.quadrant = targetItem.quadrant;
+  if (dragItem.quadrant !== 3) dragItem.owner = null;
+
+  /* determine insert position */
+  var el   = document.getElementById('c' + targetId);
+  var rect = el ? el.getBoundingClientRect() : null;
+  var insertBefore = rect ? (e.clientY < rect.top + rect.height / 2) : true;
+
+  /* reorder items array */
+  var fromIdx = -1, toIdx = -1;
+  for (var i = 0; i < items.length; i++) {
+    if (items[i].id === dragId)   fromIdx = i;
+    if (items[i].id === targetId) toIdx   = i;
+  }
+  if (fromIdx === -1 || toIdx === -1) { dragId = null; return; }
+
+  var removed = items.splice(fromIdx, 1)[0];
+  /* recalculate toIdx after splice */
+  toIdx = -1;
+  for (var j = 0; j < items.length; j++) { if (items[j].id === targetId) toIdx = j; }
+  var insertAt = insertBefore ? toIdx : toIdx + 1;
+  items.splice(insertAt, 0, removed);
+
   saveItems(); renderAll();
   if (panelId === dragId) refreshPanel();
   dragId = null;
