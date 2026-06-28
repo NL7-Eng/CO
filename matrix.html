@@ -23,6 +23,7 @@
   --q2: #1d6fbf;
   --q3: #b45309;
   --q4: #6b7280;
+  --panel: 360px;
 }
 
 body { font-family: var(--font); font-size: 14px; background: var(--bg); color: var(--text); min-height: 100vh; -webkit-font-smoothing: antialiased; }
@@ -31,14 +32,13 @@ body { font-family: var(--font); font-size: 14px; background: var(--bg); color: 
 .hdr {
   background: var(--surface); border-bottom: 1px solid var(--border);
   padding: 0 20px; height: 52px; display: flex; align-items: center;
-  gap: 16px; position: sticky; top: 0; z-index: 100;
+  gap: 16px; position: sticky; top: 0; z-index: 200;
   box-shadow: 0 1px 3px rgba(0,0,0,.05); flex-wrap: wrap;
 }
 @media(max-width:680px){ .hdr { height:auto; padding:10px 14px; gap:8px; } }
 
 .logo { font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px; white-space: nowrap; }
 .logo-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--q1); }
-
 .hdiv { width: 1px; height: 24px; background: var(--border); flex-shrink: 0; }
 
 .counters { display: flex; gap: 4px; flex-wrap: wrap; flex: 1; }
@@ -72,10 +72,17 @@ body { font-family: var(--font); font-size: 14px; background: var(--bg); color: 
 }
 .arc-btn:hover { border-color: var(--bmd); color: var(--text); }
 
+/* ── LAYOUT: matrix shifts left when panel open ── */
+.main { display: flex; transition: margin-right .25s; }
+.main.panel-open { margin-right: var(--panel); }
+@media(max-width:680px){ .main.panel-open { margin-right: 0; } }
+
 /* ── MATRIX ── */
 .matrix {
+  flex: 1;
   display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
   padding: 12px; max-width: 1400px; margin: 0 auto;
+  width: 100%;
 }
 @media(max-width:680px){ .matrix { grid-template-columns: 1fr; } }
 
@@ -87,7 +94,6 @@ body { font-family: var(--font); font-size: 14px; background: var(--bg); color: 
   overflow: hidden; transition: border-color .15s, box-shadow .15s;
 }
 @media(max-width:680px){ .quadrant { max-height: none; min-height: 200px; } }
-
 .quadrant[data-q="1"] { border-left: 3px solid var(--q1); }
 .quadrant[data-q="2"] { border-left: 3px solid var(--q2); }
 .quadrant[data-q="3"] { border-left: 3px solid var(--q3); }
@@ -110,52 +116,149 @@ body { font-family: var(--font); font-size: 14px; background: var(--bg); color: 
 }
 .q-add {
   width: 26px; height: 26px; border-radius: 6px; border: 1px solid var(--border);
-  background: none; cursor: pointer; color: var(--t3); font-size: 16px;
+  background: none; cursor: pointer; color: var(--t3); font-size: 18px; line-height: 1;
   display: flex; align-items: center; justify-content: center; transition: all .13s;
 }
 .q-add:hover { background: var(--bg); border-color: var(--bmd); color: var(--text); }
 
 .clist {
   flex: 1; overflow-y: auto; padding: 7px;
-  display: flex; flex-direction: column; gap: 5px;
+  display: flex; flex-direction: column; gap: 4px;
 }
 .clist::-webkit-scrollbar { width: 3px; }
 .clist::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 .lempty { text-align: center; color: var(--t3); font-size: 12px; padding: 22px 0; }
 
-/* ── CARD ── */
+/* ── CARD (minimal: title + meta only) ── */
 .card {
   background: var(--surface); border: 1px solid var(--border);
-  border-radius: 7px; padding: 10px 12px; cursor: grab;
+  border-radius: 7px; padding: 8px 10px; cursor: pointer;
   transition: box-shadow .12s, border-color .12s, opacity .13s;
+  display: flex; flex-direction: column; gap: 6px;
 }
 .card:hover { box-shadow: 0 1px 2px rgba(0,0,0,.06), 0 2px 6px rgba(0,0,0,.04); border-color: var(--bmd); }
-.card:hover .cedit { opacity: 1; }
 .card.dragging { opacity: .25; cursor: grabbing; }
-.card.done { opacity: .5; }
-.card.done .ctitle { text-decoration: line-through; color: var(--t3); }
+.card.done .ctitle { text-decoration: line-through; color: var(--t3); opacity: .7; }
+.card.active { border-color: #6366f1; box-shadow: 0 0 0 2px rgba(99,102,241,.15); }
 
-.crow1 { display: flex; align-items: flex-start; gap: 8px; }
-.ccheck { width: 15px; height: 15px; margin-top: 1px; flex-shrink: 0; cursor: pointer; accent-color: #6366f1; }
-.ctitle { font-size: 12.5px; font-weight: 600; flex: 1; line-height: 1.4; }
-.cedit {
-  width: 22px; height: 22px; border-radius: 5px; border: none; background: none;
-  cursor: pointer; color: var(--t3); font-size: 14px; line-height: 1;
-  display: flex; align-items: center; justify-content: center;
-  opacity: 0; transition: all .12s; flex-shrink: 0;
+.crow { display: flex; align-items: center; gap: 7px; }
+.ccheck {
+  width: 15px; height: 15px; flex-shrink: 0; cursor: pointer;
+  accent-color: #6366f1; margin-top: 0;
 }
-.cedit:hover { background: var(--bg); color: var(--t2); }
+.ctitle { font-size: 12.5px; font-weight: 600; flex: 1; line-height: 1.35; color: var(--text); }
 
-.cdesc { font-size: 11.5px; color: var(--t2); margin-top: 5px; padding-left: 23px; line-height: 1.5; }
+/* progress bar for checklist */
+.cprog-wrap { height: 3px; background: var(--border); border-radius: 99px; overflow: hidden; }
+.cprog-bar  { height: 100%; background: #6366f1; border-radius: 99px; transition: width .2s; }
 
-.cmeta { display: flex; align-items: center; gap: 5px; margin-top: 8px; flex-wrap: wrap; }
-.tpill { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 4px; }
+.cmeta { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.tpill { font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 4px; }
 .tp { background: #e8f0fa; color: #1d6fbf; }
 .tm { background: #e6f4ec; color: #16864a; }
 .tt { background: #fdf3e3; color: #b45309; }
-.own-none { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 4px; background: #fde8e8; color: #b91c1c; }
-.own-has  { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 4px; background: #e6f4ec; color: #166534; }
+.own-none { font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 4px; background: #fde8e8; color: #b91c1c; }
+.own-has  { font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 4px; background: #e6f4ec; color: #166534; }
 .cdate { font-size: 10px; color: var(--t3); margin-left: auto; }
+
+/* ── SIDE PANEL ── */
+.panel {
+  position: fixed; right: 0; top: 52px; bottom: 0;
+  width: var(--panel); background: var(--surface);
+  border-left: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  z-index: 150; transform: translateX(100%);
+  transition: transform .25s cubic-bezier(.4,0,.2,1);
+  box-shadow: -4px 0 20px rgba(0,0,0,.07);
+}
+.panel.open { transform: translateX(0); }
+@media(max-width:680px){
+  .panel { width: 100%; top: 0; z-index: 300; }
+}
+
+.panel-head {
+  padding: 14px 16px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: flex-start; gap: 10px; flex-shrink: 0;
+}
+.panel-qbar {
+  width: 3px; height: 36px; border-radius: 2px; flex-shrink: 0; margin-top: 2px;
+}
+.panel-title-wrap { flex: 1; min-width: 0; }
+.panel-title {
+  font-size: 13.5px; font-weight: 700; line-height: 1.35;
+  word-break: break-word; color: var(--text);
+}
+.panel-qname { font-size: 10.5px; color: var(--t3); margin-top: 2px; }
+.panel-close {
+  width: 28px; height: 28px; border-radius: 6px; border: none;
+  background: none; cursor: pointer; color: var(--t3); font-size: 16px;
+  display: flex; align-items: center; justify-content: center; transition: all .12s;
+  flex-shrink: 0;
+}
+.panel-close:hover { background: var(--bg); color: var(--text); }
+
+.panel-body { flex: 1; overflow-y: auto; padding: 16px; }
+.panel-body::-webkit-scrollbar { width: 3px; }
+.panel-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+.panel-section { margin-bottom: 20px; }
+.panel-lbl {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .05em; color: var(--t3); margin-bottom: 7px;
+}
+
+/* tags row in panel */
+.panel-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+
+/* description in panel */
+.panel-desc {
+  font-size: 12.5px; color: var(--t2); line-height: 1.6;
+  white-space: pre-wrap; word-break: break-word;
+}
+.panel-desc-empty { font-size: 12px; color: var(--t3); font-style: italic; }
+
+/* owner in panel */
+.panel-owner {
+  font-size: 12px; font-weight: 600; padding: 4px 9px;
+  border-radius: 5px; display: inline-flex; align-items: center; gap: 5px;
+}
+
+/* checklist in panel */
+.checklist { display: flex; flex-direction: column; gap: 4px; }
+.cl-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 8px; border-radius: 6px; border: 1px solid var(--border);
+  background: var(--bg); transition: background .12s;
+}
+.cl-item:hover { background: #ebebea; }
+.cl-item:hover .cl-del { opacity: 1; }
+.cl-cb { width: 14px; height: 14px; cursor: pointer; accent-color: #6366f1; flex-shrink: 0; }
+.cl-text {
+  flex: 1; font-size: 12px; color: var(--text); border: none; background: transparent;
+  font-family: var(--font); outline: none; line-height: 1.4; cursor: text;
+}
+.cl-text.done-text { text-decoration: line-through; color: var(--t3); }
+.cl-del {
+  width: 18px; height: 18px; border-radius: 4px; border: none; background: none;
+  cursor: pointer; color: var(--t3); font-size: 12px; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: all .12s; flex-shrink: 0;
+}
+.cl-del:hover { background: #fde8e8; color: #b91c1c; }
+.cl-add {
+  display: flex; align-items: center; gap: 7px;
+  padding: 5px 8px; border-radius: 6px; border: 1px dashed var(--border);
+  cursor: pointer; color: var(--t3); font-size: 12px; transition: all .13s;
+  margin-top: 2px;
+}
+.cl-add:hover { border-color: var(--bmd); color: var(--t2); background: var(--bg); }
+.cl-progress { font-size: 10.5px; color: var(--t3); margin-bottom: 7px; }
+
+/* panel footer with actions */
+.panel-foot {
+  padding: 12px 16px; border-top: 1px solid var(--border);
+  display: flex; gap: 6px; flex-shrink: 0;
+}
 
 /* ── WATCH SECTION ── */
 .watch-wrap { max-width: 1400px; margin: 0 auto; padding: 0 12px 32px; }
@@ -178,7 +281,7 @@ body { font-family: var(--font); font-size: 14px; background: var(--bg); color: 
 }
 .watch-add {
   width: 26px; height: 26px; border-radius: 6px; border: 1px solid var(--border);
-  background: none; cursor: pointer; color: var(--t3); font-size: 16px;
+  background: none; cursor: pointer; color: var(--t3); font-size: 18px; line-height: 1;
   display: flex; align-items: center; justify-content: center; transition: all .13s;
 }
 .watch-add:hover { background: var(--bg); border-color: var(--bmd); color: var(--text); }
@@ -191,7 +294,6 @@ body { font-family: var(--font); font-size: 14px; background: var(--bg); color: 
 .witem:last-child { border-bottom: none; }
 .witem:hover { background: var(--bg); }
 .witem:hover .wedit { opacity: 1; }
-
 .wcell { padding: 11px 14px; border-right: 1px solid var(--border); }
 .wcell:last-child { border-right: none; }
 .wlbl { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--t3); margin-bottom: 3px; }
@@ -202,8 +304,7 @@ body { font-family: var(--font); font-size: 14px; background: var(--bg); color: 
 .wval-when.past  { color: #b91c1c; }
 .wval-when.today { color: #7c3aed; font-weight: 700; }
 .wval-when.soon  { color: #b45309; }
-
-.wactions { display: flex; align-items: center; justify-content: center; border-right: none; }
+.wactions { display: flex; align-items: center; justify-content: center; }
 .wedit {
   width: 26px; height: 26px; border-radius: 5px; border: 1px solid var(--border);
   background: none; cursor: pointer; color: var(--t3); font-size: 13px;
@@ -212,97 +313,58 @@ body { font-family: var(--font); font-size: 14px; background: var(--bg); color: 
 }
 .wedit:hover { background: var(--border); color: var(--t2); }
 .wempty { text-align: center; color: var(--t3); font-size: 12.5px; padding: 28px; }
-
 @media(max-width:680px){
   .witem { grid-template-columns: 1fr 36px; }
   .wcell { border-right: none; }
   .wcell-when { display: none; }
 }
 
-/* ── OVERLAY / MODAL ── */
-.overlay {
-  position: fixed; inset: 0; background: rgba(12,10,5,.4);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 200; padding: 20px; backdrop-filter: blur(3px);
-}
+/* ── MODAL (edit form) ── */
+.overlay { position: fixed; inset: 0; background: rgba(12,10,5,.4); display: flex; align-items: center; justify-content: center; z-index: 400; padding: 20px; backdrop-filter: blur(3px); }
 .overlay.hidden { display: none; }
-.modal {
-  background: var(--surface); border-radius: 12px; width: 100%; max-width: 440px;
-  box-shadow: 0 16px 48px rgba(0,0,0,.14), 0 4px 16px rgba(0,0,0,.08);
-  border: 1px solid var(--border); overflow: hidden;
-}
-.mhead {
-  padding: 16px 20px; border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: space-between;
-}
+.modal { background: var(--surface); border-radius: 12px; width: 100%; max-width: 440px; box-shadow: 0 16px 48px rgba(0,0,0,.14); border: 1px solid var(--border); overflow: hidden; }
+.mhead { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
 .mhead-title { font-size: 14px; font-weight: 700; }
-.mclose {
-  width: 28px; height: 28px; border-radius: 6px; border: none;
-  background: none; cursor: pointer; color: var(--t3); font-size: 16px;
-  display: flex; align-items: center; justify-content: center; transition: all .12s;
-}
+.mclose { width: 28px; height: 28px; border-radius: 6px; border: none; background: none; cursor: pointer; color: var(--t3); font-size: 16px; display: flex; align-items: center; justify-content: center; transition: all .12s; }
 .mclose:hover { background: var(--bg); color: var(--text); }
 .mbody { padding: 16px 20px; }
-.mfoot {
-  padding: 12px 20px 16px; display: flex; gap: 6px;
-  justify-content: flex-end; border-top: 1px solid var(--border);
-}
+.mfoot { padding: 12px 20px 16px; display: flex; gap: 6px; justify-content: flex-end; border-top: 1px solid var(--border); }
 
 .fg { margin-bottom: 13px; }
 .fg:last-child { margin-bottom: 0; }
 .fg label { display: block; font-size: 11px; font-weight: 600; color: var(--t2); margin-bottom: 5px; letter-spacing: .03em; text-transform: uppercase; }
-.fg input, .fg textarea, .fg select {
-  width: 100%; font-size: 13px; font-family: var(--font);
-  border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px;
-  background: var(--surface); color: var(--text);
-  transition: border-color .13s, box-shadow .13s; appearance: none;
-}
-.fg input:focus, .fg textarea:focus, .fg select:focus {
-  outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,.1);
-}
+.fg input, .fg textarea, .fg select { width: 100%; font-size: 13px; font-family: var(--font); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; background: var(--surface); color: var(--text); transition: border-color .13s, box-shadow .13s; appearance: none; }
+.fg input:focus, .fg textarea:focus, .fg select:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,.1); }
 .fg textarea { resize: vertical; min-height: 68px; line-height: 1.5; }
-.fg select {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239c9a94' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-  background-repeat: no-repeat; background-position: right 10px center; padding-right: 30px;
-}
+.fg select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239c9a94' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 30px; }
 
 .tpicker { display: flex; gap: 6px; flex-wrap: wrap; }
-.tpick {
-  font-size: 11.5px; font-weight: 600; padding: 5px 11px; border-radius: 6px;
-  border: 1.5px solid var(--border); background: none; cursor: pointer;
-  color: var(--t2); transition: all .13s;
-}
+.tpick { font-size: 11.5px; font-weight: 600; padding: 5px 11px; border-radius: 6px; border: 1.5px solid var(--border); background: none; cursor: pointer; color: var(--t2); transition: all .13s; }
 .tpick:hover { border-color: var(--bmd); color: var(--text); }
 .tpick.sp { background: #e8f0fa; border-color: #1d6fbf; color: #1d6fbf; }
 .tpick.sm { background: #e6f4ec; border-color: #16864a; color: #16864a; }
 .tpick.st { background: #fdf3e3; border-color: #b45309; color: #b45309; }
 
 .opicker { display: flex; gap: 6px; }
-.opick {
-  flex: 1; text-align: center; padding: 8px 10px; border-radius: 6px;
-  border: 1.5px solid var(--border); font-size: 12px; font-weight: 600;
-  cursor: pointer; color: var(--t2); transition: all .13s;
-}
+.opick { flex: 1; text-align: center; padding: 8px 10px; border-radius: 6px; border: 1.5px solid var(--border); font-size: 12px; font-weight: 600; cursor: pointer; color: var(--t2); transition: all .13s; }
 .opick:hover { border-color: var(--bmd); color: var(--text); }
 .opick.shas  { background: #e6f4ec; border-color: #16864a; color: #166534; }
 .opick.snone { background: #fde8e8; border-color: #dc2626; color: #b91c1c; }
 
-.btn { font-family: var(--font); font-size: 12.5px; font-weight: 600; padding: 7px 14px; border-radius: 6px; cursor: pointer; border: none; transition: all .13s; letter-spacing: .01em; }
-.bghost { background: none; border: 1px solid var(--border); color: var(--t2); }
+.btn { font-family: var(--font); font-size: 12.5px; font-weight: 600; padding: 7px 14px; border-radius: 6px; cursor: pointer; border: none; transition: all .13s; }
+.bghost   { background: none; border: 1px solid var(--border); color: var(--t2); }
 .bghost:hover { border-color: var(--bmd); color: var(--text); }
 .bprimary { background: #4f46e5; color: #fff; }
 .bprimary:hover { background: #4338ca; }
 .bprimary:disabled { opacity: .4; cursor: not-allowed; }
-.bdanger { background: #fde8e8; color: #b91c1c; border: 1px solid #fecaca; }
+.bdanger  { background: #fde8e8; color: #b91c1c; border: 1px solid #fecaca; }
 .bdanger:hover { background: #fecaca; }
+.bicon { background: none; border: 1px solid var(--border); color: var(--t2); padding: 6px 10px; }
+.bicon:hover { border-color: var(--bmd); color: var(--text); }
 
-/* archive list */
+/* archive */
 .alist { max-height: 260px; overflow-y: auto; margin: 10px 0 4px; }
-.aitem {
-  display: flex; align-items: center; gap: 8px;
-  padding: 8px 10px; border: 1px solid var(--border);
-  border-radius: 6px; margin-bottom: 4px; font-size: 12px;
-}
+.aitem { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; margin-bottom: 4px; font-size: 12px; }
 .aqlbl { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; color: #fff; flex-shrink: 0; }
 .atitle { flex: 1; color: var(--t2); text-decoration: line-through; }
 .adate  { font-size: 10px; color: var(--t3); white-space: nowrap; }
@@ -322,31 +384,86 @@ body { font-family: var(--font); font-size: 14px; background: var(--bg); color: 
     <button class="ftab"    data-f="minha"   onclick="setFilter('minha')">Minha</button>
     <button class="ftab"    data-f="time"    onclick="setFilter('time')">Time</button>
   </div>
-  <button class="arc-btn" id="arcBtn" onclick="openArc()">Arquivar concluídos</button>
+  <button class="arc-btn" id="arcBtn" onclick="openArc()">Arquivar concluidos</button>
 </div>
 
-<!-- MATRIX -->
-<div class="matrix" id="matrix"></div>
+<!-- MAIN (matrix + watch, shifts when panel open) -->
+<div class="main" id="main">
+  <div style="width:100%">
+    <!-- MATRIX -->
+    <div class="matrix" id="matrix"></div>
 
-<!-- ACOMPANHAR -->
-<div class="watch-wrap">
-  <div class="watch-box">
-    <div class="watch-head">
-      <div class="watch-head-l">
-        <div class="watch-acc"></div>
-        <div>
-          <div class="watch-ttl">Acompanhar</div>
-          <div class="watch-sub">Visibilidade — sem ação, só radar</div>
+    <!-- ACOMPANHAR -->
+    <div class="watch-wrap">
+      <div class="watch-box">
+        <div class="watch-head">
+          <div class="watch-head-l">
+            <div class="watch-acc"></div>
+            <div>
+              <div class="watch-ttl">Acompanhar</div>
+              <div class="watch-sub">Visibilidade sem acao - so radar</div>
+            </div>
+            <span class="watch-pill" id="wPill">0</span>
+          </div>
+          <button class="watch-add" onclick="openWNew()">+</button>
         </div>
-        <span class="watch-pill" id="wPill">0</span>
+        <div class="wlist" id="wList"></div>
       </div>
-      <button class="watch-add" onclick="openWNew()">+</button>
     </div>
-    <div class="wlist" id="wList"></div>
   </div>
 </div>
 
-<!-- CARD MODAL -->
+<!-- SIDE PANEL (detail view) -->
+<div class="panel" id="panel">
+  <div class="panel-head">
+    <div class="panel-qbar" id="panelBar"></div>
+    <div class="panel-title-wrap">
+      <div class="panel-title" id="panelTitle"></div>
+      <div class="panel-qname" id="panelQname"></div>
+    </div>
+    <button class="panel-close" onclick="closePanel()">&#x2715;</button>
+  </div>
+
+  <div class="panel-body" id="panelBody">
+    <!-- Tags -->
+    <div class="panel-section" id="panelTagsSec">
+      <div class="panel-lbl">Origem</div>
+      <div class="panel-tags" id="panelTags"></div>
+    </div>
+    <!-- Owner -->
+    <div class="panel-section" id="panelOwnerSec" style="display:none">
+      <div class="panel-lbl">Responsavel</div>
+      <span class="panel-owner" id="panelOwner"></span>
+    </div>
+    <!-- Description -->
+    <div class="panel-section">
+      <div class="panel-lbl">Detalhamento</div>
+      <div id="panelDesc"></div>
+    </div>
+    <!-- Checklist -->
+    <div class="panel-section">
+      <div class="panel-lbl" id="panelClLbl">Checklist</div>
+      <div class="cl-progress" id="panelClProg" style="display:none"></div>
+      <div class="checklist" id="panelCl"></div>
+      <div class="cl-add" onclick="addClItem()" style="margin-top:6px">
+        <span style="font-size:14px;line-height:1">+</span> Adicionar item
+      </div>
+    </div>
+    <!-- Date -->
+    <div class="panel-section">
+      <div class="panel-lbl">Criado em</div>
+      <div style="font-size:12px;color:var(--t2)" id="panelDate"></div>
+    </div>
+  </div>
+
+  <div class="panel-foot">
+    <button class="btn bdanger" id="panelDel" onclick="delFromPanel()" style="margin-right:auto">Excluir</button>
+    <button class="btn bghost"  onclick="closePanel()">Fechar</button>
+    <button class="btn bprimary" onclick="openEditFromPanel()">Editar</button>
+  </div>
+</div>
+
+<!-- CARD EDIT MODAL -->
 <div class="overlay hidden" id="cardOv" onclick="bgclose(event,'cardOv')">
   <div class="modal">
     <div class="mhead">
@@ -355,12 +472,12 @@ body { font-family: var(--font); font-size: 14px; background: var(--bg); color: 
     </div>
     <div class="mbody">
       <div class="fg">
-        <label>Título</label>
+        <label>Titulo</label>
         <input id="fTitle" placeholder="Descreva o que precisa ser feito" oninput="chkSave()" />
       </div>
       <div class="fg">
         <label>Detalhamento</label>
-        <textarea id="fDesc" placeholder="Contexto, links, critérios de aceitação..."></textarea>
+        <textarea id="fDesc" placeholder="Contexto, links, criterios de aceitacao..."></textarea>
       </div>
       <div class="fg">
         <label>Quadrante</label>
@@ -388,7 +505,7 @@ body { font-family: var(--font); font-size: 14px; background: var(--bg); color: 
       </div>
     </div>
     <div class="mfoot">
-      <button class="btn bdanger"  id="mDel"  onclick="delItem()" style="display:none;margin-right:auto">Excluir</button>
+      <button class="btn bdanger"  id="mDel" onclick="delItem()" style="display:none;margin-right:auto">Excluir</button>
       <button class="btn bghost"   onclick="closeCard()">Cancelar</button>
       <button class="btn bprimary" id="mSave" onclick="saveItem()" disabled>Criar</button>
     </div>
@@ -417,7 +534,7 @@ body { font-family: var(--font); font-size: 14px; background: var(--bg); color: 
       </div>
     </div>
     <div class="mfoot">
-      <button class="btn bdanger"  id="wDel"  onclick="delW()" style="display:none;margin-right:auto">Excluir</button>
+      <button class="btn bdanger"  id="wDel" onclick="delW()" style="display:none;margin-right:auto">Excluir</button>
       <button class="btn bghost"   onclick="closeW()">Cancelar</button>
       <button class="btn bprimary" id="wSave" onclick="saveW()" disabled>Criar</button>
     </div>
@@ -444,26 +561,26 @@ body { font-family: var(--font); font-size: 14px; background: var(--bg); color: 
 
 <script>
 var QUADRANTS = [
-  { id:1, title:'Fazer Agora', sub:'Urgente - Importante',       color:'#c0392b' },
-  { id:2, title:'Agendar',     sub:'Importante - Nao urgente',   color:'#1d6fbf' },
-  { id:3, title:'Delegar',     sub:'Urgente - Nao importante',   color:'#b45309' },
-  { id:4, title:'Eliminar',    sub:'Baixa prioridade',           color:'#6b7280' }
+  { id:1, title:'Fazer Agora', sub:'Urgente - Importante',      color:'#c0392b' },
+  { id:2, title:'Agendar',     sub:'Importante - Nao urgente',  color:'#1d6fbf' },
+  { id:3, title:'Delegar',     sub:'Urgente - Nao importante',  color:'#b45309' },
+  { id:4, title:'Eliminar',    sub:'Baixa prioridade',          color:'#6b7280' }
 ];
-
 var TAGS = [
   { id:'pessoal', label:'Pessoal', cls:'tp', sel:'sp' },
   { id:'minha',   label:'Minha',   cls:'tm', sel:'sm' },
   { id:'time',    label:'Time',    cls:'tt', sel:'st' }
 ];
 
-var items     = [];
-var filter    = 'all';
-var editId    = null;
-var mTags     = [];
-var mOwner    = null;
-var dragId    = null;
-var wItems    = [];
-var wEditId   = null;
+var items   = [];
+var filter  = 'all';
+var editId  = null;
+var mTags   = [];
+var mOwner  = null;
+var dragId  = null;
+var wItems  = [];
+var wEditId = null;
+var panelId = null; // currently open item in panel
 
 function uid() { return Math.random().toString(36).slice(2) + Date.now().toString(36); }
 
@@ -476,7 +593,6 @@ function loadItems() {
   } catch(e) {}
   return [];
 }
-
 function saveItems() { localStorage.setItem('matrix_v2', JSON.stringify(items)); }
 
 function loadWatch() {
@@ -488,16 +604,19 @@ function fmtDate(s) {
   var d = new Date(s);
   return d.toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'2-digit' });
 }
-
 function esc(s) {
-  return String(s)
-    .replace(/&/g,'&amp;')
-    .replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;');
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function getItem(id) {
+  for (var i = 0; i < items.length; i++) { if (items[i].id === id) return items[i]; }
+  return null;
+}
+function getQ(id) {
+  for (var i = 0; i < QUADRANTS.length; i++) { if (QUADRANTS[i].id === id) return QUADRANTS[i]; }
+  return null;
 }
 
-/* ── BUILD MATRIX SHELLS ── */
+/* ── MATRIX SHELLS ── */
 function buildShells() {
   var html = '';
   for (var i = 0; i < QUADRANTS.length; i++) {
@@ -519,7 +638,7 @@ function buildShells() {
   document.getElementById('matrix').innerHTML = html;
 }
 
-/* ── RENDER ALL ── */
+/* ── RENDER ── */
 function renderAll() {
   renderCounters();
   for (var i = 0; i < QUADRANTS.length; i++) renderQ(QUADRANTS[i].id);
@@ -533,16 +652,20 @@ function renderCounters() {
     for (var j = 0; j < items.length; j++) {
       if (items[j].quadrant === q.id && !items[j].done) n++;
     }
-    html += '<span class="cnt">'
-      + '<span class="cnt-dot" style="background:' + q.color + '"></span>'
+    html += '<span class="cnt"><span class="cnt-dot" style="background:' + q.color + '"></span>'
       + q.title + ' <span class="cnt-n">' + n + '</span></span>';
   }
   document.getElementById('counters').innerHTML = html;
-
   var done = 0;
   for (var k = 0; k < items.length; k++) { if (items[k].done) done++; }
-  document.getElementById('arcBtn').textContent =
-    done > 0 ? 'Arquivar concluidos (' + done + ')' : 'Arquivar concluidos';
+  document.getElementById('arcBtn').textContent = done > 0 ? 'Arquivar concluidos (' + done + ')' : 'Arquivar concluidos';
+}
+
+function clProgress(item) {
+  if (!item.checklist || !item.checklist.length) return null;
+  var done = 0;
+  for (var i = 0; i < item.checklist.length; i++) { if (item.checklist[i].done) done++; }
+  return { done: done, total: item.checklist.length };
 }
 
 function renderQ(qid) {
@@ -553,49 +676,53 @@ function renderQ(qid) {
     if (filter !== 'all' && it.tags.indexOf(filter) === -1) continue;
     visible.push(it);
   }
-
   var open = 0;
-  for (var j = 0; j < items.length; j++) {
-    if (items[j].quadrant === qid && !items[j].done) open++;
-  }
+  for (var j = 0; j < items.length; j++) { if (items[j].quadrant === qid && !items[j].done) open++; }
   document.getElementById('qp' + qid).textContent = open;
 
   var el = document.getElementById('ql' + qid);
-  if (!visible.length) {
-    el.innerHTML = '<div class="lempty">Sem itens neste quadrante</div>';
-    return;
-  }
+  if (!visible.length) { el.innerHTML = '<div class="lempty">Sem itens neste quadrante</div>'; return; }
 
   var html = '';
   for (var k = 0; k < visible.length; k++) {
     var it = visible[k];
+    var isActive = panelId === it.id;
+
+    /* tag pills */
     var tags = '';
     for (var t = 0; t < it.tags.length; t++) {
       for (var td = 0; td < TAGS.length; td++) {
-        if (TAGS[td].id === it.tags[t]) {
-          tags += '<span class="tpill ' + TAGS[td].cls + '">' + TAGS[td].label + '</span>';
-        }
+        if (TAGS[td].id === it.tags[t]) tags += '<span class="tpill ' + TAGS[td].cls + '">' + TAGS[td].label + '</span>';
       }
     }
+    /* owner */
     var owner = '';
     if (it.quadrant === 3) {
       if (it.owner === 'none') owner = '<span class="own-none">Sem responsavel</span>';
       if (it.owner === 'has')  owner = '<span class="own-has">Delegado</span>';
     }
-    var desc = it.description ? '<div class="cdesc">' + esc(it.description) + '</div>' : '';
-    html += '<div class="card' + (it.done ? ' done' : '') + (dragId === it.id ? ' dragging' : '') + '"'
+    /* checklist progress */
+    var prog = clProgress(it);
+    var progHtml = '';
+    if (prog) {
+      var pct = Math.round(prog.done / prog.total * 100);
+      progHtml = '<div class="cprog-wrap"><div class="cprog-bar" style="width:' + pct + '%"></div></div>';
+    }
+    /* meta row (only if there's something to show) */
+    var metaHtml = (tags || owner) ? '<div class="cmeta">' + tags + owner + '<span class="cdate">' + fmtDate(it.createdAt) + '</span></div>' : '<div class="cmeta"><span class="cdate">' + fmtDate(it.createdAt) + '</span></div>';
+
+    html += '<div class="card' + (it.done ? ' done' : '') + (dragId === it.id ? ' dragging' : '') + (isActive ? ' active' : '') + '"'
       + ' id="c' + it.id + '" draggable="true"'
       + ' ondragstart="dragStart(\'' + it.id + '\')"'
-      + ' ondragend="dragEnd()">'
-      + '<div class="crow1">'
+      + ' ondragend="dragEnd()"'
+      + ' onclick="openPanel(\'' + it.id + '\')">'
+      + '<div class="crow">'
       + '<input type="checkbox" class="ccheck"' + (it.done ? ' checked' : '')
       + ' onchange="togDone(\'' + it.id + '\')" onclick="event.stopPropagation()" />'
       + '<span class="ctitle">' + esc(it.title) + '</span>'
-      + '<button class="cedit" onclick="openEdit(\'' + it.id + '\')">&#x270F;</button>'
       + '</div>'
-      + desc
-      + '<div class="cmeta">' + tags + owner
-      + '<span class="cdate">' + fmtDate(it.createdAt) + '</span></div>'
+      + progHtml
+      + metaHtml
       + '</div>';
   }
   el.innerHTML = html;
@@ -605,79 +732,198 @@ function renderQ(qid) {
 function setFilter(f) {
   filter = f;
   var tabs = document.querySelectorAll('.ftab');
-  for (var i = 0; i < tabs.length; i++) {
-    tabs[i].classList.toggle('on', tabs[i].getAttribute('data-f') === f);
-  }
+  for (var i = 0; i < tabs.length; i++) tabs[i].classList.toggle('on', tabs[i].getAttribute('data-f') === f);
   renderAll();
 }
 
 /* ── DRAG ── */
 function dragStart(id) {
   dragId = id;
-  setTimeout(function() {
-    var el = document.getElementById('c' + id);
-    if (el) el.classList.add('dragging');
-  }, 0);
+  setTimeout(function() { var el = document.getElementById('c' + id); if (el) el.classList.add('dragging'); }, 0);
 }
 function dragEnd() {
-  if (dragId) {
-    var el = document.getElementById('c' + dragId);
-    if (el) el.classList.remove('dragging');
-  }
+  if (dragId) { var el = document.getElementById('c' + dragId); if (el) el.classList.remove('dragging'); }
   dragId = null;
 }
 function dragOver(e, qid)  { e.preventDefault(); var q = document.querySelector('.quadrant[data-q="' + qid + '"]'); if (q) q.classList.add('over'); }
 function dragLeave(e, qid) { var q = document.querySelector('.quadrant[data-q="' + qid + '"]'); if (q) q.classList.remove('over'); }
 function dragDrop(e, qid) {
   e.preventDefault();
-  var q = document.querySelector('.quadrant[data-q="' + qid + '"]');
-  if (q) q.classList.remove('over');
+  var q = document.querySelector('.quadrant[data-q="' + qid + '"]'); if (q) q.classList.remove('over');
   if (!dragId) return;
-  for (var i = 0; i < items.length; i++) {
-    if (items[i].id === dragId) {
-      items[i].quadrant = qid;
-      if (qid !== 3) items[i].owner = null;
-      break;
-    }
-  }
-  saveItems(); renderAll(); dragId = null;
+  var item = getItem(dragId);
+  if (item) { item.quadrant = qid; if (qid !== 3) item.owner = null; }
+  saveItems(); renderAll();
+  if (panelId === dragId) refreshPanel();
+  dragId = null;
 }
 
 /* ── DONE ── */
 function togDone(id) {
-  for (var i = 0; i < items.length; i++) {
-    if (items[i].id === id) { items[i].done = !items[i].done; break; }
+  var item = getItem(id);
+  if (item) { item.done = !item.done; saveItems(); renderAll(); }
+  if (panelId === id) refreshPanel();
+}
+
+/* ── SIDE PANEL ── */
+function openPanel(id) {
+  panelId = id;
+  refreshPanel();
+  document.getElementById('panel').classList.add('open');
+  document.getElementById('main').classList.add('panel-open');
+  renderAll(); // highlight active card
+}
+
+function refreshPanel() {
+  var item = getItem(panelId);
+  if (!item) { closePanel(); return; }
+  var q = getQ(item.quadrant);
+
+  document.getElementById('panelBar').style.background = q ? q.color : '#888';
+  document.getElementById('panelTitle').textContent = item.title;
+  document.getElementById('panelQname').textContent = q ? q.title : '';
+
+  /* tags */
+  var tagHtml = '';
+  for (var t = 0; t < item.tags.length; t++) {
+    for (var td = 0; td < TAGS.length; td++) {
+      if (TAGS[td].id === item.tags[t]) tagHtml += '<span class="tpill ' + TAGS[td].cls + '">' + TAGS[td].label + '</span>';
+    }
   }
+  document.getElementById('panelTags').innerHTML = tagHtml || '<span style="font-size:12px;color:var(--t3);font-style:italic">Sem tag definida</span>';
+
+  /* owner */
+  var ownerSec = document.getElementById('panelOwnerSec');
+  var ownerEl  = document.getElementById('panelOwner');
+  if (item.quadrant === 3 && item.owner) {
+    ownerSec.style.display = '';
+    if (item.owner === 'has') {
+      ownerEl.style.cssText = 'background:#e6f4ec;color:#166534;';
+      ownerEl.textContent = 'Responsavel definido';
+    } else {
+      ownerEl.style.cssText = 'background:#fde8e8;color:#b91c1c;';
+      ownerEl.textContent = 'Sem responsavel';
+    }
+  } else { ownerSec.style.display = 'none'; }
+
+  /* description */
+  var descEl = document.getElementById('panelDesc');
+  if (item.description) {
+    descEl.className = 'panel-desc';
+    descEl.textContent = item.description;
+  } else {
+    descEl.className = 'panel-desc-empty';
+    descEl.textContent = 'Sem detalhamento.';
+  }
+
+  /* checklist */
+  renderPanelCl(item);
+
+  /* date */
+  document.getElementById('panelDate').textContent = fmtDate(item.createdAt);
+}
+
+function renderPanelCl(item) {
+  if (!item.checklist) item.checklist = [];
+  var prog = clProgress(item);
+  var progEl = document.getElementById('panelClProg');
+  if (prog) {
+    progEl.style.display = '';
+    progEl.textContent = prog.done + ' de ' + prog.total + ' concluidos';
+  } else { progEl.style.display = 'none'; }
+
+  var html = '';
+  for (var i = 0; i < item.checklist.length; i++) {
+    var ci = item.checklist[i];
+    html += '<div class="cl-item" id="cli' + i + '">'
+      + '<input type="checkbox" class="cl-cb"' + (ci.done ? ' checked' : '')
+      + ' onchange="togCl(' + i + ')" />'
+      + '<input type="text" class="cl-text' + (ci.done ? ' done-text' : '') + '"'
+      + ' value="' + esc(ci.text) + '"'
+      + ' onchange="saveCl(' + i + ',this.value)"'
+      + ' onblur="saveCl(' + i + ',this.value)"'
+      + ' placeholder="Item do checklist" />'
+      + '<button class="cl-del" onclick="delCl(' + i + ')">&#x2715;</button>'
+      + '</div>';
+  }
+  document.getElementById('panelCl').innerHTML = html;
+}
+
+function addClItem() {
+  var item = getItem(panelId);
+  if (!item) return;
+  if (!item.checklist) item.checklist = [];
+  item.checklist.push({ text: '', done: false });
+  saveItems();
+  renderPanelCl(item);
+  renderAll();
+  /* focus new input */
+  var inputs = document.querySelectorAll('#panelCl .cl-text');
+  if (inputs.length) inputs[inputs.length - 1].focus();
+}
+
+function togCl(idx) {
+  var item = getItem(panelId);
+  if (!item || !item.checklist || !item.checklist[idx]) return;
+  item.checklist[idx].done = !item.checklist[idx].done;
+  saveItems(); renderPanelCl(item); renderAll();
+}
+
+function saveCl(idx, val) {
+  var item = getItem(panelId);
+  if (!item || !item.checklist || !item.checklist[idx]) return;
+  item.checklist[idx].text = val;
   saveItems(); renderAll();
 }
 
-/* ── CARD MODAL ── */
-function openNew(qid) {
-  editId = null; mTags = []; mOwner = null;
-  document.getElementById('mTitle').textContent  = 'Novo item';
-  document.getElementById('fTitle').value        = '';
-  document.getElementById('fDesc').value         = '';
-  document.getElementById('fQ').value            = qid;
-  document.getElementById('mSave').disabled      = true;
-  document.getElementById('mSave').textContent   = 'Criar';
-  document.getElementById('mDel').style.display  = 'none';
+function delCl(idx) {
+  var item = getItem(panelId);
+  if (!item || !item.checklist) return;
+  item.checklist.splice(idx, 1);
+  saveItems(); renderPanelCl(item); renderAll();
+}
+
+function closePanel() {
+  panelId = null;
+  document.getElementById('panel').classList.remove('open');
+  document.getElementById('main').classList.remove('panel-open');
+  renderAll();
+}
+
+function delFromPanel() {
+  if (!panelId) return;
+  var next = [];
+  for (var i = 0; i < items.length; i++) { if (items[i].id !== panelId) next.push(items[i]); }
+  items = next;
+  saveItems(); closePanel();
+}
+
+function openEditFromPanel() {
+  var item = getItem(panelId);
+  if (!item) return;
+  editId = item.id; mTags = item.tags.slice(); mOwner = item.owner || null;
+  document.getElementById('mTitle').textContent = 'Editar item';
+  document.getElementById('fTitle').value       = item.title;
+  document.getElementById('fDesc').value        = item.description || '';
+  document.getElementById('fQ').value           = item.quadrant;
+  document.getElementById('mSave').disabled     = false;
+  document.getElementById('mSave').textContent  = 'Salvar';
+  document.getElementById('mDel').style.display = 'none'; // delete via panel
   syncTags(); syncOwner(); onQchg();
   show('cardOv');
   setTimeout(function() { document.getElementById('fTitle').focus(); }, 60);
 }
 
-function openEdit(id) {
-  var item = null;
-  for (var i = 0; i < items.length; i++) { if (items[i].id === id) { item = items[i]; break; } }
-  if (!item) return;
-  editId = id; mTags = item.tags.slice(); mOwner = item.owner || null;
-  document.getElementById('mTitle').textContent  = 'Editar item';
-  document.getElementById('fTitle').value        = item.title;
-  document.getElementById('fDesc').value         = item.description || '';
-  document.getElementById('fQ').value            = item.quadrant;
-  document.getElementById('mSave').disabled      = false;
-  document.getElementById('mSave').textContent   = 'Salvar';
-  document.getElementById('mDel').style.display  = '';
+/* ── CARD MODAL (new / edit) ── */
+function openNew(qid) {
+  editId = null; mTags = []; mOwner = null;
+  document.getElementById('mTitle').textContent = 'Novo item';
+  document.getElementById('fTitle').value       = '';
+  document.getElementById('fDesc').value        = '';
+  document.getElementById('fQ').value           = qid;
+  document.getElementById('mSave').disabled     = true;
+  document.getElementById('mSave').textContent  = 'Criar';
+  document.getElementById('mDel').style.display = 'none';
   syncTags(); syncOwner(); onQchg();
   show('cardOv');
   setTimeout(function() { document.getElementById('fTitle').focus(); }, 60);
@@ -692,7 +938,7 @@ function chkSave() {
 function saveItem() {
   var title = document.getElementById('fTitle').value.trim();
   if (!title) return;
-  var qid = parseInt(document.getElementById('fQ').value, 10);
+  var qid  = parseInt(document.getElementById('fQ').value, 10);
   var desc = document.getElementById('fDesc').value.trim();
   if (editId) {
     for (var i = 0; i < items.length; i++) {
@@ -703,10 +949,11 @@ function saveItem() {
         break;
       }
     }
+    if (panelId === editId) refreshPanel();
   } else {
     items.push({ id: uid(), title: title, description: desc, tags: mTags.slice(),
-      quadrant: qid, owner: qid === 3 ? mOwner : null, done: false,
-      createdAt: new Date().toISOString() });
+      quadrant: qid, owner: qid === 3 ? mOwner : null,
+      done: false, checklist: [], createdAt: new Date().toISOString() });
   }
   saveItems(); renderAll(); closeCard();
 }
@@ -716,6 +963,7 @@ function delItem() {
   var next = [];
   for (var i = 0; i < items.length; i++) { if (items[i].id !== editId) next.push(items[i]); }
   items = next;
+  if (panelId === editId) closePanel();
   saveItems(); renderAll(); closeCard();
 }
 
@@ -728,52 +976,42 @@ function syncTags() {
   var btns = document.querySelectorAll('.tpick');
   for (var i = 0; i < btns.length; i++) {
     var tid = btns[i].getAttribute('data-tag');
-    var tag = null;
-    for (var j = 0; j < TAGS.length; j++) { if (TAGS[j].id === tid) { tag = TAGS[j]; break; } }
-    btns[i].className = 'tpick' + (tag && mTags.indexOf(tid) >= 0 ? ' ' + tag.sel : '');
+    var sel = '';
+    for (var j = 0; j < TAGS.length; j++) { if (TAGS[j].id === tid) { sel = TAGS[j].sel; break; } }
+    btns[i].className = 'tpick' + (mTags.indexOf(tid) >= 0 ? ' ' + sel : '');
   }
 }
-
-function togOwner(val) {
-  mOwner = mOwner === val ? null : val;
-  syncOwner();
-}
+function togOwner(val) { mOwner = mOwner === val ? null : val; syncOwner(); }
 function syncOwner() {
   document.getElementById('oHas').className  = 'opick' + (mOwner === 'has'  ? ' shas'  : '');
   document.getElementById('oNone').className = 'opick' + (mOwner === 'none' ? ' snone' : '');
 }
-
 function onQchg() {
   var qid = parseInt(document.getElementById('fQ').value, 10);
   document.getElementById('ownerFg').style.display = qid === 3 ? '' : 'none';
   if (qid !== 3) { mOwner = null; syncOwner(); }
 }
 
-/* ── ARCHIVE MODAL ── */
+/* ── ARCHIVE ── */
 function openArc() {
   var done = [];
   for (var i = 0; i < items.length; i++) { if (items[i].done) done.push(items[i]); }
   document.getElementById('arcMsg').textContent = done.length === 0
     ? 'Nenhum item marcado como concluido.'
-    : done.length + ' item(s) serao removidos da matriz e salvos no arquivo local.';
+    : done.length + ' item(s) serao removidos da matriz.';
   document.getElementById('arcOk').style.display = done.length ? '' : 'none';
-  if (done.length) document.getElementById('arcOk').textContent = 'Arquivar ' + done.length + ' item(s)';
-  var listHtml = '';
-  if (!done.length) {
-    listHtml = '<div class="aempty">Nada para arquivar.</div>';
-  } else {
+  if (done.length) document.getElementById('arcOk').textContent = 'Arquivar ' + done.length;
+  var html = '';
+  if (!done.length) { html = '<div class="aempty">Nada para arquivar.</div>'; }
+  else {
     for (var j = 0; j < done.length; j++) {
-      var it = done[j];
-      var q = null;
-      for (var k = 0; k < QUADRANTS.length; k++) { if (QUADRANTS[k].id === it.quadrant) { q = QUADRANTS[k]; break; } }
-      listHtml += '<div class="aitem">'
-        + '<span class="aqlbl" style="background:' + (q ? q.color : '#888') + '">' + (q ? q.title : '') + '</span>'
-        + '<span class="atitle">' + esc(it.title) + '</span>'
-        + '<span class="adate">' + fmtDate(it.createdAt) + '</span>'
-        + '</div>';
+      var it = done[j]; var q = getQ(it.quadrant);
+      html += '<div class="aitem"><span class="aqlbl" style="background:' + (q ? q.color : '#888') + '">'
+        + (q ? q.title : '') + '</span><span class="atitle">' + esc(it.title) + '</span>'
+        + '<span class="adate">' + fmtDate(it.createdAt) + '</span></div>';
     }
   }
-  document.getElementById('arcList').innerHTML = listHtml;
+  document.getElementById('arcList').innerHTML = html;
   show('arcOv');
 }
 function closeArc() { hide('arcOv'); }
@@ -786,37 +1024,24 @@ function doArc() {
   var next = [];
   for (var j = 0; j < items.length; j++) { if (!items[j].done) next.push(items[j]); }
   items = next;
+  if (panelId && !getItem(panelId)) closePanel();
   saveItems(); renderAll(); closeArc();
 }
 
-/* ── WATCH SECTION ── */
+/* ── WATCH ── */
 function renderWatch() {
   document.getElementById('wPill').textContent = wItems.length;
   var el = document.getElementById('wList');
-  if (!wItems.length) {
-    el.innerHTML = '<div class="wempty">Nenhum item em acompanhamento</div>';
-    return;
-  }
+  if (!wItems.length) { el.innerHTML = '<div class="wempty">Nenhum item em acompanhamento</div>'; return; }
   var html = '';
   for (var i = 0; i < wItems.length; i++) {
     var w = wItems[i];
     var wc = whenClass(w.when);
     html += '<div class="witem">'
-      + '<div class="wcell">'
-      + '<div class="wlbl">O que e</div>'
-      + '<div class="wval wval-title">' + esc(w.what) + '</div>'
-      + '</div>'
-      + '<div class="wcell wcell-when">'
-      + '<div class="wlbl">Quando</div>'
-      + '<div class="wval wval-when ' + wc + '">' + esc(w.when) + '</div>'
-      + '</div>'
-      + '<div class="wcell">'
-      + '<div class="wlbl">Por que acompanhar</div>'
-      + '<div class="wval wval-why">' + esc(w.why || '-') + '</div>'
-      + '</div>'
-      + '<div class="wcell wactions">'
-      + '<button class="wedit" onclick="openWEdit(\'' + w.id + '\')" title="Editar">&#x270F;</button>'
-      + '</div>'
+      + '<div class="wcell"><div class="wlbl">O que e</div><div class="wval wval-title">' + esc(w.what) + '</div></div>'
+      + '<div class="wcell wcell-when"><div class="wlbl">Quando</div><div class="wval wval-when ' + wc + '">' + esc(w.when) + '</div></div>'
+      + '<div class="wcell"><div class="wlbl">Por que acompanhar</div><div class="wval wval-why">' + esc(w.why || '-') + '</div></div>'
+      + '<div class="wcell wactions"><button class="wedit" onclick="openWEdit(\'' + w.id + '\')">&#x270F;</button></div>'
       + '</div>';
   }
   el.innerHTML = html;
@@ -850,7 +1075,6 @@ function openWNew() {
   show('watchOv');
   setTimeout(function() { document.getElementById('wWhat').focus(); }, 60);
 }
-
 function openWEdit(id) {
   var w = null;
   for (var i = 0; i < wItems.length; i++) { if (wItems[i].id === id) { w = wItems[i]; break; } }
@@ -866,14 +1090,11 @@ function openWEdit(id) {
   show('watchOv');
   setTimeout(function() { document.getElementById('wWhat').focus(); }, 60);
 }
-
 function closeW() { hide('watchOv'); }
-
 function chkWSave() {
   var ok = document.getElementById('wWhat').value.trim() && document.getElementById('wWhen').value.trim();
   document.getElementById('wSave').disabled = !ok;
 }
-
 function saveW() {
   var what = document.getElementById('wWhat').value.trim();
   var when = document.getElementById('wWhen').value.trim();
@@ -883,18 +1104,14 @@ function saveW() {
     for (var i = 0; i < wItems.length; i++) {
       if (wItems[i].id === wEditId) { wItems[i].what = what; wItems[i].when = when; wItems[i].why = why; break; }
     }
-  } else {
-    wItems.push({ id: uid(), what: what, when: when, why: why });
-  }
+  } else { wItems.push({ id: uid(), what: what, when: when, why: why }); }
   saveWatch(); renderWatch(); closeW();
 }
-
 function delW() {
   if (!wEditId) return;
   var next = [];
   for (var i = 0; i < wItems.length; i++) { if (wItems[i].id !== wEditId) next.push(wItems[i]); }
-  wItems = next;
-  saveWatch(); renderWatch(); closeW();
+  wItems = next; saveWatch(); renderWatch(); closeW();
 }
 
 /* ── HELPERS ── */
@@ -903,7 +1120,10 @@ function hide(id) { document.getElementById(id).classList.add('hidden'); }
 function bgclose(e, id) { if (e.target === e.currentTarget) hide(id); }
 
 document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') { hide('cardOv'); hide('arcOv'); hide('watchOv'); }
+  if (e.key === 'Escape') {
+    hide('cardOv'); hide('arcOv'); hide('watchOv');
+    if (document.getElementById('panel').classList.contains('open')) closePanel();
+  }
   if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
     if (!document.getElementById('cardOv').classList.contains('hidden'))  saveItem();
     if (!document.getElementById('watchOv').classList.contains('hidden')) saveW();
