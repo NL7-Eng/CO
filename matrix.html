@@ -550,6 +550,53 @@ body {
 <!-- ─── MATRIX ──────────────────────────────────────────────────── -->
 <div class="matrix" id="matrix"></div>
 
+<!-- ─── WATCH SECTION ──────────────────────────────────────────── -->
+<div class="watch-section">
+  <div class="watch-card">
+    <div class="watch-head">
+      <div class="watch-head-left">
+        <div class="watch-accent"></div>
+        <div class="watch-title-block">
+          <div class="watch-title">Acompanhar</div>
+          <div class="watch-sub">Visibilidade — sem ação, só radar</div>
+        </div>
+        <span class="watch-count-pill" id="watchCount">0</span>
+      </div>
+      <button class="watch-add-btn" title="Adicionar item" onclick="openWatchNew()">+</button>
+    </div>
+    <div class="watch-list" id="watchList"></div>
+  </div>
+</div>
+
+<!-- ─── WATCH MODAL ─────────────────────────────────────────────── -->
+<div class="overlay hidden" id="watchOverlay" onclick="bgClose(event,'watchOverlay')">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title" id="wTitle">Novo item — Acompanhar</span>
+      <button class="modal-close" onclick="closeWatch()">&#x2715;</button>
+    </div>
+    <div class="modal-body">
+      <div class="fg">
+        <label>O que é</label>
+        <input id="wWhat" placeholder="Ex: Reunião fechamento obra X" oninput="checkWatchSave()" />
+      </div>
+      <div class="fg">
+        <label>Quando</label>
+        <input id="wWhen" placeholder="Ex: 15/07/2026 ou 'Semana de 14/07'" oninput="checkWatchSave()" />
+      </div>
+      <div class="fg">
+        <label>Por que importa acompanhar</label>
+        <textarea id="wWhy" placeholder="Ex: Decide se aditivo de prazo é aprovado — impacta cronograma do time"></textarea>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-danger" id="wDelBtn" onclick="deleteWatch()" style="display:none;margin-right:auto">Excluir</button>
+      <button class="btn btn-ghost" onclick="closeWatch()">Cancelar</button>
+      <button class="btn btn-primary" id="wSaveBtn" onclick="saveWatch()" disabled>Salvar</button>
+    </div>
+  </div>
+</div>
+
 <!-- ─── CARD MODAL ──────────────────────────────────────────────── -->
 <div class="overlay hidden" id="cardOverlay" onclick="bgClose(event,'cardOverlay')">
   <div class="modal">
@@ -893,6 +940,167 @@ function onQChange() {
   if (qid !== 3) { mOwner = null; syncOwnerBtns(); }
 }
 
+/* ─── WATCH SECTION ──────────────────────────────────────────────── */
+.watch-section {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 12px 32px;
+}
+
+.watch-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  border-left: 3px solid #7c3aed;
+  overflow: hidden;
+}
+
+.watch-head {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.watch-head-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.watch-accent {
+  width: 3px;
+  height: 28px;
+  border-radius: 2px;
+  background: #7c3aed;
+  flex-shrink: 0;
+}
+
+.watch-title-block {}
+.watch-title { font-size: 12.5px; font-weight: 700; }
+.watch-sub   { font-size: 10.5px; color: var(--text-3); margin-top: 1px; }
+
+.watch-count-pill {
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 7px;
+  border-radius: 99px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.watch-add-btn {
+  width: 26px; height: 26px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: none;
+  cursor: pointer;
+  color: var(--text-3);
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .13s;
+}
+.watch-add-btn:hover { background: var(--bg); border-color: var(--border-md); color: var(--text); }
+
+/* watch list */
+.watch-list { padding: 0; }
+
+.watch-item {
+  display: grid;
+  grid-template-columns: 1fr 96px 1fr auto;
+  align-items: center;
+  gap: 0;
+  padding: 0;
+  border-bottom: 1px solid var(--border);
+  transition: background .12s;
+}
+.watch-item:last-child { border-bottom: none; }
+.watch-item:hover { background: var(--bg); }
+.watch-item:hover .w-edit-btn { opacity: 1; }
+
+.w-cell {
+  padding: 11px 14px;
+  font-size: 12.5px;
+  color: var(--text);
+  line-height: 1.4;
+  border-right: 1px solid var(--border);
+}
+.w-cell:last-child { border-right: none; }
+.w-cell-label {
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--text-3);
+  margin-bottom: 2px;
+}
+
+.w-what { }
+.w-what-text { font-weight: 600; color: var(--text); }
+
+.w-when {
+  text-align: center;
+}
+.w-when-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+.w-when-text.past   { color: #b91c1c; }
+.w-when-text.today  { color: #7c3aed; font-weight: 700; }
+.w-when-text.soon   { color: #b45309; }
+
+.w-why { color: var(--text-2); font-size: 12px; }
+
+.w-actions {
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.w-edit-btn {
+  width: 26px; height: 26px;
+  border-radius: 5px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--text-3);
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: all .12s;
+}
+.w-edit-btn:hover { background: var(--border); color: var(--text-2); }
+
+.watch-empty {
+  padding: 28px 16px;
+  text-align: center;
+  color: var(--text-3);
+  font-size: 12.5px;
+}
+
+@media (max-width: 680px) {
+  .watch-item {
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+  }
+  .w-cell { border-right: none; border-bottom: 1px solid var(--border); }
+  .w-when { text-align: left; }
+}
+
 /* ─── ARCHIVE MODAL ──────────────────────────────────────────────── */
 function openArchive() {
   const done = items.filter(i => i.done);
@@ -929,11 +1137,135 @@ function hide(id) { document.getElementById(id).classList.add('hidden'); }
 function bgClose(e, id) { if (e.target === e.currentTarget) hide(id); }
 
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { hide('cardOverlay'); hide('arcOverlay'); }
+  if (e.key === 'Escape') { hide('cardOverlay'); hide('arcOverlay'); hide('watchOverlay'); }
   if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
     if (!document.getElementById('cardOverlay').classList.contains('hidden')) saveItem();
+    if (!document.getElementById('watchOverlay').classList.contains('hidden')) saveWatch();
   }
 });
+
+/* ─── WATCH ──────────────────────────────────────────────────────── */
+let watchItems = [];
+let watchEditId = null;
+
+function loadWatch() {
+  try { return JSON.parse(localStorage.getItem('matrix_watch_v1') || '[]'); } catch { return []; }
+}
+function persistWatch() { localStorage.setItem('matrix_watch_v1', JSON.stringify(watchItems)); }
+
+watchItems = loadWatch();
+renderWatch();
+
+function renderWatch() {
+  document.getElementById('watchCount').textContent = watchItems.length;
+
+  const list = document.getElementById('watchList');
+  if (!watchItems.length) {
+    list.innerHTML = '<div class="watch-empty">Nenhum item em acompanhamento</div>';
+    return;
+  }
+
+  list.innerHTML = watchItems.map(w => {
+    const whenClass = getWhenClass(w.when);
+    return `
+    <div class="watch-item">
+      <div class="w-cell w-what">
+        <div class="w-cell-label">O que é</div>
+        <div class="w-what-text">${esc(w.what)}</div>
+      </div>
+      <div class="w-cell w-when">
+        <div class="w-cell-label">Quando</div>
+        <div class="w-when-text ${whenClass}">${esc(w.when)}</div>
+      </div>
+      <div class="w-cell w-why">
+        <div class="w-cell-label">Por que acompanhar</div>
+        ${esc(w.why || '—')}
+      </div>
+      <div class="w-cell w-actions">
+        <button class="w-edit-btn" onclick="openWatchEdit('${w.id}')" title="Editar">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* Try to parse date from free-text "when" field for styling */
+function getWhenClass(whenStr) {
+  if (!whenStr) return '';
+  // look for dd/mm/yyyy or dd/mm pattern
+  const match = whenStr.match(/(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?/);
+  if (!match) return '';
+  const now  = new Date();
+  const year = match[3] ? (match[3].length === 2 ? 2000 + Number(match[3]) : Number(match[3])) : now.getFullYear();
+  const d    = new Date(year, Number(match[2]) - 1, Number(match[1]));
+  if (isNaN(d)) return '';
+  const diff = Math.floor((d - new Date(now.getFullYear(), now.getMonth(), now.getDate())) / 86400000);
+  if (diff < 0)  return 'past';
+  if (diff === 0) return 'today';
+  if (diff <= 7) return 'soon';
+  return '';
+}
+
+function openWatchNew() {
+  watchEditId = null;
+  document.getElementById('wTitle').textContent   = 'Novo item — Acompanhar';
+  document.getElementById('wWhat').value          = '';
+  document.getElementById('wWhen').value          = '';
+  document.getElementById('wWhy').value           = '';
+  document.getElementById('wSaveBtn').disabled    = true;
+  document.getElementById('wSaveBtn').textContent = 'Criar';
+  document.getElementById('wDelBtn').style.display = 'none';
+  show('watchOverlay');
+  setTimeout(() => document.getElementById('wWhat').focus(), 60);
+}
+
+function openWatchEdit(id) {
+  const w = watchItems.find(x => x.id === id);
+  if (!w) return;
+  watchEditId = id;
+  document.getElementById('wTitle').textContent   = 'Editar item';
+  document.getElementById('wWhat').value          = w.what;
+  document.getElementById('wWhen').value          = w.when;
+  document.getElementById('wWhy').value           = w.why || '';
+  document.getElementById('wSaveBtn').disabled    = false;
+  document.getElementById('wSaveBtn').textContent = 'Salvar';
+  document.getElementById('wDelBtn').style.display = '';
+  show('watchOverlay');
+  setTimeout(() => document.getElementById('wWhat').focus(), 60);
+}
+
+function closeWatch() { hide('watchOverlay'); }
+
+function checkWatchSave() {
+  const ok = document.getElementById('wWhat').value.trim() &&
+             document.getElementById('wWhen').value.trim();
+  document.getElementById('wSaveBtn').disabled = !ok;
+}
+
+function saveWatch() {
+  const what = document.getElementById('wWhat').value.trim();
+  const when = document.getElementById('wWhen').value.trim();
+  if (!what || !when) return;
+  const why = document.getElementById('wWhy').value.trim();
+
+  if (watchEditId) {
+    const w = watchItems.find(x => x.id === watchEditId);
+    if (w) { w.what = what; w.when = when; w.why = why; }
+  } else {
+    watchItems.push({ id: uid(), what, when, why });
+  }
+  persistWatch(); renderWatch(); closeWatch();
+}
+
+function deleteWatch() {
+  if (!watchEditId) return;
+  watchItems = watchItems.filter(x => x.id !== watchEditId);
+  persistWatch(); renderWatch(); closeWatch();
+}
 </script>
 </body>
 </html>
