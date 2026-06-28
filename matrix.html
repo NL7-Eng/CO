@@ -132,6 +132,7 @@ body { font-family: var(--font); font-size: 14px; background: var(--bg); color: 
 /* ── CARD (minimal: title + meta only) ── */
 .card {
   background: var(--surface); border: 1px solid var(--border);
+  border-left: 3px solid var(--border);
   border-radius: 7px; padding: 8px 10px; cursor: pointer;
   transition: box-shadow .12s, border-color .12s, opacity .13s;
   display: flex; flex-direction: column; gap: 6px;
@@ -688,14 +689,10 @@ function renderQ(qid) {
     var it = visible[k];
     var isActive = panelId === it.id;
 
-    /* tag pills */
-    var tags = '';
-    for (var t = 0; t < it.tags.length; t++) {
-      for (var td = 0; td < TAGS.length; td++) {
-        if (TAGS[td].id === it.tags[t]) tags += '<span class="tpill ' + TAGS[td].cls + '">' + TAGS[td].label + '</span>';
-      }
-    }
-    /* owner */
+    /* left border color from first tag */
+    var TAG_COLORS = { pessoal: '#1d6fbf', minha: '#16864a', time: '#b45309' };
+    var borderColor = it.tags && it.tags.length ? (TAG_COLORS[it.tags[0]] || 'var(--border)') : 'var(--border)';
+    /* owner badge */
     var owner = '';
     if (it.quadrant === 3) {
       if (it.owner === 'none') owner = '<span class="own-none">Sem responsavel</span>';
@@ -708,11 +705,14 @@ function renderQ(qid) {
       var pct = Math.round(prog.done / prog.total * 100);
       progHtml = '<div class="cprog-wrap"><div class="cprog-bar" style="width:' + pct + '%"></div></div>';
     }
-    /* meta row (only if there's something to show) */
-    var metaHtml = (tags || owner) ? '<div class="cmeta">' + tags + owner + '<span class="cdate">' + fmtDate(it.createdAt) + '</span></div>' : '<div class="cmeta"><span class="cdate">' + fmtDate(it.createdAt) + '</span></div>';
+    /* meta row */
+    var metaHtml = owner
+      ? '<div class="cmeta">' + owner + '<span class="cdate">' + fmtDate(it.createdAt) + '</span></div>'
+      : '<div class="cmeta"><span class="cdate">' + fmtDate(it.createdAt) + '</span></div>';
 
     html += '<div class="card' + (it.done ? ' done' : '') + (dragId === it.id ? ' dragging' : '') + (isActive ? ' active' : '') + '"'
       + ' id="c' + it.id + '" draggable="true"'
+      + ' style="border-left-color:' + borderColor + '"'
       + ' ondragstart="dragStart(\'' + it.id + '\')"'
       + ' ondragend="dragEnd()"'
       + ' onclick="openPanel(\'' + it.id + '\')">'
