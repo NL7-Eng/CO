@@ -579,9 +579,11 @@ var items   = [];
 var filter  = 'all';
 var editId  = null;
 var mTags   = [];
-var mOwner  = null;
-var dragId  = null;
-var wItems  = [];
+var mOwner      = null;
+var dragId      = null;
+var dragIndEl   = null; // element currently showing drag-above/below indicator
+var dragIndCls  = null; // which class it has
+var wItems      = [];
 var wEditId = null;
 var panelId = null; // currently open item in panel
 
@@ -762,22 +764,27 @@ function dragDrop(e, qid) {
 }
 
 function clearDragIndicators() {
-  var cards = document.querySelectorAll('.card.drag-above, .card.drag-below');
-  for (var i = 0; i < cards.length; i++) {
-    cards[i].classList.remove('drag-above', 'drag-below');
+  if (dragIndEl) {
+    dragIndEl.classList.remove('drag-above', 'drag-below');
+    dragIndEl  = null;
+    dragIndCls = null;
   }
 }
 
 function cardDragOver(e, targetId) {
   e.preventDefault();
-  e.stopPropagation(); // prevent quadrant dragOver from firing
+  e.stopPropagation();
   if (!dragId || dragId === targetId) return;
-  clearDragIndicators();
   var el = document.getElementById('c' + targetId);
   if (!el) return;
   var rect = el.getBoundingClientRect();
-  var mid  = rect.top + rect.height / 2;
-  el.classList.add(e.clientY < mid ? 'drag-above' : 'drag-below');
+  var cls  = e.clientY < rect.top + rect.height / 2 ? 'drag-above' : 'drag-below';
+  /* bail early if nothing changed — avoids pointless classList writes */
+  if (dragIndEl === el && dragIndCls === cls) return;
+  clearDragIndicators();
+  el.classList.add(cls);
+  dragIndEl  = el;
+  dragIndCls = cls;
 }
 
 function cardDrop(e, targetId) {
