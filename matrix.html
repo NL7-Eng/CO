@@ -150,6 +150,20 @@ body { font-family: var(--font); font-size: 14px; background: var(--bg); color: 
   accent-color: #6366f1; margin-top: 0;
 }
 .ctitle { font-size: 12.5px; font-weight: 600; flex: 1; line-height: 1.35; color: var(--text); }
+.carrows {
+  display: flex; flex-direction: column; gap: 1px; flex-shrink: 0;
+  opacity: 0; transition: opacity .12s; margin-left: 2px;
+}
+.card:hover .carrows { opacity: 1; }
+.carr {
+  width: 18px; height: 16px; border: none; background: none; cursor: pointer;
+  color: var(--t3); font-size: 10px; display: flex; align-items: center;
+  justify-content: center; border-radius: 3px; padding: 0; line-height: 1;
+  transition: background .1s, color .1s;
+}
+.carr:hover { background: var(--bg); color: var(--text); }
+.carr:disabled { opacity: .2; cursor: default; }
+.carr:disabled:hover { background: none; color: var(--t3); }
 
 /* progress bar for checklist */
 .cprog-wrap { height: 3px; background: var(--border); border-radius: 99px; overflow: hidden; }
@@ -712,6 +726,8 @@ function renderQ(qid) {
     /* meta row — only owner badge if present, no date */
     var metaHtml = owner ? '<div class="cmeta">' + owner + '</div>' : '';
 
+    var isFirst = k === 0;
+    var isLast  = k === visible.length - 1;
     html += '<div class="card' + (it.done ? ' done' : '') + (dragId === it.id ? ' dragging' : '') + (isActive ? ' active' : '') + '"'
       + ' id="c' + it.id + '" draggable="true"'
       + ' style="border-left-color:' + borderColor + '"'
@@ -724,6 +740,10 @@ function renderQ(qid) {
       + '<input type="checkbox" class="ccheck"' + (it.done ? ' checked' : '')
       + ' onchange="togDone(\'' + it.id + '\')" onclick="event.stopPropagation()" />'
       + '<span class="ctitle">' + esc(it.title) + '</span>'
+      + '<div class="carrows" onclick="event.stopPropagation()">'
+      + '<button class="carr" onclick="moveCard(\'' + it.id + '\',-1)"' + (isFirst ? ' disabled' : '') + '>&#9650;</button>'
+      + '<button class="carr" onclick="moveCard(\'' + it.id + '\',1)"'  + (isLast  ? ' disabled' : '') + '>&#9660;</button>'
+      + '</div>'
       + '</div>'
       + progHtml
       + metaHtml
@@ -824,6 +844,33 @@ function cardDrop(e, targetId) {
   saveItems(); renderAll();
   if (panelId === dragId) refreshPanel();
   dragId = null;
+}
+
+/* ── MOVE CARD (arrow buttons) ── */
+function moveCard(id, dir) {
+  /* find all items in the same quadrant in their current order */
+  var item = getItem(id);
+  if (!item) return;
+  var qid = item.quadrant;
+  /* collect global indices of items in this quadrant */
+  var qIndices = [];
+  for (var i = 0; i < items.length; i++) {
+    if (items[i].quadrant === qid) qIndices.push(i);
+  }
+  /* find position of this item within quadrant */
+  var pos = -1;
+  for (var j = 0; j < qIndices.length; j++) {
+    if (items[qIndices[j]].id === id) { pos = j; break; }
+  }
+  var newPos = pos + dir;
+  if (newPos < 0 || newPos >= qIndices.length) return;
+  /* swap in the global array */
+  var idxA = qIndices[pos];
+  var idxB = qIndices[newPos];
+  var tmp = items[idxA];
+  items[idxA] = items[idxB];
+  items[idxB] = tmp;
+  saveItems(); renderAll();
 }
 
 /* ── DONE ── */
