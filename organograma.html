@@ -1491,34 +1491,35 @@ function buildLegItems(usedG,hasOrphan,hasVaga){
 }
 function calcLegH(items,totalW){
   if(!items.length) return 0;
-  const legPad=24, legItemH=32;
-  // Max 4 columns; each column gets equal share of total width
-  const legCols=Math.min(4,items.length);
+  const legPad=24, legItemH=32, colGap=32, barW=16;
+  // Measure each item's natural width, cap at 320px
+  const tmp=document.createElement('canvas').getContext('2d');
+  tmp.font='500 13px "DM Sans",sans-serif';
+  const colW=Math.min(320,Math.max(...items.map(it=>tmp.measureText(it.label).width))+barW+colGap);
+  const legCols=Math.max(1,Math.floor((totalW-legPad*2+colGap)/( colW+colGap)));
   const legRows=Math.ceil(items.length/legCols);
-  return legRows*legItemH+legPad*2;
+  return legRows*legItemH+legPad*2+16; // +16 for title row
 }
 function drawLegend(ctx,items,ly0,totalW){
   if(!items.length) return;
-  const legPad=24, legItemH=32;
-  const legCols=Math.min(4,items.length);
+  const legPad=24, legItemH=32, colGap=32, barW=4;
+  const tmp=document.createElement('canvas').getContext('2d');
+  tmp.font='500 13px "DM Sans",sans-serif';
+  const colW=Math.min(320,Math.max(...items.map(it=>tmp.measureText(it.label).width))+barW+colGap+12);
+  const legCols=Math.max(1,Math.floor((totalW-legPad*2+colGap)/(colW+colGap)));
   const legRows=Math.ceil(items.length/legCols);
-  const legH=legRows*legItemH+legPad*2;
-  const colW=totalW/legCols;
+  const legH=legRows*legItemH+legPad*2+16;
   ctx.fillStyle='#f9fafb'; ctx.fillRect(0,ly0,totalW,legH);
   ctx.strokeStyle='#e5e7eb'; ctx.lineWidth=1;
   ctx.beginPath(); ctx.moveTo(0,ly0); ctx.lineTo(totalW,ly0); ctx.stroke();
-  // Section title
   ctx.fillStyle='#6b7280'; ctx.font='600 11px "DM Sans",sans-serif';
   ctx.fillText('LEGENDA',legPad,ly0+16);
   items.forEach((item,i)=>{
     const col=i%legCols, row=Math.floor(i/legCols);
-    const lx=col*colW+legPad, ly=ly0+legPad+6+row*legItemH;
-    // Color bar
-    ctx.fillStyle=item.color; ctx.fillRect(lx,ly,4,20);
-    // Label — truncate to column width
+    const lx=legPad+col*(colW+colGap), ly=ly0+legPad+16+row*legItemH;
+    ctx.fillStyle=item.color; ctx.fillRect(lx,ly+2,barW,18);
     ctx.fillStyle='#1f2937'; ctx.font='500 13px "DM Sans",sans-serif';
-    const maxLabelW=colW-legPad-20;
-    ctx.fillText(trunc(ctx,item.label,maxLabelW),lx+12,ly+14);
+    ctx.fillText(trunc(ctx,item.label,colW-barW-8),lx+barW+8,ly+14);
   });
 }
 function exportPNG(){
