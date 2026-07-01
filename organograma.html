@@ -1482,6 +1482,45 @@ function initCanvasPan(){
 /* ══ ZOOM / EXPORT ══ */
 function zoom(d){ _zoom=Math.min(3,Math.max(0.2,_zoom+d)); drawChart(); }
 function resetZoom(){ _zoom=1; drawChart(); }
+function buildLegItems(usedG,hasOrphan,hasVaga){
+  return [
+    ...usedG.map(g=>{ const pal=PAL[g.palIdx%PAL.length]; return {color:pal.border,label:g.nome}; }),
+    ...(hasOrphan?[{color:'#fbbf24',label:'Sem vínculo'}]:[]),
+    ...(hasVaga?[{color:'#9ca3af',label:'TBD = To Be Defined (posição em aberto)'}]:[]),
+  ];
+}
+function calcLegH(items,totalW){
+  if(!items.length) return 0;
+  const legPad=24, legItemH=32;
+  // Max 4 columns; each column gets equal share of total width
+  const legCols=Math.min(4,items.length);
+  const legRows=Math.ceil(items.length/legCols);
+  return legRows*legItemH+legPad*2;
+}
+function drawLegend(ctx,items,ly0,totalW){
+  if(!items.length) return;
+  const legPad=24, legItemH=32;
+  const legCols=Math.min(4,items.length);
+  const legRows=Math.ceil(items.length/legCols);
+  const legH=legRows*legItemH+legPad*2;
+  const colW=totalW/legCols;
+  ctx.fillStyle='#f9fafb'; ctx.fillRect(0,ly0,totalW,legH);
+  ctx.strokeStyle='#e5e7eb'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(0,ly0); ctx.lineTo(totalW,ly0); ctx.stroke();
+  // Section title
+  ctx.fillStyle='#6b7280'; ctx.font='600 11px "DM Sans",sans-serif';
+  ctx.fillText('LEGENDA',legPad,ly0+16);
+  items.forEach((item,i)=>{
+    const col=i%legCols, row=Math.floor(i/legCols);
+    const lx=col*colW+legPad, ly=ly0+legPad+6+row*legItemH;
+    // Color bar
+    ctx.fillStyle=item.color; ctx.fillRect(lx,ly,4,20);
+    // Label — truncate to column width
+    ctx.fillStyle='#1f2937'; ctx.font='500 13px "DM Sans",sans-serif';
+    const maxLabelW=colW-legPad-20;
+    ctx.fillText(trunc(ctx,item.label,maxLabelW),lx+12,ly+14);
+  });
+}
 function exportPNG(){
   if(!people.length) return;
   const titulo=curOrg()?.nome||'Organograma';
@@ -1497,44 +1536,17 @@ function exportPNG(){
   const usedG=grupos.filter(g=>people.some(p=>p.grupoId===g.id&&p.tipo!=='corp'));
   const noSupNonCorp=people.filter(p=>!p.superiorId&&p.tipo!=='corp');
   const hasOrphan=noSupNonCorp.some(p=>(p.nivel||1)===1)&&noSupNonCorp.some(p=>(p.nivel||1)>1);
-  const legItems=[
-    ...usedG.map(g=>{ const pal=PAL[g.palIdx%PAL.length]; return {color:pal.border,label:g.nome}; }),
-    ...(hasOrphan?[{color:'#fbbf24',label:'Sem vínculo',dashed:true}]:[]),
-  ];
-  const legPad=20, legItemW=290, legItemH=28;
-  const legCols=Math.floor(Math.max(1,canvas.width/legItemW));
-  const legRows=Math.ceil(legItems.length/legCols);
-  const legH=legItems.length?(legRows*legItemH+legPad*2):0;
-
-  // Logical dimensions (zoom=1)
-  const lw=canvas.width, lh=canvas.height+titleH+legH;
+  const legItems=buildLegItems(usedG,hasOrphan,false);
+  const lw=canvas.width, lh=canvas.height+titleH+calcLegH(legItems,lw);
   const tc=document.createElement('canvas');
   tc.width=lw*DPR; tc.height=lh*DPR;
   const ctx=tc.getContext('2d');
   ctx.scale(DPR,DPR);
   ctx.fillStyle='#fff'; ctx.fillRect(0,0,lw,lh);
-
-  // Title
   ctx.fillStyle='#1f2937'; ctx.font='700 16px "Space Grotesk",sans-serif';
   ctx.textAlign='center'; ctx.fillText(titulo,lw/2,28); ctx.textAlign='left';
-
-  // Chart (canvas was rendered at zoom=1 temporarily above)
   ctx.drawImage(canvas,0,titleH,lw,canvas.height);
-
-  // Legend
-  if(legItems.length){
-    const ly0=canvas.height+titleH;
-    ctx.fillStyle='#f9fafb'; ctx.fillRect(0,ly0,lw,legH);
-    ctx.strokeStyle='#e5e7eb'; ctx.lineWidth=1;
-    ctx.beginPath(); ctx.moveTo(0,ly0); ctx.lineTo(lw,ly0); ctx.stroke();
-    legItems.forEach((item,i)=>{
-      const col=i%legCols, row=Math.floor(i/legCols);
-      const lx=legPad+col*legItemW, ly=ly0+legPad+row*legItemH;
-      ctx.fillStyle=item.color; ctx.fillRect(lx,ly+4,4,18);
-      ctx.fillStyle='#374151'; ctx.font='500 12px "DM Sans",sans-serif';
-      ctx.fillText(item.label,lx+10,ly+16);
-    });
-  }
+  drawLegend(ctx,legItems,canvas.height+titleH,lw);
 
   const a=document.createElement('a');
   a.download=`${titulo.replace(/[^a-z0-9]/gi,'_').toLowerCase()}.png`;
@@ -1555,17 +1567,8 @@ function printChart(){
   const noSupNonCorp=people.filter(p=>!p.superiorId&&p.tipo!=='corp');
   const hasOrphan=noSupNonCorp.some(p=>(p.nivel||1)===1)&&noSupNonCorp.some(p=>(p.nivel||1)>1);
   const hasVaga=people.some(p=>p.tipo==='vaga');
-  const legItems=[
-    ...usedG.map(g=>{ const pal=PAL[g.palIdx%PAL.length]; return {color:pal.border,label:g.nome}; }),
-    ...(hasOrphan?[{color:'#fbbf24',label:'Sem vínculo',dashed:true}]:[]),
-    ...(hasVaga?[{color:'#9ca3af',label:'TBD = To Be Defined (posição em aberto)'}]:[]),
-  ];
-  const legPad=20, legItemW=290, legItemH=28;
-  const legCols=Math.floor(Math.max(1,canvas.width/legItemW));
-  const legRows=Math.ceil(legItems.length/legCols);
-  const legH=legItems.length?(legRows*legItemH+legPad*2):0;
-
-  const lw=canvas.width, lh=canvas.height+titleH+legH;
+  const legItems=buildLegItems(usedG,hasOrphan,hasVaga);
+  const lw=canvas.width, lh=canvas.height+titleH+calcLegH(legItems,lw);
   const tc=document.createElement('canvas');
   tc.width=lw*DPR; tc.height=lh*DPR;
   const ctx=tc.getContext('2d');
@@ -1574,19 +1577,7 @@ function printChart(){
   ctx.fillStyle='#1f2937'; ctx.font='700 16px "Space Grotesk",sans-serif';
   ctx.textAlign='center'; ctx.fillText(titulo,lw/2,28); ctx.textAlign='left';
   ctx.drawImage(canvas,0,titleH,lw,canvas.height);
-  if(legItems.length){
-    const ly0=canvas.height+titleH;
-    ctx.fillStyle='#f9fafb'; ctx.fillRect(0,ly0,lw,legH);
-    ctx.strokeStyle='#e5e7eb'; ctx.lineWidth=1;
-    ctx.beginPath(); ctx.moveTo(0,ly0); ctx.lineTo(lw,ly0); ctx.stroke();
-    legItems.forEach((item,i)=>{
-      const col=i%legCols, row=Math.floor(i/legCols);
-      const lx=legPad+col*legItemW, ly=ly0+legPad+row*legItemH;
-      ctx.fillStyle=item.color; ctx.fillRect(lx,ly+4,4,18);
-      ctx.fillStyle='#374151'; ctx.font='500 12px "DM Sans",sans-serif';
-      ctx.fillText(item.label,lx+10,ly+16);
-    });
-  }
+  drawLegend(ctx,legItems,canvas.height+titleH,lw);
 
   const dataUrl=tc.toDataURL('image/png');
   const w=window.open('','_blank');
