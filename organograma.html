@@ -192,6 +192,10 @@
     .chart-toolbar label{font-size:.78rem;color:var(--muted)}
     .zb{background:#f3f4f6;border:1px solid var(--border);border-radius:5px;padding:4px 12px;font-size:.86rem;cursor:pointer;font-family:var(--fd);font-weight:600;color:var(--text)}
     .zb:hover{background:#e5e7eb}
+    .layout-toggle{display:flex;border:1px solid var(--border);border-radius:5px;overflow:hidden}
+    .lbt{padding:4px 11px;font-size:.8rem;font-family:var(--fd);font-weight:600;cursor:pointer;border:none;background:#f3f4f6;color:var(--muted);transition:all .15s}
+    .lbt.on{background:#1f2937;color:#fff}
+    .lbt:hover:not(.on){background:#e5e7eb}
     .chart-empty{text-align:center;padding:60px 20px;color:var(--subtle);font-size:.9rem;font-style:italic}
     .canvas-wrap{overflow:auto;border-radius:var(--r);background:#fafafa;border:1px solid var(--border-l)}
     #orgCanvas{display:block;cursor:grab}
@@ -429,7 +433,11 @@
       <div class="chart-section" id="chartSection" style="display:none">
         <div class="card-title" style="border-bottom:none;margin-bottom:0;padding-bottom:0">Organograma</div>
         <div class="chart-toolbar">
-          <label>Zoom:</label>
+          <div class="layout-toggle">
+            <button class="lbt on" id="lbt-tb" onclick="setLayoutMode('tb')" title="Layout horizontal (padrão)">⬛ Horizontal</button>
+            <button class="lbt"    id="lbt-lr" onclick="setLayoutMode('lr')" title="Layout vertical (retrato)">▭ Vertical</button>
+          </div>
+          <label style="margin-left:6px">Zoom:</label>
           <button class="zb" onclick="zoom(-.15)">−</button>
           <button class="zb" onclick="zoom(+.15)">+</button>
           <button class="zb" onclick="resetZoom()">Ajustar</button>
@@ -490,6 +498,7 @@ let _gid=1,_pid=1,_oid=1,_currentOrgId=null;
 let _zoom=1,_editId=null,_swColor=0,_drawerMode='add',_inlineEditId=null,_searchQ='';
 let _dTipo='normal', _dSuportaIds=[];
 let _chartNodes=[], _chartOx=0, _chartOy=0;
+let _layoutMode='tb';
 
 /* ══ ORG MANAGEMENT ══ */
 function curOrg(){ return orgs.find(o=>o.id===_currentOrgId)||orgs[0]; }
@@ -1031,10 +1040,33 @@ function buildTree(treePpl, corpPpl){
 function layout(roots){
   const nodes=[];
   function sw(n){ if(!n.children.length){n._w=NW;return NW;} const t=n.children.reduce((s,c)=>s+sw(c),0)+HG*(n.children.length-1); n._w=Math.max(NW,t);return n._w; }
-  // Y is determined by nivel field, not by tree depth
-  function pl(n,x){ n._x=x+(n._w-NW)/2; n._y=(( n.nivel||1)-1)*(NH+VG); nodes.push(n);if(!n.children.length)return;let cx=x;n.children.forEach(c=>{pl(c,cx);cx+=c._w+HG;}); }
+  function pl(n,x){ n._x=x+(n._w-NW)/2; n._y=((n.nivel||1)-1)*(NH+VG); nodes.push(n);if(!n.children.length)return;let cx=x;n.children.forEach(c=>{pl(c,cx);cx+=c._w+HG;}); }
   let x=0;roots.forEach(r=>{sw(r);pl(r,x);x+=r._w+HG*2;});
   return nodes;
+}
+
+function layoutLR(roots){
+  const nodes=[];
+  const HSTEP=NW+56, VG_LR=12;
+  function sh(n,d){
+    n._depth=d;
+    if(!n.children.length){n._h=NH;return NH;}
+    const total=n.children.reduce((s,c)=>s+sh(c,d+1)+VG_LR,0)-VG_LR;
+    n._h=Math.max(NH,total); return n._h;
+  }
+  function pl(n,y){
+    n._x=n._depth*HSTEP; n._y=y+(n._h-NH)/2; nodes.push(n);
+    let cy=y; n.children.forEach(c=>{pl(c,cy);cy+=c._h+VG_LR;});
+  }
+  let y=0; roots.forEach(r=>{sh(r,0);pl(r,y);y+=r._h+56;});
+  return nodes;
+}
+
+function setLayoutMode(m){
+  _layoutMode=m;
+  document.getElementById('lbt-tb').classList.toggle('on',m==='tb');
+  document.getElementById('lbt-lr').classList.toggle('on',m==='lr');
+  drawChart();
 }
 
 function drawCard(ctx,n,ox,oy){
@@ -1104,21 +1136,19 @@ function drawChart(){
   const treePpl=allNonCorp.filter(p=>!orphanIds.has(p.id));
 
   const roots=buildTree(treePpl,corpPpl);
-  const treeNodes=layout(roots);
+  const isLR=_layoutMode==='lr';
+  const treeNodes=isLR?layoutLR(roots):layout(roots);
 
-  // Place orphans to the right of the tree, at Y = (nivel-1)*(NH+VG)
-  // Multiple orphans at the same nivel stack vertically
+  // Orphans — placed to the right/bottom of tree
   const nivelCount={};
   const orphanNodes=orphanPpl.map(p=>{
     const nvl=p.nivel||1;
     const idx=nivelCount[nvl]=(nivelCount[nvl]||0);
     nivelCount[nvl]++;
-    return {...p,_x:0,_y:(nvl-1)*(NH+VG)+idx*(NH+HG),children:[],_w:NW,_isOrphan:true};
+    const baseY=isLR ? (treeNodes.length?Math.max(...treeNodes.map(n=>n._y+NH)):0)+64 : (nvl-1)*(NH+VG)+idx*(NH+HG);
+    const baseX=isLR ? idx*(NW+HG) : (treeNodes.length?Math.max(...treeNodes.map(n=>n._x+NW)):0)+64;
+    return {...p,_x:baseX,_y:baseY,children:[],_w:NW,_isOrphan:true};
   });
-
-  const treeMaxX=treeNodes.length?Math.max(...treeNodes.map(n=>n._x+NW)):0;
-  const COL_GAP=64;
-  orphanNodes.forEach(n=>n._x=treeMaxX+COL_GAP);
 
   const allNodes=[...treeNodes,...orphanNodes];
   if(!allNodes.length){ cs.style.display='none'; ce.style.display=''; return; }
@@ -1133,28 +1163,31 @@ function drawChart(){
   ctx.save(); ctx.scale(_zoom,_zoom);
   const ox=-minX+pad, oy=-minY+pad;
 
-  // Hierarchy connectors — skip corp nodes (no vertical line from parent to corp)
+  // Hierarchy connectors
   ctx.strokeStyle='#64748b'; ctx.lineWidth=1.5; ctx.setLineDash([]);
   treeNodes.forEach(n=>{
     if(!n.children.length||n._isCorp) return;
-    const pnv=n.nivel||1;
     n.children.forEach(c=>{
       if(c._isCorp) return;
-      const cnv=c.nivel||1;
-      const fromX=n._x+ox+NW/2, toX=c._x+ox+NW/2;
       ctx.beginPath();
-      if(cnv===pnv){
-        // Same nivel → horizontal, right-center to left-center
-        const midY=n._y+oy+NH/2;
-        ctx.moveTo(n._x+ox+NW,midY); ctx.lineTo(c._x+ox,midY);
-      } else if(cnv>pnv){
-        // Child below → elbow at midpoint between parent bottom and child top
-        const fromY=n._y+oy+NH, toY=c._y+oy, midY=(fromY+toY)/2;
-        ctx.moveTo(fromX,fromY);ctx.lineTo(fromX,midY);ctx.lineTo(toX,midY);ctx.lineTo(toX,toY);
+      if(isLR){
+        const fromX=n._x+ox+NW, fromY=n._y+oy+NH/2;
+        const toX=c._x+ox,       toY=c._y+oy+NH/2;
+        const midX=(fromX+toX)/2;
+        ctx.moveTo(fromX,fromY);ctx.lineTo(midX,fromY);ctx.lineTo(midX,toY);ctx.lineTo(toX,toY);
       } else {
-        // Child above → elbow at midpoint between parent top and child bottom
-        const fromY=n._y+oy, toY=c._y+oy+NH, midY=(fromY+toY)/2;
-        ctx.moveTo(fromX,fromY);ctx.lineTo(fromX,midY);ctx.lineTo(toX,midY);ctx.lineTo(toX,toY);
+        const pnv=n.nivel||1, cnv=c.nivel||1;
+        const fromX=n._x+ox+NW/2, toX=c._x+ox+NW/2;
+        if(cnv===pnv){
+          const midY=n._y+oy+NH/2;
+          ctx.moveTo(n._x+ox+NW,midY); ctx.lineTo(c._x+ox,midY);
+        } else if(cnv>pnv){
+          const fromY=n._y+oy+NH, toY=c._y+oy, midY=(fromY+toY)/2;
+          ctx.moveTo(fromX,fromY);ctx.lineTo(fromX,midY);ctx.lineTo(toX,midY);ctx.lineTo(toX,toY);
+        } else {
+          const fromY=n._y+oy, toY=c._y+oy+NH, midY=(fromY+toY)/2;
+          ctx.moveTo(fromX,fromY);ctx.lineTo(fromX,midY);ctx.lineTo(toX,midY);ctx.lineTo(toX,toY);
+        }
       }
       ctx.stroke();
     });
