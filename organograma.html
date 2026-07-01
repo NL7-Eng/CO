@@ -1008,7 +1008,7 @@ function importJSON(ev){
 }
 
 /* ══ CHART ══ */
-const NW=196,NH=104,HG=28,VG=52;
+const NW=196,NH=120,HG=28,VG=52;
 
 function grpOrder(grupoId){ const i=grupos.findIndex(g=>g.id===grupoId); return i<0?999:i; }
 
@@ -1153,7 +1153,7 @@ function wrapText(ctx,text,maxW,maxLines){
 function drawCard(ctx,n,ox,oy){
   const x=n._x+ox, y=n._y+oy;
   const tx=x+12, maxTW=NW-22;
-  const PAD_TOP=12, LH_CARGO=16, LH_NOME=15, LH_NAME=14, GAP=8, LH_GRP=12;
+  const PAD_TOP=12, LH_CARGO=19, LH_NOME=18, LH_NAME=17, GAP=8, LH_GRP=12;
 
   // ── GROUP CARD ──
   if(n._isGroup){
@@ -1168,13 +1168,13 @@ function drawCard(ctx,n,ox,oy){
     rr(ctx,x,y,NW,NH,8); ctx.strokeStyle='#e5e7eb'; ctx.lineWidth=1; ctx.stroke();
     let cy=y+PAD_TOP;
     // Cargo (×count) — up to 2 lines
-    ctx.fillStyle='#111827'; ctx.font='700 13px "DM Sans",sans-serif';
+    ctx.fillStyle='#111827'; ctx.font='700 15px "DM Sans",sans-serif';
     const cargoLines=wrapText(ctx,`${n.cargo} (×${members.length})`,maxTW,2);
     cargoLines.forEach(l=>{cy+=LH_CARGO;ctx.fillText(l,tx,cy);});
     cy+=GAP;
     // Names — one per line, up to space available
     const names=members.map(m=>m.tipo==='vaga'?'TBD':m.nome.toUpperCase());
-    ctx.fillStyle='#6b7280'; ctx.font='500 11px "DM Sans",sans-serif';
+    ctx.fillStyle='#6b7280'; ctx.font='500 13px "DM Sans",sans-serif';
     const maxNameLines=Math.min(names.length,3);
     for(let i=0;i<maxNameLines;i++){
       if(cy+LH_NAME+GAP>y+NH-LH_GRP-GAP) break;
@@ -1213,20 +1213,20 @@ function drawCard(ctx,n,ox,oy){
   }
 
   let cy=y+PAD_TOP;
-  // Cargo — bold 13px, up to 2 lines
+  // Cargo — bold 15px, up to 2 lines
   ctx.fillStyle=isCorp?'#1e3a5f':isOrph?'#92400e':'#111827';
-  ctx.font='700 13px "DM Sans",sans-serif';
+  ctx.font='700 15px "DM Sans",sans-serif';
   const cargoLines=wrapText(ctx,n.cargo,maxTW,2);
   cargoLines.forEach(l=>{cy+=LH_CARGO;ctx.fillText(l,tx2,cy);});
   cy+=GAP;
   // Nome — 11px, up to 2 lines (or TBD for vagas)
   if(isVaga){
-    ctx.fillStyle='#9ca3af'; ctx.font='500 11px "DM Sans",sans-serif';
+    ctx.fillStyle='#9ca3af'; ctx.font='500 13px "DM Sans",sans-serif';
     cy+=LH_NOME; ctx.fillText('TBD',tx2,cy);
     cy+=GAP;
   } else {
     ctx.fillStyle=isCorp?'#1e3a5f':isOrph?'#92400e':'#111827';
-    ctx.font='500 11px "DM Sans",sans-serif';
+    ctx.font='500 13px "DM Sans",sans-serif';
     const nomeLines=wrapText(ctx,n.nome.toUpperCase(),maxTW,2);
     nomeLines.forEach(l=>{cy+=LH_NOME;ctx.fillText(l,tx2,cy);});
     cy+=GAP;
