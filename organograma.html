@@ -1017,7 +1017,23 @@ function grpOrder(grupoId){ const i=grupos.findIndex(g=>g.id===grupoId); return 
 function buildTree(treePpl, corpPpl){
   const map={};
   treePpl.forEach(p=>{map[p.id]={...p,children:[]};});
-  treePpl.forEach(p=>{ if(p.superiorId&&map[p.superiorId]) map[p.superiorId].children.push(map[p.id]); });
+
+  // Map every group member's original id → group node id (representative id)
+  const memberToGroup={};
+  treePpl.forEach(p=>{
+    if(p._isGroup&&p._groupMembers)
+      p._groupMembers.forEach(m=>{ memberToGroup[m.id]=p.id; });
+  });
+  // Resolve a raw superiorId to whichever node is actually in the map
+  const resolve=id=>memberToGroup[id]||id;
+
+  treePpl.forEach(p=>{
+    if(!p.superiorId) return;
+    const parentId=resolve(p.superiorId);
+    if(map[parentId]&&map[parentId]!==map[p.id]) map[parentId].children.push(map[p.id]);
+  });
+  // Remove duplicate children (group members may all resolve to the same parent)
+  Object.values(map).forEach(n=>{ const seen=new Set(); n.children=n.children.filter(c=>{ if(seen.has(c.id))return false; seen.add(c.id);return true; }); });
   Object.values(map).forEach(n=>n.children.sort((a,b)=>grpOrder(a.grupoId)-grpOrder(b.grupoId)));
 
   // Group corp by primary support target
@@ -1025,7 +1041,8 @@ function buildTree(treePpl, corpPpl){
   const soloCorps=[];
   corpPpl.forEach(cp=>{
     const tid=(cp.suportaIds||[])[0];
-    if(tid&&map[tid]){ (byTarget[tid]=byTarget[tid]||[]).push({...cp,children:[],_isCorp:true}); }
+    const rtid=tid?resolve(tid):null;
+    if(rtid&&map[rtid]){ (byTarget[rtid]=byTarget[rtid]||[]).push({...cp,children:[],_isCorp:true}); }
     else soloCorps.push({...cp,children:[],_isCorp:true});
   });
 
@@ -1037,7 +1054,7 @@ function buildTree(treePpl, corpPpl){
   });
 
   // Build root list; corps appear BEFORE their root target (leftmost position)
-  const roots=treePpl.filter(p=>!p.superiorId||!map[p.superiorId]).map(r=>map[r.id]);
+  const roots=treePpl.filter(p=>{ const pid=resolve(p.superiorId||''); return !p.superiorId||!map[pid]; }).map(r=>map[r.id]);
   roots.sort((a,b)=>grpOrder(a.grupoId)-grpOrder(b.grupoId));
   const finalRoots=[];
   soloCorps.forEach(cp=>finalRoots.push(cp));
@@ -1084,18 +1101,17 @@ function setGroupMode(on){
 
 function computeGroupedPeople(){
   if(!_groupMode) return people;
-  // People who have subordinates break out as individuals
-  const superiorIds=new Set(people.filter(p=>p.superiorId).map(p=>p.superiorId));
-  const breakOut=people.filter(p=>superiorIds.has(p.id)||p.tipo==='corp');
-  const candidates=people.filter(p=>!superiorIds.has(p.id)&&p.tipo!=='corp');
+  // Corps always break out individually; everyone else is a candidate
+  const breakOut=people.filter(p=>p.tipo==='corp');
+  const candidates=people.filter(p=>p.tipo!=='corp');
   // Group by cargo+nivel+superiorId+grupoId
-  const map={};
+  const gmap={};
   candidates.forEach(p=>{
     const key=`${p.cargo}||${p.nivel||1}||${p.superiorId||''}||${p.grupoId||''}`;
-    (map[key]=map[key]||[]).push(p);
+    (gmap[key]=gmap[key]||[]).push(p);
   });
   const result=[...breakOut];
-  Object.values(map).forEach(members=>{
+  Object.values(gmap).forEach(members=>{
     if(members.length<2){ result.push(...members); return; }
     result.push({
       id:members[0].id, nome:members[0].cargo, cargo:members[0].cargo,
