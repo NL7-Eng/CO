@@ -263,11 +263,20 @@
     <div class="cad-grid">
       <div class="card">
         <div class="card-title">Funções</div>
-        <div class="tag-wrap" id="funcTags"></div>
+        <div style="max-height:280px;overflow-y:auto;border:1px solid var(--border-l);border-radius:6px;margin-bottom:10px">
+          <table style="width:100%;border-collapse:collapse" id="funcTable">
+            <thead><tr style="background:#f9fafb;position:sticky;top:0">
+              <th style="padding:7px 10px;text-align:left;font-size:.75rem;color:var(--subtle);font-weight:600;border-bottom:1px solid var(--border-l)">Função</th>
+              <th style="padding:7px 10px;text-align:center;font-size:.75rem;color:var(--subtle);font-weight:600;border-bottom:1px solid var(--border-l);width:48px">Uso</th>
+              <th style="width:32px;border-bottom:1px solid var(--border-l)"></th>
+            </tr></thead>
+            <tbody id="funcTbody"></tbody>
+          </table>
+        </div>
         <div class="input-row">
           <div class="fg" style="flex:1">
             <label for="newFunc">Nova função</label>
-            <input type="text" id="newFunc" placeholder="Ex: Analista de dados" />
+            <input type="text" id="newFunc" placeholder="Ex: Analista de dados" onkeydown="if(event.key==='Enter')addFuncao()" />
           </div>
           <button class="btn btn-primary btn-sm" onclick="addFuncao()" style="align-self:flex-end">+ Adicionar</button>
         </div>
@@ -862,11 +871,44 @@ function initSwatches(){
 function pickSw(i){ _swColor=i; document.querySelectorAll('#grpSwatches .sw').forEach((e,j)=>e.classList.toggle('sel',j===i)); }
 
 /* ══ RENDER CADASTRO ══ */
+function renameFuncao(oldName, newName){
+  newName=newName.trim();
+  if(!newName||newName===oldName) return;
+  if(funcoes.some(f=>f.toLowerCase()===newName.toLowerCase()&&f!==oldName)){
+    alert('Já existe uma função com esse nome.'); return;
+  }
+  const idx=funcoes.indexOf(oldName); if(idx<0) return;
+  funcoes[idx]=newName;
+  people.forEach(p=>{ if(p.cargo===oldName) p.cargo=newName; });
+  sortFuncoes(); renderAll(); saveLocal();
+}
+function startRenameFunc(oldName){
+  const row=document.querySelector(`tr[data-func="${CSS.escape(oldName)}"]`); if(!row) return;
+  const cell=row.querySelector('.func-name-cell'); if(!cell||cell.querySelector('input')) return;
+  const inp=document.createElement('input');
+  inp.className='ie-input'; inp.value=oldName; inp.style.margin='0';
+  cell.innerHTML=''; cell.appendChild(inp); inp.focus(); inp.select();
+  const save=()=>{ const v=inp.value; renderCadastro(); if(v!==oldName) renameFuncao(oldName,v); };
+  inp.addEventListener('blur',save);
+  inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){inp.blur();} if(e.key==='Escape'){renderCadastro();} });
+}
 function renderCadastro(){
-  const ft=document.getElementById('funcTags');
-  ft.innerHTML=funcoes.length
-    ? funcoes.map(f=>`<span class="func-tag">${esc(f)}<button class="tag-x" onclick="removeFuncao('${esc(f).replace(/'/g,"\\'")}')">✕</button></span>`).join('')
-    : '<span style="color:var(--subtle);font-size:.8rem;font-style:italic;grid-column:1/-1">Nenhuma função cadastrada.</span>';
+  const tbody=document.getElementById('funcTbody');
+  if(tbody){
+    if(!funcoes.length){
+      tbody.innerHTML='<tr><td colspan="3" style="padding:12px 10px;color:var(--subtle);font-size:.8rem;font-style:italic">Nenhuma função cadastrada.</td></tr>';
+    } else {
+      tbody.innerHTML=funcoes.map(f=>{
+        const cnt=people.filter(p=>p.cargo===f).length;
+        const safe=f.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+        return `<tr data-func="${esc(f)}" style="border-bottom:1px solid var(--border-l)">
+          <td class="func-name-cell ie-cell" style="padding:7px 10px;font-size:.85rem" onclick="startRenameFunc('${safe}')">${esc(f)}</td>
+          <td style="padding:7px 10px;text-align:center;font-size:.8rem;color:var(--subtle)">${cnt}</td>
+          <td style="padding:4px 6px;text-align:center"><button class="tag-x" title="Remover" onclick="removeFuncao('${safe}')">✕</button></td>
+        </tr>`;
+      }).join('');
+    }
+  }
   const gl=document.getElementById('grpList');
   gl.innerHTML=grupos.length
     ? grupos.map((g,i)=>{ const p=PAL[g.palIdx%PAL.length];
