@@ -1023,19 +1023,19 @@ function buildTree(treePpl, corpPpl){
     else soloCorps.push({...cp,children:[],_isCorp:true});
   });
 
-  // Insert corp nodes right after their target in each parent's children list
+  // Insert corp nodes BEFORE their target in each parent's children list (left side)
   Object.values(map).forEach(n=>{
     const nc=[];
-    n.children.forEach(c=>{ nc.push(c); (byTarget[c.id]||[]).forEach(cp=>nc.push(cp)); });
+    n.children.forEach(c=>{ (byTarget[c.id]||[]).forEach(cp=>nc.push(cp)); nc.push(c); });
     n.children=nc;
   });
 
-  // Build root list; corp whose target is a root appear right after it
+  // Build root list; corps appear BEFORE their root target (leftmost position)
   const roots=treePpl.filter(p=>!p.superiorId||!map[p.superiorId]).map(r=>map[r.id]);
   roots.sort((a,b)=>grpOrder(a.grupoId)-grpOrder(b.grupoId));
   const finalRoots=[];
-  roots.forEach(r=>{ finalRoots.push(r); (byTarget[r.id]||[]).forEach(cp=>finalRoots.push(cp)); });
   soloCorps.forEach(cp=>finalRoots.push(cp));
+  roots.forEach(r=>{ (byTarget[r.id]||[]).forEach(cp=>finalRoots.push(cp)); finalRoots.push(r); });
   return finalRoots;
 }
 
@@ -1237,17 +1237,20 @@ function drawChart(){
         const midX=(fromX+toX)/2;
         ctx.moveTo(fromX,fromY);ctx.lineTo(midX,fromY);ctx.lineTo(midX,toY);ctx.lineTo(toX,toY);
       } else {
-        const pnv=n.nivel||1, cnv=c.nivel||1;
         const fromX=n._x+ox+NW/2, toX=c._x+ox+NW/2;
-        if(cnv===pnv){
-          const midY=n._y+oy+NH/2;
-          ctx.moveTo(n._x+ox+NW,midY); ctx.lineTo(c._x+ox,midY);
-        } else if(cnv>pnv){
-          const fromY=n._y+oy+NH, toY=c._y+oy, midY=(fromY+toY)/2;
-          ctx.moveTo(fromX,fromY);ctx.lineTo(fromX,midY);ctx.lineTo(toX,midY);ctx.lineTo(toX,toY);
+        const pTop=n._y+oy, pBot=n._y+oy+NH, cTop=c._y+oy, cBot=c._y+oy+NH;
+        if(Math.abs(pTop-cTop)<4){
+          // Same visual row: elbow above both cards
+          const aboveY=pTop-20;
+          ctx.moveTo(fromX,pTop);ctx.lineTo(fromX,aboveY);ctx.lineTo(toX,aboveY);ctx.lineTo(toX,cTop);
+        } else if(cTop>=pBot-4){
+          // Child visually below
+          const midY=(pBot+cTop)/2;
+          ctx.moveTo(fromX,pBot);ctx.lineTo(fromX,midY);ctx.lineTo(toX,midY);ctx.lineTo(toX,cTop);
         } else {
-          const fromY=n._y+oy, toY=c._y+oy+NH, midY=(fromY+toY)/2;
-          ctx.moveTo(fromX,fromY);ctx.lineTo(fromX,midY);ctx.lineTo(toX,midY);ctx.lineTo(toX,toY);
+          // Child visually above
+          const midY=(pTop+cBot)/2;
+          ctx.moveTo(fromX,pTop);ctx.lineTo(fromX,midY);ctx.lineTo(toX,midY);ctx.lineTo(toX,cBot);
         }
       }
       ctx.stroke();
@@ -1314,11 +1317,14 @@ function renderLegend(){
   const noSupNonCorp2=people.filter(p=>!p.superiorId&&p.tipo!=='corp');
   const hasN1Root2=noSupNonCorp2.some(p=>(p.nivel||1)===1);
   const hasOrphan=hasN1Root2&&noSupNonCorp2.some(p=>(p.nivel||1)>1);
-  const hasVaga=people.some(p=>p.tipo==='vaga');
-  if(hasCorp||hasSupport||hasOrphan||hasVaga){
+  if(hasOrphan){
     html+=`<div class="leg-block"><div class="leg-title">Legenda visual</div><div class="leg-grid">`;
-    if(hasOrphan) html+=`<div class="leg-item"><div style="width:28px;height:22px;border:1.5px dashed #fbbf24;border-radius:4px;background:#fffbeb;flex-shrink:0"></div><div class="leg-info"><div class="lc">Sem vínculo</div><div class="ln">Posicionado no nível correspondente</div></div></div>`;
-    if(hasVaga) html+=`<div class="leg-item"><div style="width:28px;text-align:center;font-size:.72rem;font-weight:700;color:#9ca3af;line-height:22px;flex-shrink:0">TBD</div><div class="leg-info"><div class="lc">To Be Defined</div><div class="ln">Vaga em aberto — nome a definir</div></div></div>`;
+    html+=`<div class="leg-item"><div style="width:28px;height:22px;border:1.5px dashed #fbbf24;border-radius:4px;background:#fffbeb;flex-shrink:0"></div><div class="leg-info"><div class="lc">Sem vínculo</div><div class="ln">Posicionado no nível correspondente</div></div></div>`;
+    html+='</div></div>';
+  }
+  if(people.some(p=>p.tipo==='vaga')){
+    html+=`<div class="leg-block"><div class="leg-title">Vagas em aberto</div><div class="leg-grid">`;
+    html+=`<div class="leg-item"><div style="width:28px;text-align:center;font-size:.75rem;font-weight:700;color:#9ca3af;line-height:22px;flex-shrink:0">TBD</div><div class="leg-info"><div class="lc">To Be Defined</div><div class="ln">Posição em aberto — nome a definir</div></div></div>`;
     html+='</div></div>';
   }
   wrap.innerHTML=html;
