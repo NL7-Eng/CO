@@ -228,9 +228,14 @@
     .vaga-qty input{width:48px;text-align:center;font-size:1rem;font-weight:700;padding:4px}
 
     @media print{
-      header p,.main-tabs,.org-bar,.chart-toolbar,.back-link,.brow,.drawer,.search-row{display:none!important}
-      body{background:#fff}.card{box-shadow:none;border:none;padding:0}
+      header p,.main-tabs,.org-bar,.chart-toolbar,.back-link,.brow,.drawer,.search-row,
+      #legWrap,.drawer-overlay{display:none!important}
+      body,html{background:#fff;margin:0;padding:0}
+      .card{box-shadow:none;border:none;padding:0}
       *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+      #canvasWrap{overflow:visible!important;width:100%!important;height:auto!important}
+      #orgCanvas{max-width:100%!important;height:auto!important;display:block}
+      @page{size:landscape;margin:10mm}
     }
   </style>
 </head>
@@ -444,6 +449,7 @@
           <button class="zb" onclick="resetZoom()">Ajustar</button>
           <button class="zb" id="gbt" onclick="setGroupMode(!_groupMode)" title="Agrupar pessoas com mesmo cargo e nível">Agrupar</button>
 <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="exportPNG()">Exportar PNG</button>
+          <button class="btn btn-ghost btn-sm" onclick="printChart()">🖨 Imprimir</button>
           <button class="btn btn-ghost btn-sm" onclick="window.print()">Imprimir</button>
         </div>
         <div class="canvas-wrap" id="canvasWrap">
@@ -1169,7 +1175,7 @@ function drawCard(ctx,n,ox,oy){
     ctx.fillStyle='#9ca3af'; ctx.font='500 10px "DM Sans",sans-serif';
     ctx.fillText('TBD',tx2,y+38);
   } else {
-    ctx.fillStyle=isCorp?'#334155':isOrph?'#b45309':'#6b7280';
+    ctx.fillStyle=isCorp?'#1e3a5f':isOrph?'#92400e':'#111827';
     ctx.font='500 10px "DM Sans",sans-serif';
     ctx.fillText(trunc(ctx,n.nome.toUpperCase(),NW-18),tx2,y+38);
   }
@@ -1390,53 +1396,67 @@ function initCanvasPan(){
 function zoom(d){ _zoom=Math.min(3,Math.max(0.2,_zoom+d)); drawChart(); }
 function resetZoom(){ _zoom=1; drawChart(); }
 function exportPNG(){
-  const canvas=document.getElementById('orgCanvas'); if(!canvas||!people.length) return;
+  if(!people.length) return;
   const titulo=curOrg()?.nome||'Organograma';
-  const titleH=44;
 
-  // Build legend lines
+  // Render at zoom=1 regardless of current zoom, with 2× DPI for sharpness
+  const DPR=2;
+  const savedZoom=_zoom; _zoom=1;
+  drawChart();
+  const canvas=document.getElementById('orgCanvas');
+  _zoom=savedZoom; drawChart();
+
+  const titleH=44;
   const usedG=grupos.filter(g=>people.some(p=>p.grupoId===g.id&&p.tipo!=='corp'));
-  const hasCorp=people.some(p=>p.tipo==='corp');
   const noSupNonCorp=people.filter(p=>!p.superiorId&&p.tipo!=='corp');
   const hasOrphan=noSupNonCorp.some(p=>(p.nivel||1)===1)&&noSupNonCorp.some(p=>(p.nivel||1)>1);
-  const hasSupport=people.some(p=>(p.suportaIds||[]).length>0);
   const legItems=[
     ...usedG.map(g=>{ const pal=PAL[g.palIdx%PAL.length]; return {color:pal.border,label:g.nome}; }),
     ...(hasOrphan?[{color:'#fbbf24',label:'Sem vínculo',dashed:true}]:[]),
   ];
-  const legPad=20, legItemW=180, legItemH=26, legCols=Math.floor(Math.max(1,canvas.width/legItemW));
+  const legPad=20, legItemW=200, legItemH=28;
+  const legCols=Math.floor(Math.max(1,canvas.width/legItemW));
   const legRows=Math.ceil(legItems.length/legCols);
   const legH=legItems.length?(legRows*legItemH+legPad*2):0;
 
+  // Logical dimensions (zoom=1)
+  const lw=canvas.width, lh=canvas.height+titleH+legH;
   const tc=document.createElement('canvas');
-  tc.width=canvas.width; tc.height=canvas.height+titleH+legH;
+  tc.width=lw*DPR; tc.height=lh*DPR;
   const ctx=tc.getContext('2d');
-  ctx.fillStyle='#fff'; ctx.fillRect(0,0,tc.width,tc.height);
+  ctx.scale(DPR,DPR);
+  ctx.fillStyle='#fff'; ctx.fillRect(0,0,lw,lh);
 
   // Title
   ctx.fillStyle='#1f2937'; ctx.font='700 16px "Space Grotesk",sans-serif';
-  ctx.textAlign='center'; ctx.fillText(titulo,tc.width/2,28); ctx.textAlign='left';
+  ctx.textAlign='center'; ctx.fillText(titulo,lw/2,28); ctx.textAlign='left';
 
-  // Chart
-  ctx.drawImage(canvas,0,titleH);
+  // Chart (canvas was rendered at zoom=1 temporarily above)
+  ctx.drawImage(canvas,0,titleH,lw,canvas.height);
 
   // Legend
   if(legItems.length){
-    ctx.fillStyle='#f9fafb'; ctx.fillRect(0,canvas.height+titleH,tc.width,legH);
+    const ly0=canvas.height+titleH;
+    ctx.fillStyle='#f9fafb'; ctx.fillRect(0,ly0,lw,legH);
     ctx.strokeStyle='#e5e7eb'; ctx.lineWidth=1;
-    ctx.beginPath(); ctx.moveTo(0,canvas.height+titleH); ctx.lineTo(tc.width,canvas.height+titleH); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0,ly0); ctx.lineTo(lw,ly0); ctx.stroke();
     legItems.forEach((item,i)=>{
       const col=i%legCols, row=Math.floor(i/legCols);
-      const lx=legPad+col*legItemW, ly=canvas.height+titleH+legPad+row*legItemH;
-      ctx.fillStyle=item.color; ctx.fillRect(lx,ly+4,4,16);
-      ctx.fillStyle='#374151'; ctx.font='500 11px "DM Sans",sans-serif';
-      ctx.fillText(item.label,lx+10,ly+15);
+      const lx=legPad+col*legItemW, ly=ly0+legPad+row*legItemH;
+      ctx.fillStyle=item.color; ctx.fillRect(lx,ly+4,4,18);
+      ctx.fillStyle='#374151'; ctx.font='500 12px "DM Sans",sans-serif';
+      ctx.fillText(item.label,lx+10,ly+16);
     });
   }
 
   const a=document.createElement('a');
   a.download=`${titulo.replace(/[^a-z0-9]/gi,'_').toLowerCase()}.png`;
   a.href=tc.toDataURL('image/png'); a.click();
+}
+
+function printChart(){
+  const saved=_zoom; _zoom=1; drawChart();
+  setTimeout(()=>{ window.print(); setTimeout(()=>{ _zoom=saved; drawChart(); },500); },150);
 }
 
 /* ══ INLINE EDIT ══ */
