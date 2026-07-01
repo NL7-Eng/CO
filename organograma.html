@@ -227,16 +227,6 @@
     .vaga-qty button{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:#f9fafb;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
     .vaga-qty input{width:48px;text-align:center;font-size:1rem;font-weight:700;padding:4px}
 
-    @media print{
-      header p,.main-tabs,.org-bar,.chart-toolbar,.back-link,.brow,.drawer,.search-row,
-      #legWrap,.drawer-overlay{display:none!important}
-      body,html{background:#fff;margin:0;padding:0}
-      .card{box-shadow:none;border:none;padding:0}
-      *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-      #canvasWrap{overflow:visible!important;width:100%!important;height:auto!important}
-      #orgCanvas{max-width:100%!important;height:auto!important;display:block}
-      @page{size:landscape;margin:10mm}
-    }
   </style>
 </head>
 <body>
@@ -458,8 +448,7 @@
           <button class="zb" onclick="resetZoom()">Ajustar</button>
           <button class="zb" id="gbt" onclick="setGroupMode(!_groupMode)" title="Agrupar pessoas com mesmo cargo e nível">Agrupar</button>
 <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="exportPNG()">Exportar PNG</button>
-          <button class="btn btn-ghost btn-sm" onclick="printChart()">🖨 Imprimir</button>
-          <button class="btn btn-ghost btn-sm" onclick="window.print()">Imprimir</button>
+          <button class="btn btn-ghost btn-sm" onclick="printChart()">🖨 Imprimir / PDF</button>
         </div>
         <div class="canvas-wrap" id="canvasWrap">
           <canvas id="orgCanvas"></canvas>
@@ -1553,8 +1542,67 @@ function exportPNG(){
 }
 
 function printChart(){
-  const saved=_zoom; _zoom=1; drawChart();
-  setTimeout(()=>{ window.print(); setTimeout(()=>{ _zoom=saved; drawChart(); },500); },150);
+  if(!people.length) return;
+  // Build the same composed image as exportPNG but open in a print-ready page
+  const titulo=curOrg()?.nome||'Organograma';
+  const DPR=2;
+  const savedZoom=_zoom; _zoom=1; drawChart();
+  const canvas=document.getElementById('orgCanvas');
+  _zoom=savedZoom; drawChart();
+
+  const titleH=44;
+  const usedG=grupos.filter(g=>people.some(p=>p.grupoId===g.id&&p.tipo!=='corp'));
+  const noSupNonCorp=people.filter(p=>!p.superiorId&&p.tipo!=='corp');
+  const hasOrphan=noSupNonCorp.some(p=>(p.nivel||1)===1)&&noSupNonCorp.some(p=>(p.nivel||1)>1);
+  const hasVaga=people.some(p=>p.tipo==='vaga');
+  const legItems=[
+    ...usedG.map(g=>{ const pal=PAL[g.palIdx%PAL.length]; return {color:pal.border,label:g.nome}; }),
+    ...(hasOrphan?[{color:'#fbbf24',label:'Sem vínculo',dashed:true}]:[]),
+    ...(hasVaga?[{color:'#9ca3af',label:'TBD = To Be Defined (posição em aberto)'}]:[]),
+  ];
+  const legPad=20, legItemW=200, legItemH=28;
+  const legCols=Math.floor(Math.max(1,canvas.width/legItemW));
+  const legRows=Math.ceil(legItems.length/legCols);
+  const legH=legItems.length?(legRows*legItemH+legPad*2):0;
+
+  const lw=canvas.width, lh=canvas.height+titleH+legH;
+  const tc=document.createElement('canvas');
+  tc.width=lw*DPR; tc.height=lh*DPR;
+  const ctx=tc.getContext('2d');
+  ctx.scale(DPR,DPR);
+  ctx.fillStyle='#fff'; ctx.fillRect(0,0,lw,lh);
+  ctx.fillStyle='#1f2937'; ctx.font='700 16px "Space Grotesk",sans-serif';
+  ctx.textAlign='center'; ctx.fillText(titulo,lw/2,28); ctx.textAlign='left';
+  ctx.drawImage(canvas,0,titleH,lw,canvas.height);
+  if(legItems.length){
+    const ly0=canvas.height+titleH;
+    ctx.fillStyle='#f9fafb'; ctx.fillRect(0,ly0,lw,legH);
+    ctx.strokeStyle='#e5e7eb'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(0,ly0); ctx.lineTo(lw,ly0); ctx.stroke();
+    legItems.forEach((item,i)=>{
+      const col=i%legCols, row=Math.floor(i/legCols);
+      const lx=legPad+col*legItemW, ly=ly0+legPad+row*legItemH;
+      ctx.fillStyle=item.color; ctx.fillRect(lx,ly+4,4,18);
+      ctx.fillStyle='#374151'; ctx.font='500 12px "DM Sans",sans-serif';
+      ctx.fillText(item.label,lx+10,ly+16);
+    });
+  }
+
+  const dataUrl=tc.toDataURL('image/png');
+  const w=window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8">
+    <title>${titulo}</title>
+    <style>
+      *{margin:0;padding:0;box-sizing:border-box}
+      body{background:#fff;display:flex;justify-content:center;align-items:flex-start;min-height:100vh}
+      img{max-width:100%;height:auto;display:block}
+      @media print{@page{size:landscape;margin:8mm}body{display:block}img{width:100%;height:auto}}
+    </style>
+  </head><body>
+    <img src="${dataUrl}" />
+    <script>window.onload=function(){window.print();}<\/script>
+  </body></html>`);
+  w.document.close();
 }
 
 /* ══ INLINE EDIT ══ */
