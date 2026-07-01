@@ -1215,10 +1215,15 @@ function drawCard(ctx,n,ox,oy){
       cy+=LH_NAME; ctx.fillText(trunc(ctx,names[i],maxTW),tx,cy); shown++;
     }
     if(names.length>shown){cy+=LH_NAME-2;ctx.fillStyle='#9ca3af';ctx.font='500 11px "DM Sans",sans-serif';ctx.fillText(`+${names.length-shown} mais`,tx,cy);}
-    // Grupo label anchored to bottom
+    // Grupo label anchored to bottom, up to 2 lines
     if(g){
       ctx.fillStyle=accent;
-      fillFit(ctx,g.nome.toUpperCase(),tx,y+NH-5,maxTW,11,8,'600');
+      ctx.font='600 9px "DM Sans",sans-serif';
+      const gLines=wrapText(ctx,g.nome.toUpperCase(),maxTW,2);
+      const lineH=11;
+      gLines.slice().reverse().forEach((l,ri)=>{
+        fillFit(ctx,l,tx,y+NH-5-ri*lineH,maxTW,9,7,'600');
+      });
     }
     return;
   }
@@ -1265,17 +1270,23 @@ function drawCard(ctx,n,ox,oy){
     nomeLines.forEach(l=>{cy+=LH_NOME;ctx.fillText(l,tx2,cy);});
     cy+=GAP;
   }
-  // Label line (grupo / compartilhado / sem vínculo) — anchored near bottom
-  const labelY=y+NH-6;
+  // Label line (grupo / compartilhado / sem vínculo) — up to 2 lines, anchored near bottom
   if(isCorp){
-    ctx.fillStyle='#334155'; ctx.font='600 11px "DM Sans",sans-serif';
-    ctx.fillText('COMPARTILHADO',tx2,labelY);
+    ctx.fillStyle='#334155';
+    fillFit(ctx,'COMPARTILHADO',tx2,y+NH-6,maxTW,11,7,'600');
   } else if(isOrph){
-    ctx.fillStyle='#d97706'; ctx.font='600 11px "DM Sans",sans-serif';
-    ctx.fillText('SEM VÍNCULO',tx2,labelY);
+    ctx.fillStyle='#d97706';
+    fillFit(ctx,'SEM VÍNCULO',tx2,y+NH-6,maxTW,11,7,'600');
   } else if(g){
     ctx.fillStyle=accent;
-    fillFit(ctx,g.nome.toUpperCase(),tx2,labelY,maxTW,11,8,'600');
+    ctx.font='600 9px "DM Sans",sans-serif';
+    const gLines=wrapText(ctx,g.nome.toUpperCase(),maxTW,2);
+    // Draw from bottom up so 1-line and 2-line labels both end at the same position
+    const lineH=11;
+    gLines.slice().reverse().forEach((l,ri)=>{
+      const ly=y+NH-5-ri*lineH;
+      fillFit(ctx,l,tx2,ly,maxTW,9,7,'600');
+    });
   }
 }
 
@@ -1586,9 +1597,14 @@ function printChart(){
     <title>${titulo}</title>
     <style>
       *{margin:0;padding:0;box-sizing:border-box}
-      body{background:#fff;display:flex;justify-content:center;align-items:flex-start;min-height:100vh}
-      img{max-width:100%;height:auto;display:block}
-      @media print{@page{size:landscape;margin:8mm}body{display:block}img{width:100%;height:auto}}
+      html,body{background:#fff;width:100%;height:100%}
+      body{display:flex;align-items:flex-start;justify-content:center;padding:0}
+      img{width:100%;height:auto;display:block}
+      @media print{
+        @page{size:landscape;margin:6mm}
+        html,body{width:100%;height:auto}
+        img{width:100%;height:auto;page-break-inside:avoid}
+      }
     </style>
   </head><body>
     <img src="${dataUrl}" />
