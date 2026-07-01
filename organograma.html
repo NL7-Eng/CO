@@ -443,6 +443,7 @@
           <button class="zb" onclick="zoom(+.15)">+</button>
           <button class="zb" onclick="resetZoom()">Ajustar</button>
           <button class="zb" id="gbt" onclick="setGroupMode(!_groupMode)" title="Agrupar pessoas com mesmo cargo e nível">Agrupar</button>
+          <button class="zb" onclick="recalcNiveis()" title="Recalcular níveis com base na hierarquia">Recalcular níveis</button>
           <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="exportPNG()">Exportar PNG</button>
           <button class="btn btn-ghost btn-sm" onclick="window.print()">Imprimir</button>
         </div>
@@ -783,6 +784,18 @@ function deletePerson(id){
   _inlineEditId=null; renderAll(); saveLocal();
 }
 function clearPeople(){ if(!confirm('Limpar toda a equipe?')) return; people=[]; _pid=1; _inlineEditId=null; renderAll(); saveLocal(); }
+function recalcNiveis(){
+  if(!confirm('Recalcular todos os níveis com base na hierarquia atual?\n\nNíveis serão redefinidos pela distância da raiz.')) return;
+  const visited=new Set();
+  const queue=people.filter(p=>!p.superiorId||!people.find(x=>x.id===p.superiorId)).map(p=>({p,n:1}));
+  while(queue.length){
+    const {p,n}=queue.shift();
+    if(visited.has(p.id)) continue;
+    visited.add(p.id); p.nivel=n;
+    people.filter(c=>c.superiorId===p.id).forEach(c=>queue.push({p:c,n:n+1}));
+  }
+  renderAll(); saveLocal();
+}
 function fixCircular(id){
   function desc(pid){ const ch=people.filter(p=>p.superiorId===pid).map(p=>p.id); return ch.concat(ch.flatMap(c=>desc(c))); }
   const self=people.find(p=>p.id===id);
@@ -1101,6 +1114,14 @@ function computeGroupedPeople(){
   return result;
 }
 
+function fillFit(ctx,text,x,y,maxW,maxSize,minSize,fontStyle){
+  for(let s=maxSize;s>=minSize;s-=0.5){
+    ctx.font=`${fontStyle} ${s}px "DM Sans",sans-serif`;
+    if(ctx.measureText(text).width<=maxW){ctx.fillText(text,x,y);return;}
+  }
+  ctx.font=`${fontStyle} ${minSize}px "DM Sans",sans-serif`;
+  ctx.fillText(trunc(ctx,text,maxW),x,y);
+}
 function drawCard(ctx,n,ox,oy){
   const x=n._x+ox, y=n._y+oy;
 
@@ -1116,8 +1137,8 @@ function drawCard(ctx,n,ox,oy){
     rr(ctx,x,y,5,NH,[8,0,0,8]); ctx.fillStyle=accent; ctx.fill();
     rr(ctx,x,y,NW,NH,8); ctx.strokeStyle='#e5e7eb'; ctx.lineWidth=1; ctx.stroke();
     // Cargo (×count)
-    ctx.fillStyle='#111827'; ctx.font='700 11px "DM Sans",sans-serif';
-    ctx.fillText(trunc(ctx,`${n.cargo} (×${members.length})`,NW-20),x+12,y+20);
+    ctx.fillStyle='#111827';
+    fillFit(ctx,`${n.cargo} (×${members.length})`,x+12,y+20,NW-20,11,7,'700');
     // Names — up to 3 on one line, remainder as "..."
     const names=members.map(m=>m.tipo==='vaga'?'TBD':m.nome);
     const shown=names.slice(0,3).join(' · ')+(names.length>3?` +${names.length-3}`:'' );
@@ -1173,8 +1194,8 @@ function drawCard(ctx,n,ox,oy){
     ctx.fillStyle='#d97706'; ctx.font='600 8.5px "DM Sans",sans-serif';
     ctx.fillText('SEM VÍNCULO',tx2,y+56);
   } else if(g){
-    ctx.fillStyle=accent; ctx.font='600 9px "DM Sans",sans-serif';
-    ctx.fillText(trunc(ctx,g.nome.toUpperCase(),NW-18),tx2,y+56);
+    ctx.fillStyle=accent;
+    fillFit(ctx,g.nome.toUpperCase(),tx2,y+56,NW-18,9,7,'600');
   }
 }
 
@@ -1199,6 +1220,16 @@ function drawChart(){
   const roots=buildTree(treePpl,corpPpl);
   const isLR=_layoutMode==='lr';
   const treeNodes=isLR?layoutLR(roots):layout(roots);
+
+  // Reposition corp nodes adjacent to their connected target
+  {const nodeById={};
+  treeNodes.forEach(n=>{if(n.id) nodeById[n.id]=n;});
+  treeNodes.forEach(n=>{
+    if(!n._isCorp) return;
+    const tid=(n.suportaIds||[])[0];
+    const target=tid?nodeById[tid]:null;
+    if(target){ n._x=target._x-NW-HG; n._y=target._y; }
+  });}
 
   // Orphans — placed to the right/bottom of tree
   const nivelCount={};
