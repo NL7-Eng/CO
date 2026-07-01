@@ -443,8 +443,7 @@
           <button class="zb" onclick="zoom(+.15)">+</button>
           <button class="zb" onclick="resetZoom()">Ajustar</button>
           <button class="zb" id="gbt" onclick="setGroupMode(!_groupMode)" title="Agrupar pessoas com mesmo cargo e nível">Agrupar</button>
-          <button class="zb" onclick="recalcNiveis()" title="Recalcular níveis com base na hierarquia">Recalcular níveis</button>
-          <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="exportPNG()">Exportar PNG</button>
+<button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="exportPNG()">Exportar PNG</button>
           <button class="btn btn-ghost btn-sm" onclick="window.print()">Imprimir</button>
         </div>
         <div class="canvas-wrap" id="canvasWrap">
@@ -784,18 +783,6 @@ function deletePerson(id){
   _inlineEditId=null; renderAll(); saveLocal();
 }
 function clearPeople(){ if(!confirm('Limpar toda a equipe?')) return; people=[]; _pid=1; _inlineEditId=null; renderAll(); saveLocal(); }
-function recalcNiveis(){
-  if(!confirm('Recalcular todos os níveis com base na hierarquia atual?\n\nNíveis serão redefinidos pela distância da raiz.')) return;
-  const visited=new Set();
-  const queue=people.filter(p=>!p.superiorId||!people.find(x=>x.id===p.superiorId)).map(p=>({p,n:1}));
-  while(queue.length){
-    const {p,n}=queue.shift();
-    if(visited.has(p.id)) continue;
-    visited.add(p.id); p.nivel=n;
-    people.filter(c=>c.superiorId===p.id).forEach(c=>queue.push({p:c,n:n+1}));
-  }
-  renderAll(); saveLocal();
-}
 function fixCircular(id){
   function desc(pid){ const ch=people.filter(p=>p.superiorId===pid).map(p=>p.id); return ch.concat(ch.flatMap(c=>desc(c))); }
   const self=people.find(p=>p.id===id);
