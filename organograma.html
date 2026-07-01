@@ -1008,7 +1008,7 @@ function importJSON(ev){
 }
 
 /* ══ CHART ══ */
-const NW=196,NH=120,HG=28,VG=52;
+const NW=210,NH=112,HG=18,VG=44;
 
 function grpOrder(grupoId){ const i=grupos.findIndex(g=>g.id===grupoId); return i<0?999:i; }
 
@@ -1172,19 +1172,22 @@ function drawCard(ctx,n,ox,oy){
     const cargoLines=wrapText(ctx,`${n.cargo} (×${members.length})`,maxTW,2);
     cargoLines.forEach(l=>{cy+=LH_CARGO;ctx.fillText(l,tx,cy);});
     cy+=GAP;
-    // Names — one per line, up to space available
-    const names=members.map(m=>m.tipo==='vaga'?'TBD':m.nome.toUpperCase());
+    // Names — one per line (collapse repeated TBDs to single entry)
+    const allVaga=members.every(m=>m.tipo==='vaga');
+    const names=allVaga?['TBD']:members.map(m=>m.tipo==='vaga'?'TBD':m.nome.toUpperCase());
     ctx.fillStyle='#6b7280'; ctx.font='500 13px "DM Sans",sans-serif';
-    const maxNameLines=Math.min(names.length,3);
+    const bottomReserve=g?LH_GRP+8:6;
+    const maxNameLines=Math.min(names.length,4);
+    let shown=0;
     for(let i=0;i<maxNameLines;i++){
-      if(cy+LH_NAME+GAP>y+NH-LH_GRP-GAP) break;
-      cy+=LH_NAME; ctx.fillText(trunc(ctx,names[i],maxTW),tx,cy);
+      if(cy+LH_NAME>y+NH-bottomReserve) break;
+      cy+=LH_NAME; ctx.fillText(trunc(ctx,names[i],maxTW),tx,cy); shown++;
     }
-    if(names.length>maxNameLines){cy+=LH_NAME;ctx.fillStyle='#9ca3af';ctx.fillText(`+${names.length-maxNameLines} mais`,tx,cy);}
-    // Grupo label
+    if(names.length>shown){cy+=LH_NAME-2;ctx.fillStyle='#9ca3af';ctx.font='500 11px "DM Sans",sans-serif';ctx.fillText(`+${names.length-shown} mais`,tx,cy);}
+    // Grupo label anchored to bottom
     if(g){
-      ctx.fillStyle=accent; ctx.font='600 9px "DM Sans",sans-serif';
-      fillFit(ctx,g.nome.toUpperCase(),tx,y+NH-6,maxTW,9,7,'600');
+      ctx.fillStyle=accent;
+      fillFit(ctx,g.nome.toUpperCase(),tx,y+NH-5,maxTW,11,8,'600');
     }
     return;
   }
@@ -1234,14 +1237,14 @@ function drawCard(ctx,n,ox,oy){
   // Label line (grupo / compartilhado / sem vínculo) — anchored near bottom
   const labelY=y+NH-6;
   if(isCorp){
-    ctx.fillStyle='#334155'; ctx.font='600 9px "DM Sans",sans-serif';
+    ctx.fillStyle='#334155'; ctx.font='600 11px "DM Sans",sans-serif';
     ctx.fillText('COMPARTILHADO',tx2,labelY);
   } else if(isOrph){
-    ctx.fillStyle='#d97706'; ctx.font='600 9px "DM Sans",sans-serif';
+    ctx.fillStyle='#d97706'; ctx.font='600 11px "DM Sans",sans-serif';
     ctx.fillText('SEM VÍNCULO',tx2,labelY);
   } else if(g){
     ctx.fillStyle=accent;
-    fillFit(ctx,g.nome.toUpperCase(),tx2,labelY,maxTW,9,7,'600');
+    fillFit(ctx,g.nome.toUpperCase(),tx2,labelY,maxTW,11,8,'600');
   }
 }
 
