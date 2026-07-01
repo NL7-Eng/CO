@@ -1501,7 +1501,7 @@ function exportPNG(){
     ...usedG.map(g=>{ const pal=PAL[g.palIdx%PAL.length]; return {color:pal.border,label:g.nome}; }),
     ...(hasOrphan?[{color:'#fbbf24',label:'Sem vínculo',dashed:true}]:[]),
   ];
-  const legPad=20, legItemW=200, legItemH=28;
+  const legPad=20, legItemW=290, legItemH=28;
   const legCols=Math.floor(Math.max(1,canvas.width/legItemW));
   const legRows=Math.ceil(legItems.length/legCols);
   const legH=legItems.length?(legRows*legItemH+legPad*2):0;
@@ -1560,7 +1560,7 @@ function printChart(){
     ...(hasOrphan?[{color:'#fbbf24',label:'Sem vínculo',dashed:true}]:[]),
     ...(hasVaga?[{color:'#9ca3af',label:'TBD = To Be Defined (posição em aberto)'}]:[]),
   ];
-  const legPad=20, legItemW=200, legItemH=28;
+  const legPad=20, legItemW=290, legItemH=28;
   const legCols=Math.floor(Math.max(1,canvas.width/legItemW));
   const legRows=Math.ceil(legItems.length/legCols);
   const legH=legItems.length?(legRows*legItemH+legPad*2):0;
