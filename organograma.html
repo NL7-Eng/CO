@@ -192,6 +192,7 @@
     .chart-toolbar label{font-size:.78rem;color:var(--muted)}
     .zb{background:#f3f4f6;border:1px solid var(--border);border-radius:5px;padding:4px 12px;font-size:.86rem;cursor:pointer;font-family:var(--fd);font-weight:600;color:var(--text)}
     .zb:hover{background:#e5e7eb}
+    .zb.on{background:#1f2937;color:#fff;border-color:#1f2937}
     .layout-toggle{display:flex;border:1px solid var(--border);border-radius:5px;overflow:hidden}
     .lbt{padding:4px 11px;font-size:.8rem;font-family:var(--fd);font-weight:600;cursor:pointer;border:none;background:#f3f4f6;color:var(--muted);transition:all .15s}
     .lbt.on{background:#1f2937;color:#fff}
@@ -441,6 +442,7 @@
           <button class="zb" onclick="zoom(-.15)">−</button>
           <button class="zb" onclick="zoom(+.15)">+</button>
           <button class="zb" onclick="resetZoom()">Ajustar</button>
+          <button class="zb" id="gbt" onclick="setGroupMode(!_groupMode)" title="Agrupar pessoas com mesmo cargo e nível">Agrupar</button>
           <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="exportPNG()">Exportar PNG</button>
           <button class="btn btn-ghost btn-sm" onclick="window.print()">Imprimir</button>
         </div>
@@ -498,7 +500,7 @@ let _gid=1,_pid=1,_oid=1,_currentOrgId=null;
 let _zoom=1,_editId=null,_swColor=0,_drawerMode='add',_inlineEditId=null,_searchQ='';
 let _dTipo='normal', _dSuportaIds=[];
 let _chartNodes=[], _chartOx=0, _chartOy=0;
-let _layoutMode='tb';
+let _layoutMode='tb', _groupMode=false;
 
 /* ══ ORG MANAGEMENT ══ */
 function curOrg(){ return orgs.find(o=>o.id===_currentOrgId)||orgs[0]; }
@@ -1048,17 +1050,16 @@ function layout(roots){
 function layoutLR(roots){
   const nodes=[];
   const HSTEP=NW+56, VG_LR=12;
-  function sh(n,d){
-    n._depth=d;
+  function sh(n){
     if(!n.children.length){n._h=NH;return NH;}
-    const total=n.children.reduce((s,c)=>s+sh(c,d+1)+VG_LR,0)-VG_LR;
+    const total=n.children.reduce((s,c)=>s+sh(c)+VG_LR,0)-VG_LR;
     n._h=Math.max(NH,total); return n._h;
   }
   function pl(n,y){
-    n._x=n._depth*HSTEP; n._y=y+(n._h-NH)/2; nodes.push(n);
+    n._x=((n.nivel||1)-1)*HSTEP; n._y=y+(n._h-NH)/2; nodes.push(n);
     let cy=y; n.children.forEach(c=>{pl(c,cy);cy+=c._h+VG_LR;});
   }
-  let y=0; roots.forEach(r=>{sh(r,0);pl(r,y);y+=r._h+56;});
+  let y=0; roots.forEach(r=>{sh(r);pl(r,y);y+=r._h+56;});
   return nodes;
 }
 
@@ -1069,8 +1070,66 @@ function setLayoutMode(m){
   drawChart();
 }
 
+function setGroupMode(on){
+  _groupMode=on;
+  document.getElementById('gbt').classList.toggle('on',on);
+  drawChart();
+}
+
+function computeGroupedPeople(){
+  if(!_groupMode) return people;
+  // People who have subordinates break out as individuals
+  const superiorIds=new Set(people.filter(p=>p.superiorId).map(p=>p.superiorId));
+  const breakOut=people.filter(p=>superiorIds.has(p.id)||p.tipo==='corp');
+  const candidates=people.filter(p=>!superiorIds.has(p.id)&&p.tipo!=='corp');
+  // Group by cargo+nivel+superiorId+grupoId
+  const map={};
+  candidates.forEach(p=>{
+    const key=`${p.cargo}||${p.nivel||1}||${p.superiorId||''}||${p.grupoId||''}`;
+    (map[key]=map[key]||[]).push(p);
+  });
+  const result=[...breakOut];
+  Object.values(map).forEach(members=>{
+    if(members.length<2){ result.push(...members); return; }
+    result.push({
+      id:members[0].id, nome:members[0].cargo, cargo:members[0].cargo,
+      nivel:members[0].nivel||1, superiorId:members[0].superiorId,
+      grupoId:members[0].grupoId, tipo:members[0].tipo,
+      suportaIds:[], _isGroup:true, _groupMembers:members,
+    });
+  });
+  return result;
+}
+
 function drawCard(ctx,n,ox,oy){
   const x=n._x+ox, y=n._y+oy;
+
+  // ── GROUP CARD ──
+  if(n._isGroup){
+    const members=n._groupMembers;
+    const g=grupos.find(g=>g.id===n.grupoId);
+    const pal=g?PAL[g.palIdx%PAL.length]:null;
+    const accent=pal?pal.border:'#d1d5db';
+    ctx.shadowColor='rgba(0,0,0,.08)'; ctx.shadowBlur=8; ctx.shadowOffsetY=2;
+    rr(ctx,x,y,NW,NH,8); ctx.fillStyle='#fff'; ctx.fill();
+    ctx.shadowColor='transparent'; ctx.shadowBlur=0; ctx.shadowOffsetY=0;
+    rr(ctx,x,y,5,NH,[8,0,0,8]); ctx.fillStyle=accent; ctx.fill();
+    rr(ctx,x,y,NW,NH,8); ctx.strokeStyle='#e5e7eb'; ctx.lineWidth=1; ctx.stroke();
+    // Cargo (×count)
+    ctx.fillStyle='#111827'; ctx.font='700 11px "DM Sans",sans-serif';
+    ctx.fillText(trunc(ctx,`${n.cargo} (×${members.length})`,NW-20),x+12,y+20);
+    // Names — up to 3 on one line, remainder as "..."
+    const names=members.map(m=>m.tipo==='vaga'?'TBD':m.nome);
+    const shown=names.slice(0,3).join(' · ')+(names.length>3?` +${names.length-3}`:'' );
+    ctx.fillStyle='#6b7280'; ctx.font='500 9.5px "DM Sans",sans-serif';
+    ctx.fillText(trunc(ctx,shown,NW-20),x+12,y+38);
+    // Grupo
+    if(g){ ctx.fillStyle=accent; ctx.font='600 9px "DM Sans",sans-serif';
+      ctx.fillText(trunc(ctx,g.nome.toUpperCase(),NW-20),x+12,y+56); }
+    return;
+  }
+
+  // ── INDIVIDUAL CARD ──
   const isCorp=n._isCorp, isVaga=n.tipo==='vaga', isOrph=!!n._isOrphan&&!isVaga;
   const g=(isCorp||isOrph)?null:grupos.find(g=>g.id===n.grupoId);
   const pal=g?PAL[g.palIdx%PAL.length]:null;
@@ -1093,19 +1152,20 @@ function drawCard(ctx,n,ox,oy){
   }
 
   const tx2=(isCorp||isOrph)?x+10:x+12;
-  // Nome: TBD em cinza para vagas, nome normal caso contrário
+  // Line 1: Cargo (sentence case, bold)
+  ctx.fillStyle=isCorp?'#1e3a5f':isOrph?'#92400e':'#111827';
+  ctx.font='700 11px "DM Sans",sans-serif';
+  ctx.fillText(trunc(ctx,n.cargo,NW-18),tx2,y+22);
+  // Line 2: Nome uppercase (or TBD for vagas)
   if(isVaga){
-    ctx.fillStyle='#9ca3af'; ctx.font='500 10.5px "DM Sans",sans-serif';
-    ctx.fillText('TBD',tx2,y+22);
+    ctx.fillStyle='#9ca3af'; ctx.font='500 10px "DM Sans",sans-serif';
+    ctx.fillText('TBD',tx2,y+38);
   } else {
-    ctx.fillStyle=isCorp?'#1e3a5f':isOrph?'#92400e':'#111827';
-    ctx.font='700 11.5px "DM Sans",sans-serif';
-    ctx.fillText(trunc(ctx,n.nome.toUpperCase(),NW-18),tx2,y+22);
+    ctx.fillStyle=isCorp?'#334155':isOrph?'#b45309':'#6b7280';
+    ctx.font='500 10px "DM Sans",sans-serif';
+    ctx.fillText(trunc(ctx,n.nome.toUpperCase(),NW-18),tx2,y+38);
   }
-  // Cargo
-  ctx.fillStyle=isCorp?'#334155':isOrph?'#b45309':'#6b7280';
-  ctx.font='500 10px "DM Sans",sans-serif';
-  ctx.fillText(trunc(ctx,n.cargo.toUpperCase(),NW-18),tx2,y+38);
+  // Line 3: label
   if(isCorp){
     ctx.fillStyle='#334155'; ctx.font='600 8.5px "DM Sans",sans-serif';
     ctx.fillText('COMPARTILHADO',tx2,y+56);
@@ -1124,8 +1184,9 @@ function drawChart(){
   if(!people.length){ cs.style.display='none'; ce.style.display=''; return; }
   cs.style.display=''; ce.style.display='none';
 
-  const corpPpl=people.filter(p=>p.tipo==='corp');
-  const allNonCorp=people.filter(p=>p.tipo!=='corp');
+  const eff=computeGroupedPeople();
+  const corpPpl=eff.filter(p=>p.tipo==='corp');
+  const allNonCorp=eff.filter(p=>p.tipo!=='corp');
 
   // Nivel=1 + no superior = tree root. Nivel>1 + no superior = orphan (right column at nivel Y).
   // If nobody is nivel=1 (unusual), fall back to all no-sup as roots.
@@ -1253,9 +1314,11 @@ function renderLegend(){
   const noSupNonCorp2=people.filter(p=>!p.superiorId&&p.tipo!=='corp');
   const hasN1Root2=noSupNonCorp2.some(p=>(p.nivel||1)===1);
   const hasOrphan=hasN1Root2&&noSupNonCorp2.some(p=>(p.nivel||1)>1);
-  if(hasCorp||hasSupport||hasOrphan){
+  const hasVaga=people.some(p=>p.tipo==='vaga');
+  if(hasCorp||hasSupport||hasOrphan||hasVaga){
     html+=`<div class="leg-block"><div class="leg-title">Legenda visual</div><div class="leg-grid">`;
     if(hasOrphan) html+=`<div class="leg-item"><div style="width:28px;height:22px;border:1.5px dashed #fbbf24;border-radius:4px;background:#fffbeb;flex-shrink:0"></div><div class="leg-info"><div class="lc">Sem vínculo</div><div class="ln">Posicionado no nível correspondente</div></div></div>`;
+    if(hasVaga) html+=`<div class="leg-item"><div style="width:28px;text-align:center;font-size:.72rem;font-weight:700;color:#9ca3af;line-height:22px;flex-shrink:0">TBD</div><div class="leg-info"><div class="lc">To Be Defined</div><div class="ln">Vaga em aberto — nome a definir</div></div></div>`;
     html+='</div></div>';
   }
   wrap.innerHTML=html;
