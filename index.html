@@ -132,6 +132,11 @@
       .sum-top-row > .vis-card { flex-basis:100%; }
       .hol-dual { grid-template-columns: 1fr; }
       .cal-grid { grid-template-columns: repeat(2, 1fr); }
+      .fase-item { grid-template-columns: 30px 24px 1fr 30px; }
+      .fase-item .fase-info  { grid-column: 3; }
+      .fase-item .fase-datas { grid-column: 3; white-space: normal; }
+      .fase-move-btn { font-size: .8rem; padding: 3px 8px; }
+      .fase-del { font-size: 1.3rem; }
     }
     .pc-table { border-collapse:collapse; font-size:.82rem; white-space:nowrap; }
     .pc-table th { font-weight:600; color:var(--muted); text-align:center; padding:4px 6px; font-size:.75rem; text-transform:uppercase; letter-spacing:.4px; }
@@ -231,8 +236,40 @@
     .custom-item-name { color: var(--muted); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .remove-btn { background: none; border: none; color: var(--subtle); font-size: .82rem; cursor: pointer; padding: 2px 6px; border-radius: 4px; font-family: var(--fb); white-space: nowrap; }
     .remove-btn:hover { background: #fee2e2; color: #b91c1c; }
-    .recalc-notice { display:none; background:#fffbeb; border:1px solid #fde68a; color:#92400e; font-size:.82rem; border-radius:6px; padding:8px 12px; margin-top:10px; }
-    .recalc-notice.on { display:block; }
+    /* stale results */
+    .stale-banner { display:none; background:#fffbeb; border:1px solid #fde68a; color:#92400e; font-size:.85rem; border-radius:6px; padding:10px 14px; margin-top:16px; align-items:center; gap:12px; justify-content:space-between; flex-wrap:wrap; }
+    .stale-banner.on { display:flex; }
+    #results.stale .card { opacity:.55; }
+
+    /* gantt fases × clima */
+    .gantt-wrap { margin-top:18px; border:1px solid var(--border); border-radius:var(--r); padding:14px 16px; background:#fff; overflow-x:auto; }
+    .gantt-inner { min-width:560px; position:relative; }
+    .gantt-strip { display:flex; height:22px; border-radius:4px; overflow:hidden; }
+    .gantt-mo { display:flex; align-items:center; justify-content:center; font-size:.62rem; font-weight:700; overflow:hidden; white-space:nowrap; flex-shrink:0; }
+    .g-umido { background:#bfdbfe; color:#1e3a8a; } .g-transicao { background:#d1fae5; color:#065f46; } .g-seco { background:#fef9c3; color:#713f12; }
+    .gantt-rows { position:relative; margin-top:6px; display:flex; flex-direction:column; gap:4px; }
+    .gantt-row { position:relative; height:22px; background:#f8fafc; border-radius:4px; }
+    .gantt-bar { position:absolute; top:0; height:100%; background:#1f2937; border-radius:4px; color:#fff; font-size:.66rem; font-weight:600; display:flex; align-items:center; padding:0 6px; overflow:hidden; white-space:nowrap; cursor:default; }
+    .gantt-bar.trunc { background:#c2410c; }
+    .gantt-today { position:absolute; top:0; bottom:0; width:2px; background:#dc2626; z-index:5; }
+    .gantt-leg { display:flex; gap:12px; margin-top:8px; font-size:.72rem; color:var(--muted); flex-wrap:wrap; }
+    .gantt-leg span { display:inline-flex; align-items:center; gap:5px; }
+    .gantt-leg i { width:10px; height:10px; border-radius:2px; display:inline-block; }
+
+    /* sugestão climática */
+    .clima-sug { background:#eff6ff; border:1px solid #bfdbfe; border-radius:6px; padding:12px 14px; margin-bottom:14px; font-size:.82rem; color:#1e3a8a; }
+    .clima-sug table { width:auto; font-size:.74rem; border-collapse:collapse; margin:8px 0; }
+    .clima-sug th, .clima-sug td { padding:2px 7px; text-align:center; border-bottom:none; background:transparent; white-space:nowrap; }
+    .clima-sug .btn { font-size:.75rem; padding:5px 14px; }
+    .clima-err { background:#fef2f2; border:1px solid #fecaca; color:#b91c1c; border-radius:6px; padding:8px 12px; margin-bottom:12px; font-size:.8rem; }
+    .clima-loading { color:var(--muted); font-size:.8rem; font-style:italic; margin-bottom:12px; }
+
+    /* cabeçalho de impressão */
+    .print-hdr { display:none; font-size:.85rem; color:var(--text); padding:8px 0 2px; }
+    .print-hdr strong { font-family:var(--fd); }
+
+    /* nota de rodapé das tabelas */
+    .table-note { font-size:.74rem; color:var(--subtle); margin-top:8px; line-height:1.5; }
     /* folga calendar day */
     .cd.folga   { background: #ddd6fe; color: #5b21b6; font-weight: 700; }
     .ld-folga   { background: #ddd6fe; border: 1px solid #c4b5fd; }
@@ -312,21 +349,6 @@
     .per-mini-bar { height:6px; border-radius:3px; background:#f3f4f6; margin-top:10px; overflow:hidden; }
     .per-mini-fill { height:100%; border-radius:3px; background:#0000ff; }
 
-    /* ── TIMELINE ── */
-    .tl-wrap { margin-top: 18px; background: #f9fafb; border: 1px solid var(--border); border-radius: var(--r); padding: 13px 15px; overflow-x: auto; }
-    .tl-lbl  { font-size: .7rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 7px; }
-    .tl-bar  { display: flex; height: 22px; border-radius: 4px; overflow: hidden; min-width: 360px; }
-    .tl-seg  { display: flex; align-items: center; justify-content: center; font-size: .62rem; font-weight: 700; color: #fff; min-width: 2px; cursor: default; }
-    .tl-seg:hover { filter: brightness(.88); }
-    .s-u { background: #374151; }
-    .s-w { background: #d1d5db; color: #374151; }
-    .s-h { background: #c2410c; }
-    .s-m { background: #ea7c39; }
-    .s-b { background: #f59e0b; color: #374151; }
-    .s-r { background: #fef9c3; color: #713f12; }
-    .tl-mos { display: flex; min-width: 360px; margin-top: 5px; }
-    .tl-mo  { font-size: .65rem; color: var(--subtle); font-weight: 600; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
     /* ── LEGEND ── */
     .legend { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
     .leg-i  { display: flex; align-items: center; gap: 6px; font-size: .8rem; color: var(--muted); }
@@ -397,7 +419,6 @@
     .badge-mun { background:#fff3e6; color:#9a3412; border:1px solid #fcd9b4; }
     .badge-rec { background:#f3f4f6; color:#374151; border:1px solid #d1d5db; }
     .badge-fol { background:#ede9fe; color:#5b21b6; border:1px solid #c4b5fd; }
-    .s-f { background: #a78bfa; }
     .b-cus { background: #ea7c39; color: #fff; border: none; }
 
     /* monthly table */
@@ -415,12 +436,12 @@
     @media(max-width:600px){
       header h1 { font-size: 1.3rem; }
       .card { padding: 18px; }
-      .sum-grid { grid-template-columns: repeat(2,1fr); }
       .cal-grid { grid-template-columns: 1fr; }
     }
     @media print {
       .form-card, .alerts-wrap, header p, .btn-row, #btnCalc, .btn-ghost,
-      .btn-export, #recalcNotice { display: none !important; }
+      .btn-export, .stale-banner { display: none !important; }
+      .print-hdr { display: block !important; }
       header { padding: 14px 24px; background: #1f2937 !important; }
       header h1 { font-size: 1.1rem; }
       body { background: #fff; }
@@ -428,7 +449,6 @@
       .card { box-shadow: none; border: 1px solid #d1d5db; margin-top: 10px; break-inside: avoid; padding: 16px 18px; }
       .cal-grid { grid-template-columns: repeat(4,1fr); gap: 6px; }
       .hol-dual { grid-template-columns: 1fr 1fr; }
-      .sum-grid { grid-template-columns: repeat(5,1fr); }
       .prat-cards { flex-wrap: nowrap; }
       * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       @page { margin: 15mm 12mm; }
@@ -519,15 +539,12 @@
       <div class="custom-list" id="customList">
         <span style="color:var(--subtle);font-size:.82rem;font-style:italic;">Nenhuma data especial cadastrada.</span>
       </div>
-      <div class="recalc-notice" id="recalcNotice">
-        Datas especiais modificadas — clique em Calcular para atualizar o calendário.
-      </div>
     </div>
 
     <!-- MARCOS / FASES -->
     <div class="custom-section" id="fasesSection">
       <div class="custom-title">Marcos e Fases do Contrato</div>
-      <p class="custom-sub">Preencha os campos que se aplicam. Se informar data de início, ela será usada como âncora. Se informar OS + dias (sem data), a fase começa nesse offset. Sem nenhum dos dois, inicia após a fase anterior.</p>
+      <p class="custom-sub">Preencha os campos que se aplicam. Se informar data de início, ela será usada como âncora. Se informar OS + dias (0 = começa na própria OS), a fase começa nesse offset. Sem nenhum dos dois, inicia após a fase anterior.</p>
       <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:8px;">
         <div class="fg" style="min-width:200px;">
           <label>Nome da fase / marco</label>
@@ -582,10 +599,32 @@
 
     <!-- PERÍODO CLIMÁTICO -->
     <div class="periodo-section" id="periodoSection">
-      <div class="custom-title">Cálculo de Praticabilidade</div>
-      <p class="custom-sub">Marque o tipo climático de cada mês, informe a pluviometria de referência e os dias de impacto. O % de impraticabilidade médio de cada tipo é aplicado sobre a jornada produtiva para chegar às horas praticáveis/dia.</p>
+      <div class="custom-title" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        Cálculo de Praticabilidade
+        <button class="btn btn-ghost" style="font-size:.72rem;padding:4px 12px;" onclick="fetchClimaCidade()">Buscar pluviometria histórica da cidade</button>
+      </div>
+      <p class="custom-sub">Marque o tipo climático de cada mês e informe os <strong>dias de impacto</strong> (dias perdidos por chuva) — são eles que definem o % de impraticabilidade aplicado sobre a jornada produtiva. A pluviometria (mm) é referência histórica: ao selecionar a cidade, buscamos os dados dos últimos 10 anos e sugerimos os dias de impacto (chuva ≥ 5 mm = 0,5 dia perdido; ≥ 10 mm = 1 dia).</p>
+      <div id="climaSug"></div>
       <div id="periodoGrid"></div>
       <div id="periodoCards" style="margin-top:18px;"></div>
+    </div>
+
+    <!-- CENÁRIOS -->
+    <div class="custom-section" id="cenariosSection">
+      <div class="custom-title">Cenários</div>
+      <p class="custom-sub">Salve a configuração completa com um nome para comparar alternativas (ex.: "OS em junho" vs "OS em setembro"), exporte/importe como arquivo ou compartilhe por link.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+        <input type="text" id="scNome" placeholder="Nome do cenário" style="max-width:190px;" />
+        <button class="btn btn-add" style="font-size:.78rem;padding:7px 14px;" onclick="salvarCenario()">Salvar cenário</button>
+        <select id="scSelect" style="border:1px solid var(--border);border-radius:var(--r);padding:8px 10px;font-family:var(--fb);font-size:.85rem;background:#fff;max-width:200px;"></select>
+        <button class="btn btn-ghost" style="font-size:.78rem;padding:7px 14px;" onclick="carregarCenario()">Carregar</button>
+        <button class="btn btn-ghost" style="font-size:.78rem;padding:7px 14px;" onclick="excluirCenario()">Excluir</button>
+        <span style="border-left:1px solid var(--border);height:24px;"></span>
+        <button class="btn btn-ghost" style="font-size:.78rem;padding:7px 14px;" onclick="exportarCenarioJSON()">Exportar arquivo</button>
+        <button class="btn btn-ghost" style="font-size:.78rem;padding:7px 14px;" onclick="document.getElementById('scFile').click()">Importar arquivo</button>
+        <input type="file" id="scFile" accept="application/json,.json" style="display:none" onchange="importarCenarioJSON(this)" />
+        <button class="btn btn-ghost" style="font-size:.78rem;padding:7px 14px;" onclick="compartilharLink()">Copiar link do cenário</button>
+      </div>
     </div>
 
     <div class="btn-row">
@@ -596,10 +635,19 @@
     <div class="alert alert-err"  id="aErr"></div>
     <div class="alert alert-warn" id="aWarn"></div>
     <div class="alert alert-info" id="aInfo"></div>
+    <div class="stale-banner" id="staleForm">
+      <span>⚠ Dados do contrato modificados — os resultados exibidos estão desatualizados.</span>
+      <button class="btn btn-primary" style="font-size:.75rem;padding:6px 16px;" onclick="calcular()">Recalcular</button>
+    </div>
   </div>
 
   <!-- RESULTS -->
   <div id="results" class="hidden">
+    <div class="stale-banner" id="staleRes">
+      <span>⚠ Estes resultados estão desatualizados em relação aos dados do formulário.</span>
+      <button class="btn btn-primary" style="font-size:.75rem;padding:6px 16px;" onclick="calcular()">Recalcular</button>
+    </div>
+    <div class="print-hdr" id="printHdr"></div>
     <div class="card">
       <div class="section-title">Resumo do Contrato</div>
       <div class="sum-grid" id="sumCards"></div>
@@ -615,6 +663,7 @@
     <div class="card">
       <div class="section-title">Projeção de Horas por Mês</div>
       <div class="t-wrap"><table class="mt" id="moTable"></table></div>
+      <div class="table-note" id="moTableNote"></div>
       <div class="btn-row" style="margin-top:16px;">
         <button class="btn btn-export" onclick="imprimirRelatorio()">Imprimir / Gerar PDF</button>
         <button class="btn btn-ghost" onclick="exportarCSV()">Exportar CSV</button>
@@ -664,6 +713,7 @@ const dow = dt => dt.getUTCDay();
 const isWE= dt => { const d=dow(dt); return d===0||d===6; };
 const p2  = n => String(n).padStart(2,'0');
 const fBR = dt => `${p2(dt.getUTCDate())}/${p2(dt.getUTCMonth()+1)}/${dt.getUTCFullYear()}`;
+const esc = s => String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const WD  = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
 const MO  = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 const MS  = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
@@ -791,7 +841,8 @@ const CITIES_BUNDLED = [
   ['1709500','Gurupi','TO'],
   // AM — ampliado
   ['1300029','Coari','AM'],['1302603','Manaus','AM'],['1303403','Parintins','AM'],
-].map(([id,nome,uf])=>({id,nome,uf}));
+].map(([id,nome,uf])=>({id,nome,uf}))
+ .filter((c,i,arr)=>arr.findIndex(x=>x.id===c.id)===i); // remove duplicatas
 
 /* ====================================================================
    AUTOCOMPLETE
@@ -807,6 +858,7 @@ const norm = s => s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
 
 function setStatus(state, msg){
   elStatus.className = 'muni-status ' + state;
+  elStatus.style.display = '';
   elStatus.textContent = msg;
 }
 
@@ -837,7 +889,8 @@ async function loadMunicipios(){
     if(!Array.isArray(data)||!data.length) throw 0;
     municipios = data.map(m=>({id:String(m.id),nome:m.nome,uf:m.microrregiao.mesorregiao.UF.sigla}));
     ibgeReady = true;
-    setStatus('ok', `Base completa: ${municipios.length.toLocaleString('pt-BR')} municípios carregados`);
+    if(selectedCity) showMuniInfo();
+    else setStatus('ok', `Base completa: ${municipios.length.toLocaleString('pt-BR')} municípios carregados`);
     if(norm(elCidade.value.trim()).length>=2&&!selectedCity) doSearch();
     return;
   } catch(e){}
@@ -849,7 +902,8 @@ async function loadMunicipios(){
     if(data.length > 100){
       municipios = data.sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
       ibgeReady = true;
-      setStatus('ok', `Base alternativa: ${municipios.length.toLocaleString('pt-BR')} municípios carregados`);
+      if(selectedCity) showMuniInfo();
+      else setStatus('ok', `Base alternativa: ${municipios.length.toLocaleString('pt-BR')} municípios carregados`);
       if(norm(elCidade.value.trim()).length>=2&&!selectedCity) doSearch();
       return;
     }
@@ -857,7 +911,8 @@ async function loadMunicipios(){
 
   // 3) both failed — bundled list only
   ibgeReady = true;
-  setStatus('err', `Base completa indisponível — buscando em ${municipios.length} municípios pré-carregados`);
+  if(selectedCity) showMuniInfo();
+  else setStatus('err', `Base completa indisponível — buscando em ${municipios.length} municípios pré-carregados`);
   if(norm(elCidade.value.trim()).length>=2&&!selectedCity) doSearch();
 }
 
@@ -878,8 +933,8 @@ function doSearch(){
   }
   const footer = !ibgeReady ? '<div class="ac-status">Carregando base completa…</div>' : '';
   elAcList.innerHTML=matches.map((m,i)=>
-    `<div class="ac-item" data-i="${i}" data-id="${m.id}" data-nome="${m.nome}" data-uf="${m.uf}">
-       <span class="ac-name">${m.nome}</span><span class="ac-uf">${m.uf}</span>
+    `<div class="ac-item" data-i="${i}" data-id="${m.id}" data-nome="${esc(m.nome)}" data-uf="${esc(m.uf)}">
+       <span class="ac-name">${esc(m.nome)}</span><span class="ac-uf">${esc(m.uf)}</span>
      </div>`
   ).join('') + footer;
   elAcList.classList.add('open'); acIdx=-1;
@@ -903,6 +958,21 @@ function pickCity(el){
   document.getElementById('cidadeNome').value=el.dataset.nome;
   document.getElementById('cidadeUF').value=el.dataset.uf;
   closeAC();
+  saveState();
+  markStale();
+  showMuniInfo();
+  fetchClimaCidade(true); // busca automática de pluviometria histórica
+}
+
+/* Mostra quais feriados municipais existem na base para a cidade escolhida */
+function showMuniInfo(){
+  if(!selectedCity) return;
+  const list=MUNI_DB[selectedCity.id]||[];
+  if(list.length){
+    setStatus('ok', `Feriados municipais na base: ${list.map(h=>`${p2(h.d)}/${p2(h.m)} – ${h.n}`).join(' · ')}`);
+  } else {
+    setStatus('err', 'Nenhum feriado municipal cadastrado na base para esta cidade — pesquise os feriados locais e adicione em "Datas Especiais da Obra" (marque "Repetir todo ano").');
+  }
 }
 function resetCity(){ selectedCity=null; document.getElementById('cidadeId').value=''; }
 function closeAC(){ elAcList.classList.remove('open'); acIdx=-1; }
@@ -940,8 +1010,9 @@ function parseHora(str){
 // Format decimal hours → "8h 30min / 8,5h"
 function fmtHora(dec){
   dec = Math.max(0,dec);
-  const h = Math.floor(dec);
-  const m = Math.round((dec-h)*60);
+  let h = Math.floor(dec);
+  let m = Math.round((dec-h)*60);
+  if(m===60){ h++; m=0; }
   const hm = m>0 ? `${h}h ${m}min` : `${h}h`;
   const dec2 = +dec.toFixed(1);
   const decStr = String(dec2).replace('.',',');
@@ -960,6 +1031,30 @@ function calcJornada(){
   const el = document.getElementById('jornadaProdutiva');
   if(el) el.textContent = fmtHora(jp)+'/dia';
   if(typeof renderPeriodoCards==='function') renderPeriodoCards();
+  if(typeof refreshResults==='function') refreshResults();
+}
+
+/* Re-renderiza os resultados (com debounce) quando um insumo do cálculo
+   de horas muda — jornada, improdutivos, período climático, impacto. */
+let _refreshTimer=null;
+function refreshResults(){
+  if(!hasCalcResult||!lastResult) return;
+  clearTimeout(_refreshTimer);
+  _refreshTimer=setTimeout(()=>{ if(hasCalcResult&&lastResult) render(lastResult); },250);
+}
+
+/* Marca os resultados como desatualizados (mudou OS, prazo, cidade,
+   pontes/recesso ou datas especiais — coisas que alteram o dayMap). */
+function markStale(){
+  if(!hasCalcResult) return;
+  document.getElementById('staleForm')?.classList.add('on');
+  document.getElementById('staleRes')?.classList.add('on');
+  document.getElementById('results')?.classList.add('stale');
+}
+function clearStale(){
+  document.getElementById('staleForm')?.classList.remove('on');
+  document.getElementById('staleRes')?.classList.remove('on');
+  document.getElementById('results')?.classList.remove('stale');
 }
 function improdHoras(i){
   return i.modo==='qtd' ? (i.qtd||0)*(i.unitH||0) : (i.horas||0);
@@ -1021,7 +1116,7 @@ function renderImprodList(){
          <span style="font-size:.75rem;color:var(--muted);">h/dia</span>`;
     return `<div class="jornada-improd-item">
       ${modeBtn}
-      <input type="text" id="imp-n-${i.id}" placeholder="Descrição" value="${i.nome}"
+      <input type="text" id="imp-n-${i.id}" placeholder="Descrição" value="${esc(i.nome)}"
         oninput="updateImprod(${i.id},'nome',this.value)" />
       ${fields}
       <button class="remove-btn" onclick="removeImprod(${i.id})">Remover</button>
@@ -1034,10 +1129,11 @@ function renderImprodList(){
    PERÍODO CLIMÁTICO
    ==================================================================== */
 // periodoMes[m]  = 'umido'|'transicao'|'seco'  (m = 1..12)
-// periodoPerc    = {umido:100, transicao:80, seco:60}  — % praticabilidade
+// IMPRAT_FALLBACK — % de impraticabilidade usado quando não há dias de
+// impacto nem valor manual para o tipo (padrão conservador por clima)
+const IMPRAT_FALLBACK = {umido:40, transicao:20, seco:0};
 let periodoMes  = {};
-let periodoPerc = {umido:100, transicao:80, seco:60};
-let pluvioMes   = {};  // mm por mês (referência)
+let pluvioMes   = {};  // mm por mês (referência histórica)
 let impactoMes  = {};  // dias de impacto por mês → sobrescreve % praticabilidade
 let impratManual= {umido:null, transicao:null, seco:null}; // override manual por tipo
 const DIAS_MES_PAD = [31,28,31,30,31,30,31,31,30,31,30,31];
@@ -1104,7 +1200,7 @@ function renderPeriodoGrid(){
   const impactRow=`<tr>
     <td class="pc-type-lbl" style="white-space:nowrap;">Dias de impacto (dias)</td>
     ${Array.from({length:12},(_,i)=>{const m=i+1;
-      return `<td style="text-align:center;"><input type="number" min="0" step="1" style="${inputStyle}" value="${impactoMes[m]??''}" id="dimp-${m}" onchange="saveImpacto(${m})"></td>`;
+      return `<td style="text-align:center;"><input type="number" min="0" step="0.5" style="${inputStyle}" value="${impactoMes[m]??''}" id="dimp-${m}" onchange="saveImpacto(${m})"></td>`;
     }).join('')}
   </tr>`;
 
@@ -1137,23 +1233,25 @@ function renderPeriodoCards(){
   const imprat=calcImpratMedio();
   const jp=jornadaProdutiva();
   const CARD_CFG=[
-    {k:'umido',    lbl:'Úmido',    cls:'umido-card',    fallback:periodoPerc.umido??0},
-    {k:'transicao',lbl:'Transição', cls:'transicao-card', fallback:periodoPerc.transicao??20},
-    {k:'seco',     lbl:'Seco',      cls:'seco-card',     fallback:periodoPerc.seco??40},
+    {k:'umido',    lbl:'Úmido',    cls:'umido-card'},
+    {k:'transicao',lbl:'Transição', cls:'transicao-card'},
+    {k:'seco',     lbl:'Seco',      cls:'seco-card'},
   ];
   const MO_ABR=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 
-  const fmtH=v=>{ const h=Math.floor(v),mn=Math.round((v-h)*60); const hm=mn>0?`${h}h ${mn}min`:`${h}h`; const dec=String(+v.toFixed(1)).replace('.',','); return `${hm} (${dec}h)`; };
+  const fmtH=v=>{ let h=Math.floor(v),mn=Math.round((v-h)*60); if(mn===60){h++;mn=0;} const hm=mn>0?`${h}h ${mn}min`:`${h}h`; const dec=String(+v.toFixed(1)).replace('.',','); return `${hm} (${dec}h)`; };
 
   const cards=CARD_CFG.map(c=>{
     const meses=Array.from({length:12},(_,i)=>i+1).filter(m=>(periodoMes[m]||'seco')===c.k);
     const mesNomes=meses.map(m=>MO_ABR[m-1]).join(', ')||'—';
     const isManual = impratManual[c.k]!=null;
-    const pImprat  = isManual ? impratManual[c.k] : (imprat[c.k]??null);
-    const hasValue = pImprat!==null;
+    const isCalc   = !isManual && imprat[c.k]!=null;
+    // mesma cadeia de prioridade usada no cálculo: manual > calculado > padrão
+    const pImprat  = isManual ? impratManual[c.k] : (imprat[c.k] ?? IMPRAT_FALLBACK[c.k]);
     const srcLabel = isManual
       ? `<span class="prat-src-badge prat-src-manual">Manual <button class="prat-clear-btn" onclick="clearImpratManual('${c.k}')" title="Limpar">×</button></span>`
-      : (imprat[c.k]!=null ? `<span class="prat-src-badge prat-src-calc">Calculado</span>` : '');
+      : (isCalc ? `<span class="prat-src-badge prat-src-calc">Calculado</span>`
+                : `<span class="prat-src-badge" style="background:#f3f4f6;color:#6b7280;" title="Sem dias de impacto informados — usando valor padrão. Preencha a tabela ou informe manualmente.">Padrão</span>`);
 
     const manualRow=`<div class="prat-manual-row">
       <label class="prat-manual-lbl">Impraticabilidade manual (%):</label>
@@ -1162,15 +1260,6 @@ function renderPeriodoCards(){
         value="${isManual?impratManual[c.k]:''}"
         onchange="setImpratManual('${c.k}')" />
     </div>`;
-
-    if(!hasValue){
-      return `<div class="prat-card ${c.cls}">
-        <div class="prat-card-title">${c.lbl}</div>
-        <div class="prat-card-meses">${mesNomes}</div>
-        <div style="font-size:.78rem;color:var(--muted);font-style:italic;margin:6px 0 10px;">Sem dados de impacto na tabela.</div>
-        ${manualRow}
-      </div>`;
-    }
 
     const pPratic=+(100-pImprat).toFixed(1);
     const hImprat=+(jp*(pImprat/100)).toFixed(1);
@@ -1211,14 +1300,22 @@ function savePeriodoMes(m){
   const checked=document.querySelector(`input[name="pm${m}"]:checked`);
   if(checked) periodoMes[m]=checked.value;
   renderPeriodoCards(); saveState();
-  // update % impraticabilidade row (type classification didn't change, only grouping)
+  refreshResults();
 }
 function savePluvio(m){
   pluvioMes[m]=document.getElementById('pluv-'+m)?.value??'';
   saveState();
 }
 function saveImpacto(m){
-  const val=document.getElementById('dimp-'+m)?.value??'';
+  const inp=document.getElementById('dimp-'+m);
+  let val=inp?.value??'';
+  // valida: dias de impacto não podem exceder os dias do mês
+  if(val!==''&&Number(val)>DIAS_MES_PAD[m-1]){
+    val=String(DIAS_MES_PAD[m-1]);
+    if(inp) inp.value=val;
+    showAlert('warn',`Dias de impacto de ${MO_ABR_FULL[m-1]} limitados a ${DIAS_MES_PAD[m-1]} (dias do mês).`);
+  }
+  if(val!==''&&Number(val)<0){ val='0'; if(inp) inp.value=val; }
   impactoMes[m]=val===''?'':Number(val);
   // Update per-month % cell inline
   const cell=document.getElementById('ppct-'+m);
@@ -1230,13 +1327,8 @@ function saveImpacto(m){
     }
   }
   renderPeriodoCards(); saveState();
+  refreshResults();
 }
-function savePeriodoPercManual(tipo){
-  periodoPerc[tipo]=parseFloat(document.getElementById('pperc-'+tipo)?.value)??100;
-  renderPeriodoCards();
-}
-// Keep old name as alias
-function savePeriodoPerc(tipo){ savePeriodoPercManual(tipo); }
 
 /* ====================================================================
    CUSTOM HOLIDAYS
@@ -1257,7 +1349,7 @@ function resolveFaseDates(osDate){
   fases.forEach((f,i)=>{
     let start=null, end=null;
     const dataFilled = f.dataInicio && parseBR(f.dataInicio);
-    const osFilled   = (f.osOffset??0) > 0;
+    const osFilled   = f.osOffset!=null;   // null = campo vazio; 0 = começa na OS
     const prazFilled = (f.prazTotal??0) > 0;
     if(dataFilled){
       start=dataFilled;
@@ -1291,9 +1383,18 @@ function addFase(){
   const prazTotal=parseInt(document.getElementById('fasePrazTotal').value)||0;
   if(!nome||(dur<1&&prazTotal<1)){showAlert('warn','Informe nome e duração (ou prazo total) da fase.');return;}
   const dataInicio=document.getElementById('faseDataInicio').value.trim();
-  const osOffset=parseInt(document.getElementById('faseOsOffset').value)||0;
-  const tipo=dataInicio?'data':(osOffset>0||prazTotal>0)?'os':'seq';
-  const fase={id:++_faseId,nome,dur:dur||prazTotal,tipo,dataInicio,osOffset,prazTotal};
+  if(dataInicio&&!parseBR(dataInicio)){showAlert('err','Data de início da fase inválida. Use DD/MM/AAAA.');return;}
+  const osRaw=document.getElementById('faseOsOffset').value.trim();
+  const osOffset=osRaw===''?null:Math.max(0,parseInt(osRaw)||0);
+  // aviso preventivo: fase que já nasce fora do prazo contratual
+  const prazoContrato=parseInt(document.getElementById('prazo').value)||0;
+  if(prazoContrato>0){
+    if(prazTotal>prazoContrato)
+      showAlert('warn',`Atenção: o prazo total da fase (OS+${prazTotal}) excede o prazo contratual de ${prazoContrato} dias.`);
+    else if(osOffset!=null&&dur>0&&osOffset+dur>prazoContrato)
+      showAlert('warn',`Atenção: a fase termina em OS+${osOffset+dur}, além do prazo contratual de ${prazoContrato} dias.`);
+  }
+  const fase={id:++_faseId,nome,dur:dur||prazTotal,dataInicio,osOffset,prazTotal};
   fases.push(fase);
   document.getElementById('faseNome').value='';
   document.getElementById('faseDur').value='';
@@ -1327,10 +1428,10 @@ function renderFasesList(){
     const {start,end}=resolved[i];
     const fimStr=end?fBR(end):'—';
     const iniStr=start?fBR(start):'—';
-    const tipo=f.dataInicio?'data':((f.osOffset>0||f.prazTotal>0)?'os':'seq');
+    const tipo=f.dataInicio?'data':((f.osOffset!=null||f.prazTotal>0)?'os':'seq');
     let infoTxt='';
     if(tipo==='os')        infoTxt=f.prazTotal>0?`OS+${f.osOffset||0} → OS+${f.prazTotal}d`:`OS+${f.osOffset||0}d · ${f.dur}d`;
-    else if(tipo==='data') infoTxt=`${f.dataInicio} · ${f.dur}d`;
+    else if(tipo==='data') infoTxt=`${esc(f.dataInicio)} · ${f.dur}d`;
     else                   infoTxt=`${f.dur}d corridos`;
     return `<div class="fase-item">
       <div class="fase-move">
@@ -1338,7 +1439,7 @@ function renderFasesList(){
         <button class="fase-move-btn" onclick="moveFase(${f.id},1)"  title="Descer">▼</button>
       </div>
       <span class="fase-num">${i+1}</span>
-      <input class="fase-nome" value="${f.nome}" onchange="fases[${i}].nome=this.value;saveState();if(hasCalcResult&&lastResult)render(lastResult);" placeholder="Nome da fase">
+      <input class="fase-nome" value="${esc(f.nome)}" onchange="fases[${i}].nome=this.value;saveState();if(hasCalcResult&&lastResult)render(lastResult);" placeholder="Nome da fase">
       <div class="fase-info">
         <span class="fase-info-badge" style="background:${TIPO_COLOR[tipo]};color:#374151;">${TIPO_LBL[tipo]}</span>
         <span class="fase-info-txt">${infoTxt}</span>
@@ -1360,23 +1461,25 @@ function addCustomHol(){
   if(!dt){ showAlert('err','Data inválida. Use DD/MM/AAAA.'); return; }
   clearAlerts();
   const key=YMD(dt);
-  // For repeating, key is MM-DD so duplicates are per day-month
-  const dupKey=repeat?`repeat-${p2(dt.getUTCMonth()+1)}-${p2(dt.getUTCDate())}`:key;
-  if(customHols.find(h=>(h.repeat?`repeat-${p2(h.dt.getUTCMonth()+1)}-${p2(h.dt.getUTCDate())}`:h.key)===dupKey)){
-    showAlert('err','Esta data já foi adicionada.'); return;
-  }
+  // Duplicata: mesma data exata, ou colisão dia/mês quando uma das duas é anual
+  const mmdd=`${p2(dt.getUTCMonth()+1)}-${p2(dt.getUTCDate())}`;
+  const conflita=customHols.some(h=>{
+    const hMmdd=`${p2(h.dt.getUTCMonth()+1)}-${p2(h.dt.getUTCDate())}`;
+    return (h.repeat||repeat) ? hMmdd===mmdd : h.key===key;
+  });
+  if(conflita){ showAlert('err','Esta data já foi adicionada (ou colide com uma data anual existente).'); return; }
   customHols.push({key,name,dt,type,repeat});
   customHols.sort((a,b)=>a.dt-b.dt);
   document.getElementById('cusDate').value='';
   document.getElementById('cusName').value='';
   document.getElementById('cusRepeat').value='nao';
   renderCustomList(); saveState();
-  if(hasCalcResult) document.getElementById('recalcNotice').classList.add('on');
+  markStale();
 }
 function removeCustomHol(key){
   customHols=customHols.filter(h=>h.key!==key);
   renderCustomList(); saveState();
-  if(hasCalcResult) document.getElementById('recalcNotice').classList.add('on');
+  markStale();
 }
 function renderCustomList(){
   const el=document.getElementById('customList');
@@ -1392,7 +1495,7 @@ function renderCustomList(){
          <span class="custom-item-date">${h.repeat?`${p2(h.dt.getUTCDate())}/${p2(h.dt.getUTCMonth()+1)} (todo ano)`:fBR(h.dt)}</span>
          <span class="custom-badge ${typeClass[h.type]||'badge-mun'}">${typeLabel[h.type]||h.type}</span>
          ${h.repeat?'<span class="custom-badge" style="background:#f0fdf4;color:#166534;border:1px solid #bbf7d0;">Anual</span>':''}
-         ${h.name}
+         ${esc(h.name)}
        </span>
        <button class="remove-btn" onclick="removeCustomHol('${h.key}')">Remover</button>
      </div>`
@@ -1532,6 +1635,10 @@ async function calcular(){
 
   const prazo=parseInt(document.getElementById('prazo').value);
   if(!prazo||prazo<1){ showAlert('err','O prazo deve ser de pelo menos 1 dia.'); return; }
+  if(prazo>3660){ showAlert('err','Prazo acima de 10 anos (3660 dias) — verifique o valor informado.'); return; }
+  const ju0=jornadaUtil();
+  if(ju0<=0){ showAlert('err','Informe uma jornada útil válida (ex.: 8,8).'); return; }
+  if(ju0>16) showAlert('warn',`Jornada útil de ${String(ju0).replace('.',',')}h/dia parece alta — confira o valor.`);
 
   const end    = add(start,prazo-1);
   const pontes = document.getElementById('chkPontes').checked;
@@ -1544,10 +1651,12 @@ async function calcular(){
   showAlert('info','Buscando feriados…');
 
   let allHols={};
+  let apiFalhou=false;
   for(const yr of years){
     const api=await fetchBrasilAPI(yr);
     const loc=natHols(yr);
     if(api) Object.assign(allHols,api);
+    else apiFalhou=true;
     Object.assign(allHols,loc);
   }
 
@@ -1560,6 +1669,10 @@ async function calcular(){
 
   clearAlerts();
   document.getElementById('btnCalc').disabled=false;
+  if(apiFalhou)
+    showAlert('warn','A API de feriados está indisponível — usando a base local de feriados nacionais (pode divergir de decretos pontuais).');
+  if(!hasMuni)
+    showAlert('info',`Nenhum feriado municipal cadastrado na base para ${selectedCity.nome} — pesquise os feriados locais (aniversário da cidade, padroeiro) e adicione em "Datas Especiais da Obra".`);
 
 
   // Recess
@@ -1575,7 +1688,11 @@ async function calcular(){
   // Custom holidays — applied after recSet is built
   for(const h of customHols){
     const keysToApply = h.repeat
-      ? [...years].map(yr => YMD(D(yr, h.dt.getUTCMonth(), h.dt.getUTCDate())))
+      ? [...years].map(yr => {
+          const d2=D(yr, h.dt.getUTCMonth(), h.dt.getUTCDate());
+          // 29/02 em ano não bissexto viraria 01/03 — pula o ano
+          return d2.getUTCMonth()===h.dt.getUTCMonth() ? YMD(d2) : null;
+        }).filter(Boolean)
       : [h.key];
     for(const k of keysToApply){
       if(h.type==='recess'){
@@ -1599,7 +1716,9 @@ async function calcular(){
   const dayMap={};
   let nC=0,nW=0,nH=0,nHm=0,nB=0,nR=0,nF=0,nU=0;
   const monthData={};
-  const todayStr=YMD(new Date());
+  // "hoje" em horário local (YMD usaria UTC e erraria após ~21h em Brasília)
+  const _now=new Date();
+  const todayStr=`${_now.getFullYear()}-${p2(_now.getMonth()+1)}-${p2(_now.getDate())}`;
 
   for(let dt=new Date(start);dt<=end;dt=add(dt,1)){
     const key=YMD(dt), mk=key.slice(0,7);
@@ -1632,8 +1751,8 @@ async function calcular(){
   }
 
   hasCalcResult=true;
-  document.getElementById('recalcNotice').classList.remove('on');
-  lastResult={city:selectedCity,start,end,totals:{nC,nU,nW,nH,nHm,nB,nR,nF},dayMap,monthData,allHols,bridgeDays,recSet,todayStr};
+  clearStale();
+  lastResult={city:selectedCity,start,end,prazo,totals:{nC,nU,nW,nH,nHm,nB,nR,nF},dayMap,monthData,allHols,bridgeDays,recSet,todayStr};
   render(lastResult);
 }
 
@@ -1645,16 +1764,15 @@ function render(res){
   const{nC,nU,nW,nH,nHm,nB,nR,nF}=totals;
   document.getElementById('results').classList.remove('hidden');
 
-  // Timeline
-  const total=nC;
-  const segs=[
-    {p:nU/total,c:'s-u',l:`${nU} úteis`},{p:nW/total,c:'s-w',l:`${nW} FDS`},
-    {p:nH/total,c:'s-h',l:`${nH} nac.`},{p:nHm/total,c:'s-m',l:`${nHm} mun.`},
-    {p:nB/total,c:'s-b',l:`${nB} comp.`},{p:nR/total,c:'s-r',l:`${nR} rec.`},
-    {p:(nF||0)/total,c:'s-f',l:`${nF} folgas`}
-  ].filter(s=>s.p>0);
   const mos=Object.keys(monthData).sort();
-  document.getElementById('tlSection').innerHTML='';
+
+  // Cabeçalho de impressão (só aparece no PDF)
+  const printHdr=document.getElementById('printHdr');
+  if(printHdr) printHdr.innerHTML=
+    `<strong>Obra:</strong> ${esc(city.nome)}/${esc(city.uf)} &nbsp;·&nbsp; `+
+    `<strong>OS:</strong> ${fBR(start)} &nbsp;·&nbsp; `+
+    `<strong>Prazo:</strong> ${res.prazo||nC} dias corridos &nbsp;·&nbsp; `+
+    `<strong>Término:</strong> ${fBR(end)}`;
 
   // Calendars — while loop
   const cg=document.getElementById('calGrid'); cg.innerHTML='';
@@ -1732,14 +1850,66 @@ function render(res){
     } else if(impratMedio[tipo]!=null){
       pImprat=impratMedio[tipo];           // 2. calculado da tabela
     } else {
-      pImprat=100-(periodoPerc[tipo]??100); // 3. fallback
+      pImprat=IMPRAT_FALLBACK[tipo]??0;    // 3. padrão conservador por clima
     }
     const percPratic=Math.max(0,100-pImprat);
-    const horas=+(jp*(percPratic/100)).toFixed(1);
+    // precisão total aqui — arredondar só na exibição (senão 8,05→8,1 infla os totais)
+    const horas=jp*(percPratic/100);
     return {tipo,horas,perc:+percPratic.toFixed(1),daysActual};
   };
   const TAG_CLS = {umido:'tag-umido',transicao:'tag-transicao',seco:'tag-seco'};
   const TAG_LBL = {umido:'Úmido',transicao:'Transição',seco:'Seco'};
+
+  // ── GANTT: fases sobre a faixa climática ──────────────────────────
+  {
+    const dayOff=dt=>Math.round((dt.getTime()-start.getTime())/864e5);
+    const stripHtml=mos.map(mk=>{
+      const per=getPer(mk), c=monthData[mk].c, w=c/nC*100;
+      return `<div class="gantt-mo g-${per.tipo}" style="width:${w.toFixed(3)}%" title="${monthData[mk].lbl} — ${TAG_LBL[per.tipo]}">${w>=5?monthData[mk].lbl:''}</div>`;
+    }).join('');
+
+    let rowsHtml2='';
+    if(fases.length){
+      const gResolved=resolveFaseDates(start);
+      rowsHtml2=fases.map((f,i)=>{
+        const r=gResolved[i];
+        if(!r.start) return '';
+        let gS=r.start, gE=r.end||add(gS,(f.dur||1)-1);
+        const overflow=gE.getTime()>end.getTime()||gS.getTime()<start.getTime();
+        if(gS.getTime()<start.getTime()) gS=start;
+        if(gE.getTime()>end.getTime())   gE=end;
+        if(gE.getTime()<gS.getTime()) return '';
+        const left=dayOff(gS)/nC*100;
+        const width=Math.max(( (dayOff(gE)-dayOff(gS)+1)/nC*100),0.8);
+        return `<div class="gantt-row">
+          <div class="gantt-bar${overflow?' trunc':''}" style="left:${left.toFixed(3)}%;width:${width.toFixed(3)}%"
+            title="${esc(f.nome)}: ${fBR(r.start)} → ${fBR(r.end||gE)}${overflow?' (fora dos limites do contrato)':''}">${width>=8?`${i+1}. ${esc(f.nome)}`:i+1}</div>
+        </div>`;
+      }).join('');
+    }
+
+    let todayMark='';
+    if(todayStr>=YMD(start)&&todayStr<=YMD(end)){
+      const tDt=new Date(todayStr+'T00:00:00Z');
+      todayMark=`<div class="gantt-today" style="left:${(dayOff(tDt)/nC*100).toFixed(3)}%" title="Hoje"></div>`;
+    }
+
+    document.getElementById('tlSection').innerHTML=`<div class="gantt-wrap">
+      <div class="vis-title">Fases × Períodos Climáticos</div>
+      <div class="gantt-inner">
+        <div class="gantt-strip">${stripHtml}</div>
+        ${rowsHtml2?`<div class="gantt-rows">${rowsHtml2}</div>`:''}
+        ${todayMark}
+      </div>
+      <div class="gantt-leg">
+        <span><i class="g-umido"></i>Úmido</span>
+        <span><i class="g-transicao"></i>Transição</span>
+        <span><i class="g-seco"></i>Seco</span>
+        ${fases.length?'<span><i style="background:#1f2937;"></i>Fase</span><span><i style="background:#c2410c;"></i>Fase fora dos limites</span>':''}
+        ${todayMark?'<span><i style="background:#dc2626;"></i>Hoje</span>':''}
+      </div>
+    </div>`;
+  }
 
   // Cards — now after mos/jp/getPer are defined
   const ju = jornadaUtil();
@@ -1811,8 +1981,8 @@ function render(res){
         </div>
       </div>
       <div style="display:flex;justify-content:space-between;font-size:.75rem;color:var(--muted);margin-top:4px;">
-        <span>${nU} dias úteis (${utilsPct}%)</span>
-        <span>${perdidos} perdidos (${+(100-utilsPct).toFixed(1)}%)</span>
+        <span>${nU} dias úteis (${utilsPct.toFixed(1)}%)</span>
+        <span>${perdidos} perdidos (${(100-utilsPct).toFixed(1)}%)</span>
       </div>
     </div>
     <div class="days-chips">${chips}</div>
@@ -1827,11 +1997,11 @@ function render(res){
     const pratPct=hprod>0?+(hprat/hprod*100).toFixed(1):0;
     return `<div class="per-card" style="border-left-color:${p.border};">
       <div class="per-card-title">${p.lbl}</div>
-      <div class="per-stat-row"><span class="per-stat-lbl">Dias úteis</span><span class="per-stat-val">${d.u} <span style="font-weight:400;color:var(--muted);font-size:.78rem;">(${pctU}% do total)</span></span></div>
+      <div class="per-stat-row"><span class="per-stat-lbl">Dias úteis</span><span class="per-stat-val">${d.u} <span style="font-weight:400;color:var(--muted);font-size:.78rem;">(${pctU.toFixed(1)}% do total)</span></span></div>
       <div class="per-stat-row"><span class="per-stat-lbl">H. produtivas</span><span class="per-stat-val">${hprod.toFixed(1)} h</span></div>
       <div class="per-stat-row"><span class="per-stat-lbl">H. praticáveis</span><span class="per-stat-val">${hprat.toFixed(1)} h</span></div>
       <div class="per-mini-bar"><div class="per-mini-fill" style="width:${pratPct}%;"></div></div>
-      <div style="font-size:.72rem;color:var(--muted);margin-top:4px;text-align:right;">${pratPct}% praticabilidade</div>
+      <div style="font-size:.72rem;color:var(--muted);margin-top:4px;text-align:right;">${pratPct.toFixed(1)}% praticabilidade</div>
     </div>`;
   }).join('');
 
@@ -1869,11 +2039,11 @@ function render(res){
   document.getElementById('moTable').innerHTML=`
     <thead><tr>
       <th>Mês</th>
-      <th class="tc">Dias<br>Período</th>
-      <th class="tc">Dias<br>Úteis</th>
-      <th class="tc">Período<br>Climático</th>
-      <th class="tc">Horas<br>Produtivas</th>
-      <th class="tc">Horas<br>Praticáveis</th>
+      <th class="tc" title="Dias corridos do mês dentro do contrato">Dias<br>Período</th>
+      <th class="tc" title="Dias corridos menos fins de semana, feriados, pontes, recessos e folgas">Dias<br>Úteis</th>
+      <th class="tc" title="Classificação marcada na seção Cálculo de Praticabilidade">Período<br>Climático</th>
+      <th class="tc" title="Dias úteis × jornada produtiva (jornada útil − tempos improdutivos)">Horas<br>Produtivas</th>
+      <th class="tc" title="Horas produtivas × (100% − impraticabilidade do período climático)">Horas<br>Praticáveis</th>
     </tr></thead>
     <tbody>
       ${moRows}
@@ -1886,6 +2056,11 @@ function render(res){
         <td class="tc">${tHprat} h</td>
       </tr>
     </tbody>`;
+  const moNote=document.getElementById('moTableNote');
+  if(moNote) moNote.innerHTML=
+    `<strong>Fórmulas:</strong> H. produtivas = dias úteis × jornada produtiva (${String(jp.toFixed(1)).replace('.',',')} h/dia). `+
+    `H. praticáveis = h. produtivas × (100% − impraticabilidade do período climático do mês). `+
+    `Impraticabilidade: valor manual > calculado dos dias de impacto > padrão (úmido ${IMPRAT_FALLBACK.umido}%, transição ${IMPRAT_FALLBACK.transicao}%, seco ${IMPRAT_FALLBACK.seco}%).`;
 
   // ── FASES DO CONTRATO ────────────────────────────────────────────
   const fasesCard=document.getElementById('fasesCard');
@@ -1930,15 +2105,22 @@ function render(res){
     const resolvedDates=resolveFaseDates(start);
     const faseRows=fases.map((f,i)=>{
       const res=resolvedDates[i];
-      if(!res.start){ truncadas.push(`<strong>${i+1}. ${f.nome}</strong> — data de início não pôde ser calculada (verifique a OS ou a fase anterior)`); return ''; }
+      if(!res.start){ truncadas.push(`<strong>${i+1}. ${esc(f.nome)}</strong> — data de início não pôde ser calculada (verifique a OS ou a fase anterior)`); return ''; }
       const fStartRaw=res.start;
-      const fStart=D(fStartRaw.getUTCFullYear(),fStartRaw.getUTCMonth(),fStartRaw.getUTCDate());
+      let fStart=D(fStartRaw.getUTCFullYear(),fStartRaw.getUTCMonth(),fStartRaw.getUTCDate());
+      // Fase que começa antes da OS: dias anteriores não existem no calendário do contrato
+      const preOS=fStart.getTime()<start.getTime();
+      if(preOS){
+        const diasAntes=Math.round((start.getTime()-fStart.getTime())/864e5);
+        truncadas.push(`<strong>${i+1}. ${esc(f.nome)}</strong> inicia em ${fBR(fStart)}, <strong>${diasAntes} dia${diasAntes>1?'s':''} antes da OS</strong> (${fBR(start)}) — esses dias não são contabilizados`);
+        fStart=D(start.getUTCFullYear(),start.getUTCMonth(),start.getUTCDate());
+      }
       const fEndRaw=res.end||add(fStart,f.dur-1);
       const truncada=fEndRaw.getTime()>end.getTime();
       const fEnd=truncada?D(end.getUTCFullYear(),end.getUTCMonth(),end.getUTCDate()):fEndRaw;
       if(truncada){
         const diasFalta=Math.round((fEndRaw.getTime()-end.getTime())/864e5);
-        truncadas.push(`<strong>${i+1}. ${f.nome}</strong> ultrapassa o término em <strong>${diasFalta} dia${diasFalta>1?'s':''}</strong>`);
+        truncadas.push(`<strong>${i+1}. ${esc(f.nome)}</strong> ultrapassa o término em <strong>${diasFalta} dia${diasFalta>1?'s':''}</strong>`);
       }
       const nCorr=Math.round((fEnd.getTime()-fStart.getTime())/864e5)+1;
       const {nUtil,hProd,hPrat,pct,byTipo}=rangeStats(fStart,fEnd);
@@ -1950,12 +2132,12 @@ function render(res){
         const lbl={umido:'Úmido',transicao:'Transição',seco:'Seco'}[tipo];
         const pp=v.hprod>0?+(v.hprat/v.hprod*100).toFixed(1):0;
         return `<span style="display:inline-flex;align-items:center;gap:4px;background:${PER_COLOR[tipo]};color:${PER_TXT[tipo]};border-radius:4px;padding:2px 7px;font-size:.74rem;font-weight:600;white-space:nowrap;">
-          ${lbl}: ${v.u}d · ${v.hprat.toFixed(1)}h prat. · ${pp}%
+          ${lbl}: ${v.u}d · ${v.hprat.toFixed(1)}h prat. · ${pp.toFixed(1)}%
         </span>`;
       }).join('');
 
-      return `<tr${truncada?' class="fase-trunc"':''}>
-        <td><strong>${i+1}. ${f.nome}</strong>${truncada?'<span class="fase-trunc-badge">⚠ truncada</span>':''}</td>
+      return `<tr${truncada||preOS?' class="fase-trunc"':''}>
+        <td><strong>${i+1}. ${esc(f.nome)}</strong>${truncada?'<span class="fase-trunc-badge">⚠ truncada</span>':''}${preOS?'<span class="fase-trunc-badge">⚠ antes da OS</span>':''}</td>
         <td class="tc">${fBR(fStart)}</td>
         <td class="tc">${fBR(fEnd)}</td>
         <td class="tc">${nCorr}</td>
@@ -1984,11 +2166,11 @@ function render(res){
         <th>Fase</th>
         <th class="tc">Início</th>
         <th class="tc">Fim</th>
-        <th class="tc">Dias<br>Corridos</th>
-        <th class="tc">Dias<br>Úteis</th>
-        <th class="tc">Horas<br>Produtivas</th>
-        <th class="tc">Horas<br>Praticáveis</th>
-        <th class="tc">Praticab.<br>Média</th>
+        <th class="tc" title="Dias corridos da fase dentro dos limites do contrato">Dias<br>Corridos</th>
+        <th class="tc" title="Dias úteis do calendário do contrato dentro do intervalo da fase">Dias<br>Úteis</th>
+        <th class="tc" title="Dias úteis × jornada produtiva">Horas<br>Produtivas</th>
+        <th class="tc" title="Horas produtivas × praticabilidade climática de cada mês">Horas<br>Praticáveis</th>
+        <th class="tc" title="Horas praticáveis ÷ horas produtivas">Praticab.<br>Média</th>
       </tr></thead>
       <tbody>
         ${faseRows}
@@ -2031,9 +2213,9 @@ function exportarCSV(){
     let pImprat;
     if(impratManual[tipo]!=null) pImprat=impratManual[tipo];
     else if(impratMedio[tipo]!=null) pImprat=impratMedio[tipo];
-    else pImprat=100-(periodoPerc[tipo]??100);
+    else pImprat=IMPRAT_FALLBACK[tipo]??0;
     const percPratic=Math.max(0,100-pImprat);
-    return {tipo,horas:+(jp*(percPratic/100)).toFixed(1),perc:+percPratic.toFixed(1)};
+    return {tipo,horas:jp*(percPratic/100),perc:+percPratic.toFixed(1)};
   };
   const mos=Object.keys(monthData).sort();
   const lines=['﻿']; // BOM for Excel UTF-8
@@ -2072,7 +2254,7 @@ function exportarCSV(){
     fases.forEach((f,i)=>{
       const res=csvResolved[i];
       if(!res.start) return;
-      const fStart=res.start;
+      const fStart=res.start.getTime()<start.getTime()?start:res.start;
       const fEndRaw=res.end||fStart;
       const fEnd=fEndRaw.getTime()>end.getTime()?new Date(Date.UTC(end.getUTCFullYear(),end.getUTCMonth(),end.getUTCDate())):fEndRaw;
       const nCorr=Math.round((fEnd.getTime()-fStart.getTime())/864e5)+1;
@@ -2124,85 +2306,305 @@ function clearAlerts(){
   ['aErr','aWarn','aInfo'].forEach(id=>{const el=document.getElementById(id);if(el){el.textContent='';el.classList.remove('on');}});
 }
 function limpar(){
+  if(!confirm('Isso apagará todos os dados preenchidos (cenários salvos são mantidos). Continuar?')) return;
   localStorage.removeItem(LS_KEY);
   clearAlerts();
   elCidade.value=''; resetCity();
+  elStatus.style.display='none';
   document.getElementById('dataOS').value='';
   document.getElementById('prazo').value='180';
+  document.getElementById('jornadaUtil').value='8,8';
   document.getElementById('chkPontes').checked=true;
   document.getElementById('chkRecesso').checked=true;
   customHols=[]; renderCustomList();
   fases=[]; _faseId=0; renderFasesList();
-  periodoMes={}; periodoPerc={umido:100,transicao:80,seco:60}; pluvioMes={}; impactoMes={}; impratManual={umido:null,transicao:null,seco:null};
+  periodoMes={}; pluvioMes={}; impactoMes={}; impratManual={umido:null,transicao:null,seco:null};
+  climaHist=null; document.getElementById('climaSug').innerHTML='';
   improdList=[{id:1,nome:'DDS e Doc. Segurança',modo:'total',horas:0.25},{id:2,nome:'Deslocamentos',modo:'qtd',qtd:4,unitH:0.125}]; _improdId=2; renderImprodList(); calcJornada();
   renderPeriodoGrid();
   hasCalcResult=false;
-  document.getElementById('recalcNotice').classList.remove('on');
+  clearStale();
   document.getElementById('results').classList.add('hidden');
   lastResult=null;
 }
 
 /* ====================================================================
-   PERSISTÊNCIA (localStorage)
+   PERSISTÊNCIA (localStorage) + CENÁRIOS + LINK
    ==================================================================== */
 const LS_KEY='co_state_v1';
+const SC_KEY='co_scenarios_v1';
+
+function buildState(){
+  return {
+    dataOS:document.getElementById('dataOS')?.value,
+    prazo:document.getElementById('prazo')?.value,
+    jornadaUtil:document.getElementById('jornadaUtil')?.value,
+    chkPontes:document.getElementById('chkPontes')?.checked,
+    chkRecesso:document.getElementById('chkRecesso')?.checked,
+    selectedCity,
+    customHols: customHols.map(h=>({...h,dt:h.dt.toISOString(),key:h.key})),
+    fases, _faseId,
+    periodoMes, pluvioMes, impactoMes, impratManual,
+    improdList,
+  };
+}
 
 function saveState(){
-  try{
-    const state={
-      dataOS:document.getElementById('dataOS')?.value,
-      prazo:document.getElementById('prazo')?.value,
-      jornadaUtil:document.getElementById('jornadaUtil')?.value,
-      chkPontes:document.getElementById('chkPontes')?.checked,
-      chkRecesso:document.getElementById('chkRecesso')?.checked,
-      selectedCity,
-      customHols: customHols.map(h=>({...h,dt:h.dt.toISOString(),key:h.key})),
-      fases, _faseId,
-      periodoMes, periodoPerc, pluvioMes, impactoMes, impratManual,
-      improdList,
-    };
-    localStorage.setItem(LS_KEY,JSON.stringify(state));
-  }catch(e){}
+  try{ localStorage.setItem(LS_KEY,JSON.stringify(buildState())); }catch(e){}
+}
+
+function applyState(s){
+  if(!s||typeof s!=='object') return false;
+  if(s.dataOS) document.getElementById('dataOS').value=s.dataOS;
+  if(s.prazo)  document.getElementById('prazo').value=s.prazo;
+  if(s.jornadaUtil) document.getElementById('jornadaUtil').value=s.jornadaUtil;
+  if(s.chkPontes!=null)  document.getElementById('chkPontes').checked=s.chkPontes;
+  if(s.chkRecesso!=null) document.getElementById('chkRecesso').checked=s.chkRecesso;
+  if(s.selectedCity?.id){
+    selectedCity=s.selectedCity;
+    elCidade.value=`${selectedCity.nome}, ${selectedCity.uf}`;
+    showMuniInfo();
+  }
+  if(s.customHols) customHols=s.customHols.map(h=>({...h,dt:new Date(h.dt)}));
+  if(s.periodoMes)   periodoMes=s.periodoMes;
+  if(s.pluvioMes)    pluvioMes=s.pluvioMes;
+  if(s.impactoMes)   impactoMes=s.impactoMes;
+  if(s.impratManual) impratManual={umido:null,transicao:null,seco:null,...s.impratManual};
+  if(s.improdList){ improdList=s.improdList; _improdId=improdList.reduce((mx,i)=>Math.max(mx,i.id),0); }
+  if(s.fases){
+    fases=s.fases;
+    // migração: osOffset 0 nos estados antigos significava "campo vazio"
+    fases.forEach(f=>{ if(f.osOffset===0&&!f.prazTotal) f.osOffset=null; });
+    _faseId=s._faseId||fases.reduce((mx,f)=>Math.max(mx,f.id),0);
+  }
+  renderCustomList();
+  renderImprodList();
+  renderFasesList();
+  calcJornada();
+  renderPeriodoGrid();
+  return true;
 }
 
 function loadState(){
   try{
     const raw=localStorage.getItem(LS_KEY);
     if(!raw) return false;
-    const s=JSON.parse(raw);
-    if(s.dataOS) document.getElementById('dataOS').value=s.dataOS;
-    if(s.prazo)  document.getElementById('prazo').value=s.prazo;
-    if(s.jornadaUtil) document.getElementById('jornadaUtil').value=s.jornadaUtil;
-    if(s.chkPontes!=null)  document.getElementById('chkPontes').checked=s.chkPontes;
-    if(s.chkRecesso!=null) document.getElementById('chkRecesso').checked=s.chkRecesso;
-    if(s.selectedCity?.id){
-      selectedCity=s.selectedCity;
-      elCidade.value=selectedCity.nome+(selectedCity.uf?` – ${selectedCity.uf}`:'');
-    }
-    if(s.customHols) customHols=s.customHols.map(h=>({...h,dt:new Date(h.dt)}));
-    if(s.periodoMes)  periodoMes=s.periodoMes;
-    if(s.periodoPerc) periodoPerc=s.periodoPerc;
-    if(s.pluvioMes)   pluvioMes=s.pluvioMes;
-    if(s.impactoMes)   impactoMes=s.impactoMes;
-    if(s.impratManual) impratManual={...impratManual,...s.impratManual};
-    if(s.improdList){ improdList=s.improdList; _improdId=improdList.reduce((mx,i)=>Math.max(mx,i.id),0); }
-    if(s.fases){ fases=s.fases; _faseId=s._faseId||fases.reduce((mx,f)=>Math.max(mx,f.id),0); }
-    renderCustomList();
-    renderImprodList();
-    renderFasesList();
-    calcJornada();
-    renderPeriodoGrid();
-    return true;
+    return applyState(JSON.parse(raw));
   }catch(e){ return false; }
 }
 
-// Attach saveState to all relevant inputs; refresh fase end-dates when OS changes
-document.querySelectorAll('#dataOS,#prazo,#jornadaUtil,#chkPontes,#chkRecesso')
-  .forEach(el=>el.addEventListener('change',saveState));
+/* ── Cenários nomeados ── */
+function listScenarios(){
+  try{ return JSON.parse(localStorage.getItem(SC_KEY)||'{}'); }catch(e){ return {}; }
+}
+function renderScenarioSelect(){
+  const sel=document.getElementById('scSelect');
+  if(!sel) return;
+  const nomes=Object.keys(listScenarios()).sort((a,b)=>a.localeCompare(b,'pt-BR'));
+  sel.innerHTML=nomes.length
+    ? nomes.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join('')
+    : '<option value="">— nenhum cenário salvo —</option>';
+}
+function salvarCenario(){
+  const nome=document.getElementById('scNome').value.trim();
+  if(!nome){ showAlert('warn','Dê um nome ao cenário antes de salvar.'); return; }
+  const all=listScenarios();
+  const existia=all[nome]!=null;
+  all[nome]=buildState();
+  try{ localStorage.setItem(SC_KEY,JSON.stringify(all)); }catch(e){ showAlert('err','Não foi possível salvar (armazenamento cheio?).'); return; }
+  renderScenarioSelect();
+  document.getElementById('scSelect').value=nome;
+  document.getElementById('scNome').value='';
+  showAlert('info',`Cenário "${nome}" ${existia?'atualizado':'salvo'}.`);
+}
+function carregarCenario(){
+  const nome=document.getElementById('scSelect').value;
+  const all=listScenarios();
+  if(!nome||!all[nome]){ showAlert('warn','Selecione um cenário salvo.'); return; }
+  applyState(all[nome]);
+  saveState();
+  hasCalcResult=false; lastResult=null;
+  clearStale();
+  document.getElementById('results').classList.add('hidden');
+  showAlert('info',`Cenário "${nome}" carregado — clique em Calcular para gerar os resultados.`);
+}
+function excluirCenario(){
+  const nome=document.getElementById('scSelect').value;
+  const all=listScenarios();
+  if(!nome||!all[nome]){ showAlert('warn','Selecione um cenário salvo.'); return; }
+  if(!confirm(`Excluir o cenário "${nome}"?`)) return;
+  delete all[nome];
+  localStorage.setItem(SC_KEY,JSON.stringify(all));
+  renderScenarioSelect();
+  showAlert('info',`Cenário "${nome}" excluído.`);
+}
+function exportarCenarioJSON(){
+  const blob=new Blob([JSON.stringify(buildState(),null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download='cenario_calendario_obras.json'; a.click();
+  URL.revokeObjectURL(url);
+}
+function importarCenarioJSON(input){
+  const file=input.files?.[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      applyState(JSON.parse(reader.result));
+      saveState();
+      hasCalcResult=false; lastResult=null;
+      clearStale();
+      document.getElementById('results').classList.add('hidden');
+      showAlert('info','Cenário importado — clique em Calcular para gerar os resultados.');
+    }catch(e){ showAlert('err','Arquivo inválido — selecione um JSON exportado por esta página.'); }
+    input.value='';
+  };
+  reader.readAsText(file);
+}
+
+/* ── Compartilhar por link (estado no hash da URL) ── */
+function compartilharLink(){
+  try{
+    const json=JSON.stringify(buildState());
+    const b64=btoa(unescape(encodeURIComponent(json))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+    const url=location.origin+location.pathname+'#s='+b64;
+    const done=()=>showAlert('info','Link copiado! Quem abrir verá exatamente este cenário.');
+    if(navigator.clipboard?.writeText) navigator.clipboard.writeText(url).then(done).catch(()=>prompt('Copie o link do cenário:',url));
+    else prompt('Copie o link do cenário:',url);
+  }catch(e){ showAlert('err','Não foi possível gerar o link.'); }
+}
+function loadFromHash(){
+  if(!location.hash.startsWith('#s=')) return false;
+  try{
+    const b64=location.hash.slice(3).replace(/-/g,'+').replace(/_/g,'/');
+    const json=decodeURIComponent(escape(atob(b64)));
+    const ok=applyState(JSON.parse(json));
+    if(ok){
+      saveState();
+      history.replaceState(null,'',location.pathname+location.search);
+      showAlert('info','Cenário carregado do link — clique em Calcular para gerar os resultados.');
+    }
+    return ok;
+  }catch(e){ return false; }
+}
+
+/* ====================================================================
+   PLUVIOMETRIA HISTÓRICA (Open-Meteo) → sugestão de dias de impacto
+   Regra: chuva ≥ 5 mm = 0,5 dia de perda · ≥ 10 mm = 1 dia de perda
+   ==================================================================== */
+const UF_NOME={AC:'Acre',AL:'Alagoas',AP:'Amapá',AM:'Amazonas',BA:'Bahia',CE:'Ceará',
+  DF:'Distrito Federal',ES:'Espírito Santo',GO:'Goiás',MA:'Maranhão',MT:'Mato Grosso',
+  MS:'Mato Grosso do Sul',MG:'Minas Gerais',PA:'Pará',PB:'Paraíba',PR:'Paraná',
+  PE:'Pernambuco',PI:'Piauí',RJ:'Rio de Janeiro',RN:'Rio Grande do Norte',
+  RS:'Rio Grande do Sul',RO:'Rondônia',RR:'Roraima',SC:'Santa Catarina',
+  SP:'São Paulo',SE:'Sergipe',TO:'Tocantins'};
+let climaHist=null;
+let _climaBusy=false;
+
+// Classificação sugerida do mês pelo volume médio de chuva
+function classTipoMm(mm){ return mm>=150?'umido':mm>=60?'transicao':'seco'; }
+
+async function fetchClimaCidade(auto){
+  const box=document.getElementById('climaSug');
+  if(!selectedCity){ if(!auto) showAlert('warn','Selecione a cidade da obra primeiro.'); return; }
+  if(_climaBusy) return;
+  _climaBusy=true;
+  box.innerHTML=`<div class="clima-loading">Buscando pluviometria histórica de ${esc(selectedCity.nome)}/${esc(selectedCity.uf)} (últimos 10 anos)…</div>`;
+  try{
+    // 1) geocodifica a cidade (Open-Meteo)
+    const geo=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(selectedCity.nome)}&count=20&language=pt&format=json`,
+      {signal:AbortSignal.timeout(12000)}).then(r=>r.json());
+    const cand=(geo.results||[]).filter(g=>g.country_code==='BR');
+    const alvo=norm(UF_NOME[selectedCity.uf]||'');
+    const match=cand.find(g=>norm(g.admin1||'')===alvo)||cand[0];
+    if(!match) throw new Error('cidade não encontrada na base climática');
+
+    // 2) chuva diária dos últimos 10 anos completos
+    const yNow=new Date().getFullYear();
+    const y1=yNow-10, y2=yNow-1;
+    const arc=await fetch(`https://archive-api.open-meteo.com/v1/archive?latitude=${match.latitude}&longitude=${match.longitude}&start_date=${y1}-01-01&end_date=${y2}-12-31&daily=precipitation_sum&timezone=auto`,
+      {signal:AbortSignal.timeout(25000)}).then(r=>r.json());
+    const dates=arc.daily?.time||[], prec=arc.daily?.precipitation_sum||[];
+    if(!dates.length) throw new Error('sem dados de chuva para o local');
+
+    // 3) agrega por mês: mm médio e dias ≥5mm / ≥10mm médios por ano
+    const mm=Array(12).fill(0), d5=Array(12).fill(0), d10=Array(12).fill(0);
+    const yrs=new Set();
+    dates.forEach((ds,i)=>{
+      const p=prec[i];
+      if(p==null) return;
+      const mo=+ds.slice(5,7)-1;
+      yrs.add(ds.slice(0,4));
+      mm[mo]+=p;
+      if(p>=10) d10[mo]++;
+      else if(p>=5) d5[mo]++;
+    });
+    const nY=yrs.size||1;
+    climaHist={
+      cidade:selectedCity.nome, uf:selectedCity.uf, anos:`${y1}–${y2}`, local:match.name,
+      mm:  mm.map(v=>Math.round(v/nY)),
+      imp: d10.map((v,i)=>Math.round((v/nY+0.5*d5[i]/nY)*2)/2), // arredonda a 0,5
+    };
+
+    // aplica direto se a tabela ainda está vazia; senão, mostra sugestão
+    const vazio=Array.from({length:12},(_,i)=>i+1)
+      .every(m=>(pluvioMes[m]==null||pluvioMes[m]==='')&&(impactoMes[m]==null||impactoMes[m]===''));
+    if(vazio){ aplicarClimaSug(); }
+    else renderClimaSug();
+  }catch(e){
+    box.innerHTML=`<div class="clima-err">Não foi possível obter os dados climáticos (${esc(e.message||'erro de rede')}). Preencha a pluviometria e os dias de impacto manualmente ou tente novamente.</div>`;
+  }finally{ _climaBusy=false; }
+}
+
+function renderClimaSug(){
+  const box=document.getElementById('climaSug');
+  if(!climaHist){ box.innerHTML=''; return; }
+  const MO_ABR=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const fmtBRn=v=>String(v).replace('.',',');
+  box.innerHTML=`<div class="clima-sug">
+    <strong>Dados históricos de ${esc(climaHist.cidade)}/${esc(climaHist.uf)}</strong> (${climaHist.anos}, Open-Meteo):
+    <div style="overflow-x:auto;"><table>
+      <tr><th style="text-align:left;">Mês</th>${MO_ABR.map(m=>`<th>${m}</th>`).join('')}</tr>
+      <tr><td style="text-align:left;font-weight:600;">Chuva média (mm)</td>${climaHist.mm.map(v=>`<td>${v}</td>`).join('')}</tr>
+      <tr><td style="text-align:left;font-weight:600;">Dias de impacto sugeridos</td>${climaHist.imp.map(v=>`<td>${fmtBRn(v)}</td>`).join('')}</tr>
+      <tr><td style="text-align:left;font-weight:600;">Período sugerido</td>${climaHist.mm.map(v=>{
+        const t=classTipoMm(v);
+        return `<td><span class="periodo-tag tag-${t}" style="font-size:.65rem;padding:1px 5px;">${t==='umido'?'Úm':t==='transicao'?'Tr':'Se'}</span></td>`;
+      }).join('')}</tr>
+    </table></div>
+    <div style="font-size:.75rem;margin-bottom:8px;">Regra: dia com chuva ≥ 5 mm = 0,5 dia de perda · ≥ 10 mm = 1 dia. Período: ≥ 150 mm/mês = úmido · 60–149 = transição · &lt; 60 = seco.</div>
+    <button class="btn btn-add" onclick="aplicarClimaSug()">Aplicar sugestão</button>
+    <button class="btn btn-ghost" onclick="document.getElementById('climaSug').innerHTML=''">Dispensar</button>
+  </div>`;
+}
+
+function aplicarClimaSug(){
+  if(!climaHist) return;
+  climaHist.mm.forEach((v,i)=>{
+    pluvioMes[i+1]=String(v);
+    periodoMes[i+1]=classTipoMm(v);
+  });
+  climaHist.imp.forEach((v,i)=>{ impactoMes[i+1]=v; });
+  renderPeriodoGrid(); saveState(); refreshResults();
+  const box=document.getElementById('climaSug');
+  box.innerHTML=`<div class="clima-sug">✓ Pluviometria histórica e dias de impacto de <strong>${esc(climaHist.cidade)}/${esc(climaHist.uf)}</strong> (${climaHist.anos}) aplicados — ajuste os valores conforme sua experiência local.
+    <button class="btn btn-ghost" style="font-size:.72rem;padding:3px 10px;margin-left:8px;" onclick="document.getElementById('climaSug').innerHTML=''">OK</button></div>`;
+}
+
+/* ====================================================================
+   LISTENERS + INIT
+   ==================================================================== */
+// Persiste e marca resultados como desatualizados quando mudam insumos do dayMap
+document.querySelectorAll('#dataOS,#prazo,#chkPontes,#chkRecesso')
+  .forEach(el=>el.addEventListener('change',()=>{ saveState(); markStale(); }));
+document.getElementById('jornadaUtil').addEventListener('change',saveState);
 document.getElementById('dataOS').addEventListener('change',renderFasesList);
 
-// defaults (only when no saved state)
-if(!loadState()){
+renderScenarioSelect();
+
+// prioridade: link compartilhado > estado salvo > defaults
+if(!loadFromHash() && !loadState()){
   document.getElementById('dataOS').value='01/06/2026';
   document.getElementById('prazo').value='180';
   renderPeriodoGrid();
