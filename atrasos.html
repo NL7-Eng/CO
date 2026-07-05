@@ -1,0 +1,1878 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Análise de Atrasos — AACE 29R-03 / 52R-06</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" onerror="window.__noXLSX=true"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:       #f4f4f5;
+  --surface:  #ffffff;
+  --border:   #d1d5db;
+  --border-l: #e5e7eb;
+  --text:     #111827;
+  --muted:    #6b7280;
+  --subtle:   #9ca3af;
+  --hdr:      #1f2937;
+
+  /* séries de dados (paleta validada) */
+  --s-base:   #2a78d6;   /* baseline            */
+  --s-atual:  #1baf7a;   /* atualização/as-built */
+  --s-frag:   #4a3aa7;   /* cenário fragnet      */
+  --crit:     #d03b3b;   /* crítico / atraso     */
+  --good:     #0ca30c;   /* adiantamento / ok    */
+  --good-t:   #006300;   /* texto de sucesso     */
+  --warn:     #fab219;
+  --serious:  #ec835a;
+  --grid:     #e1e0d9;
+
+  --r: 8px;
+  --sh: 0 1px 3px rgba(0,0,0,.08), 0 2px 8px rgba(0,0,0,.05);
+  --fd: 'Space Grotesk', sans-serif;
+  --fb: 'DM Sans', sans-serif;
+}
+body { font-family: var(--fb); background: var(--bg); color: var(--text); min-height: 100vh; }
+.hidden { display: none !important; }
+button { font-family: var(--fb); cursor: pointer; }
+input, select, textarea { font-family: var(--fb); font-size: .85rem; }
+
+/* ── HEADER ── */
+header { background: var(--hdr); padding: 26px 24px 0; }
+.hdr { max-width: 1240px; margin: 0 auto; }
+header h1 { font-family: var(--fd); font-size: 1.45rem; font-weight: 700; color: #fff; letter-spacing: -.3px; }
+header .sub { margin-top: 5px; color: #9ca3af; font-size: .85rem; max-width: 860px; }
+header .sub b { color: #d1d5db; font-weight: 600; }
+
+/* fluxo (etapas) */
+.flow { display: flex; gap: 4px; margin-top: 18px; flex-wrap: wrap; }
+.flow .step {
+  font-size: .72rem; font-weight: 600; letter-spacing: .4px; text-transform: uppercase;
+  color: #9ca3af; padding: 6px 12px 8px; border-bottom: 3px solid transparent;
+}
+.flow .step.done  { color: #6ee7b7; border-bottom-color: #059669; }
+.flow .step.curr  { color: #fff; border-bottom-color: #3b82f6; }
+
+/* navegação por abas */
+nav.tabs { background: var(--hdr); padding: 10px 24px 0; border-bottom: 1px solid #374151; }
+nav.tabs .in { max-width: 1240px; margin: 0 auto; display: flex; gap: 2px; flex-wrap: wrap; }
+nav.tabs button {
+  background: transparent; border: none; color: #9ca3af; font-size: .85rem; font-weight: 600;
+  padding: 10px 16px; border-radius: 6px 6px 0 0; border-bottom: 2px solid transparent;
+}
+nav.tabs button:hover { color: #e5e7eb; }
+nav.tabs button.active { background: var(--bg); color: var(--text); }
+nav.tabs button .cnt {
+  display: inline-block; min-width: 18px; padding: 1px 5px; margin-left: 6px;
+  background: #374151; color: #d1d5db; border-radius: 9px; font-size: .68rem; text-align: center;
+}
+nav.tabs button.active .cnt { background: var(--crit); color: #fff; }
+
+/* ── LAYOUT ── */
+.wrap { max-width: 1240px; margin: 0 auto; padding: 0 16px 72px; }
+.card { background: var(--surface); border-radius: var(--r); box-shadow: var(--sh); border: 1px solid var(--border); padding: 24px 26px; margin-top: 20px; }
+.section-title {
+  font-family: var(--fd); font-size: .8rem; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .7px; margin-bottom: 16px;
+  padding-bottom: 9px; border-bottom: 1px solid var(--border-l);
+  display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+}
+.section-title .actions { display: flex; gap: 8px; }
+.hint { font-size: .78rem; color: var(--muted); line-height: 1.5; }
+.hint code { background: #f3f4f6; border: 1px solid var(--border-l); border-radius: 4px; padding: 0 4px; font-size: .72rem; }
+
+/* ── BOTÕES ── */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px; border-radius: 6px;
+  font-size: .82rem; font-weight: 600; padding: 8px 14px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text); transition: background .12s;
+}
+.btn:hover { background: #f9fafb; }
+.btn.primary { background: #1d4ed8; border-color: #1d4ed8; color: #fff; }
+.btn.primary:hover { background: #1e40af; }
+.btn.ok { background: #047857; border-color: #047857; color: #fff; }
+.btn.ok:hover { background: #065f46; }
+.btn.danger { background: #fff; border-color: #fca5a5; color: #b91c1c; }
+.btn.danger:hover { background: #fef2f2; }
+.btn.sm { padding: 4px 9px; font-size: .74rem; }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+
+/* ── UPLOAD ── */
+.up-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+@media(max-width:760px){ .up-grid { grid-template-columns: 1fr; } }
+.dropzone {
+  border: 2px dashed var(--border); border-radius: var(--r); padding: 26px 18px;
+  text-align: center; background: #fafafa; transition: border-color .15s, background .15s;
+}
+.dropzone.over { border-color: #1d4ed8; background: #eff6ff; }
+.dropzone.loaded { border-style: solid; border-color: #059669; background: #ecfdf5; }
+.dropzone h3 { font-family: var(--fd); font-size: .95rem; margin-bottom: 4px; }
+.dropzone .tag { display:inline-block; font-size:.68rem; font-weight:700; letter-spacing:.5px; text-transform:uppercase; padding:2px 8px; border-radius:10px; margin-bottom:10px; }
+.dz-bl .tag { background:#dbeafe; color:#1e40af; }
+.dz-up .tag { background:#d1fae5; color:#065f46; }
+.dropzone p { font-size: .78rem; color: var(--muted); margin-top: 4px; }
+.dropzone .fname { font-size: .8rem; font-weight: 600; color: #065f46; margin-top: 8px; word-break: break-all; }
+
+/* ── TABELAS ── */
+.tbl-wrap { overflow-x: auto; }
+table.tbl { width: 100%; border-collapse: collapse; font-size: .8rem; }
+table.tbl th {
+  text-align: left; font-family: var(--fd); font-size: .68rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .5px; color: var(--muted);
+  padding: 8px 10px; border-bottom: 2px solid var(--border-l); white-space: nowrap;
+}
+table.tbl td { padding: 7px 10px; border-bottom: 1px solid var(--border-l); vertical-align: top; }
+table.tbl tr:hover td { background: #fafafa; }
+table.tbl td.num, table.tbl th.num { text-align: right; font-variant-numeric: tabular-nums; }
+table.tbl input, table.tbl select { border:1px solid var(--border); border-radius:5px; padding:3px 6px; font-size:.76rem; width:100%; }
+
+/* ── BADGES ── */
+.badge { display: inline-block; font-size: .68rem; font-weight: 700; padding: 2px 8px; border-radius: 10px; white-space: nowrap; }
+.b-crit    { background: #fee2e2; color: #991b1b; }
+.b-folga   { background: #f3f4f6; color: #4b5563; }
+.b-atraso  { background: #fee2e2; color: #991b1b; }
+.b-adiant  { background: #d1fae5; color: #065f46; }
+.b-herd    { background: #dbeafe; color: #1e40af; }
+.b-repl    { background: #ede9fe; color: #5b21b6; }
+.b-prop    { background: #ffedd5; color: #9a3412; }
+.b-nid     { background: #f3f4f6; color: #374151; border: 1px dashed var(--subtle); }
+.b-evd     { background: #fef3c7; color: #92400e; }
+.b-conf    { background: #d1fae5; color: #065f46; }
+.b-pend    { background: #fef3c7; color: #92400e; }
+.b-esc     { background: #dbeafe; color: #1e40af; }
+.b-nesc    { background: #fee2e2; color: #991b1b; }
+.b-comp    { background: #d1fae5; color: #065f46; }
+.b-ncomp   { background: #f3f4f6; color: #4b5563; }
+.b-conc    { background: #fde68a; color: #78350f; }
+.b-nota    { background: #e0f2fe; color: #075985; }
+
+/* ── VALIDAÇÃO ── */
+.vitem { display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; border-radius: 6px; font-size: .8rem; margin-top: 6px; }
+.vitem.err  { background: #fef2f2; border: 1px solid #fecaca; color: #7f1d1d; }
+.vitem.warn { background: #fffbeb; border: 1px solid #fde68a; color: #78350f; }
+.vitem.ok   { background: #ecfdf5; border: 1px solid #a7f3d0; color: #064e3b; }
+.vitem .ico { font-weight: 700; }
+
+/* ── EXCEÇÕES (confirmação) ── */
+.exc {
+  border: 1px solid var(--border-l); border-left: 4px solid var(--subtle);
+  border-radius: 6px; padding: 12px 14px; margin-top: 10px; background: #fff;
+}
+.exc.crit { border-left-color: var(--crit); }
+.exc.done { border-left-color: var(--good); background: #f9fefb; }
+.exc-top { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: baseline; }
+.exc-top .aid { font-family: var(--fd); font-weight: 700; font-size: .9rem; }
+.exc-top .days { font-variant-numeric: tabular-nums; font-weight: 700; }
+.exc-top .days.late { color: var(--crit); } .exc-top .days.early { color: var(--good-t); }
+.exc-body { margin-top: 8px; font-size: .8rem; color: var(--muted); line-height: 1.55; }
+.exc-body .cause { color: var(--text); }
+.exc-evd { margin-top: 6px; font-size: .78rem; color: #92400e; background:#fffbeb; border:1px solid #fde68a; border-radius:6px; padding:6px 9px; }
+.exc-actions { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.exc-edit { margin-top: 10px; background: #f9fafb; border: 1px solid var(--border-l); border-radius: 6px; padding: 12px; }
+.exc-edit .row { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+@media(max-width:760px){ .exc-edit .row { grid-template-columns: 1fr; } }
+.exc-edit label { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; color: var(--muted); display: block; margin-bottom: 4px; }
+.exc-edit input[type=text], .exc-edit select, .exc-edit textarea { width: 100%; border: 1px solid var(--border); border-radius: 6px; padding: 7px 9px; }
+.class-preview { font-size: .78rem; margin-top: 4px; padding: 8px 10px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; color: #1e3a8a; line-height: 1.5; }
+
+/* ── KPI TILES ── */
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; }
+.kpi { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--sh); padding: 16px 18px; }
+.kpi .lbl { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); }
+.kpi .val { font-family: var(--fd); font-size: 1.9rem; font-weight: 700; margin-top: 4px; letter-spacing: -.5px; }
+.kpi .val.bad { color: var(--crit); } .kpi .val.good { color: var(--good-t); }
+.kpi .sub { font-size: .72rem; color: var(--subtle); margin-top: 2px; }
+
+/* ── GANTT ── */
+.gantt-box { overflow-x: auto; border: 1px solid var(--border-l); border-radius: 6px; background: #fcfcfb; }
+.legend { display: flex; gap: 18px; flex-wrap: wrap; font-size: .74rem; color: var(--muted); margin: 4px 0 12px; }
+.legend .it { display: inline-flex; align-items: center; gap: 6px; }
+.legend .sw { width: 14px; height: 8px; border-radius: 4px; display: inline-block; }
+.gtip {
+  position: fixed; z-index: 60; pointer-events: none; background: #1f2937; color: #f9fafb;
+  font-size: .74rem; padding: 8px 11px; border-radius: 6px; box-shadow: 0 4px 14px rgba(0,0,0,.25);
+  max-width: 320px; line-height: 1.5; display: none;
+}
+.gtip b { color: #fff; }
+
+/* ── EVIDÊNCIAS / LINHA DO TEMPO ── */
+.tl { border-left: 2px solid var(--border); margin: 10px 0 0 8px; padding-left: 18px; }
+.tl-item { position: relative; padding: 8px 0 14px; }
+.tl-item::before {
+  content: ''; position: absolute; left: -24px; top: 14px; width: 10px; height: 10px;
+  border-radius: 50%; background: var(--s-atual); border: 2px solid #fff; box-shadow: 0 0 0 1px var(--border);
+}
+.tl-item .tld { font-family: var(--fd); font-weight: 700; font-size: .82rem; }
+.tl-item .tlt { font-size: .8rem; color: var(--text); margin-top: 2px; line-height: 1.5; }
+.tl-item .tlrefs { margin-top: 3px; }
+.tl-item.sel { background: #eff6ff; border-radius: 6px; margin-left: -6px; padding-left: 6px; }
+
+/* ── MODO (retro/prospectivo) ── */
+.mode-switch { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.mode-switch button { border: none; background: #fff; padding: 8px 16px; font-size: .8rem; font-weight: 600; color: var(--muted); }
+.mode-switch button.active { background: var(--hdr); color: #fff; }
+
+/* ── TIA / FRAGNET ── */
+.tia-steps { counter-reset: st; }
+.tia-step { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px dashed var(--border-l); font-size: .82rem; }
+.tia-step::before {
+  counter-increment: st; content: counter(st);
+  flex: 0 0 24px; height: 24px; border-radius: 50%; background: var(--hdr); color: #fff;
+  display: flex; align-items: center; justify-content: center; font-family: var(--fd); font-weight: 700; font-size: .76rem;
+}
+.tia-step.done::before { background: var(--good); }
+.frag-result { font-family: var(--fd); font-size: 1.1rem; font-weight: 700; padding: 12px 16px; border-radius: 8px; margin-top: 12px; }
+.frag-result.late { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+.frag-result.zero { background: #ecfdf5; border: 1px solid #a7f3d0; color: #064e3b; }
+
+/* ── DISCLAIMER ── */
+.disclaimer {
+  margin-top: 20px; padding: 12px 16px; border-radius: var(--r); font-size: .76rem; line-height: 1.55;
+  background: #fffbeb; border: 1px solid #fde68a; color: #78350f;
+}
+
+/* ── RELATÓRIO ── */
+#report-body { background: #fff; }
+.rep { font-size: .84rem; line-height: 1.6; }
+.rep h1 { font-family: var(--fd); font-size: 1.5rem; margin: 24px 0 4px; }
+.rep h2 { font-family: var(--fd); font-size: 1.05rem; margin: 26px 0 8px; padding-bottom: 5px; border-bottom: 2px solid var(--hdr); }
+.rep h3 { font-family: var(--fd); font-size: .9rem; margin: 16px 0 6px; }
+.rep p { margin: 6px 0; }
+.rep table { width: 100%; border-collapse: collapse; font-size: .76rem; margin: 10px 0; }
+.rep th { background: #f3f4f6; text-align: left; padding: 6px 8px; border: 1px solid var(--border); font-size: .68rem; text-transform: uppercase; letter-spacing: .4px; }
+.rep td { padding: 6px 8px; border: 1px solid var(--border-l); vertical-align: top; }
+.rep td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.rep .cover { text-align: center; padding: 60px 0 30px; }
+.rep .cover .rlogo { font-family: var(--fd); font-size: .78rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); }
+.rep .exec { background: #f9fafb; border: 1px solid var(--border-l); border-radius: 8px; padding: 16px 20px; }
+.rep .trace { background: #f9fafb; border-left: 3px solid var(--s-base); padding: 10px 14px; margin: 8px 0; font-size: .78rem; }
+.rep .trace b { display: inline-block; min-width: 78px; }
+.rep .evref { color: #92400e; font-weight: 600; text-decoration: none; }
+.rep a.actref { color: #1d4ed8; text-decoration: none; font-weight: 600; }
+.rep .pagebreak { page-break-before: always; }
+
+@media print {
+  body * { visibility: hidden; }
+  #view-relatorio, #view-relatorio * { visibility: visible; }
+  #view-relatorio { position: absolute; left: 0; top: 0; width: 100%; }
+  #view-relatorio .no-print { display: none !important; }
+  .card { border: none; box-shadow: none; padding: 0; }
+  .rep h2 { page-break-after: avoid; }
+  .rep table, .rep .trace { page-break-inside: avoid; }
+}
+
+/* ── MODAL / TOAST ── */
+.toast {
+  position: fixed; bottom: 24px; right: 24px; z-index: 90; background: #1f2937; color: #fff;
+  padding: 12px 18px; border-radius: 8px; font-size: .82rem; box-shadow: 0 6px 20px rgba(0,0,0,.3);
+  opacity: 0; transform: translateY(8px); transition: all .25s; pointer-events: none; max-width: 420px;
+}
+.toast.show { opacity: 1; transform: none; }
+.toast.err { background: #991b1b; }
+
+.empty { text-align: center; padding: 40px 20px; color: var(--subtle); font-size: .85rem; }
+.empty .big { font-size: 2rem; margin-bottom: 8px; }
+
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+@media(max-width:860px){ .grid2 { grid-template-columns: 1fr; } }
+.fg { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+.fg label { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; color: var(--muted); }
+.fg input, .fg select, .fg textarea { border: 1px solid var(--border); border-radius: 6px; padding: 7px 9px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="hdr">
+    <h1>Análise de Atrasos de Cronograma</h1>
+    <p class="sub">Análise forense retrospectiva (<b>AACE RP 29R-03</b>, observacional as-planned vs as-built e fragnet modelado) e prospectiva (<b>AACE RP 52R-06</b>, Time Impact Analysis) com confirmação humana de causa e rastreabilidade completa.</p>
+    <div class="flow" id="flow">
+      <span class="step" data-st="upload">1 · Upload</span>
+      <span class="step" data-st="valida">2 · Validação</span>
+      <span class="step" data-st="modo">3 · Modo</span>
+      <span class="step" data-st="analise">4 · Análise &amp; confirmação</span>
+      <span class="step" data-st="relatorio">5 · Relatório</span>
+    </div>
+  </div>
+</header>
+
+<nav class="tabs"><div class="in">
+  <button data-view="projeto" class="active">Projeto &amp; dados</button>
+  <button data-view="analise">Análise de desvios <span class="cnt hidden" id="cnt-exc">0</span></button>
+  <button data-view="evidencias">Evidências <span class="cnt hidden" id="cnt-evd">0</span></button>
+  <button data-view="fragnet">Fragnet / TIA</button>
+  <button data-view="dashboard">Dashboard</button>
+  <button data-view="relatorio">Relatório</button>
+</div></nav>
+
+<div class="wrap">
+
+<!-- ══════════ VIEW: PROJETO ══════════ -->
+<section id="view-projeto">
+  <div class="card">
+    <div class="section-title"><span>Projeto</span>
+      <span class="actions">
+        <button class="btn sm" id="btn-demo">Carregar projeto de exemplo</button>
+        <button class="btn sm" id="btn-template">Baixar modelo XLSX</button>
+        <button class="btn sm danger" id="btn-reset">Limpar projeto</button>
+      </span>
+    </div>
+    <div class="fg" style="max-width:420px">
+      <label>Nome do projeto</label>
+      <input type="text" id="proj-name" placeholder="Ex.: Duplicação BR-000 — Lote 2">
+    </div>
+    <p class="hint">Formatos aceitos: <b>.XLSX/.CSV</b> (colunas: <code>ID</code>, <code>Descrição</code>, <code>Predecessoras</code> — ex. <code>A10FS+2;A20SS</code> —, <code>Duração</code>, <code>Início Planejado</code>, <code>Término Planejado</code>, <code>Início Real</code>, <code>Término Real</code>, <code>% Avanço</code>, <code>Área</code>, <code>Notas</code>, <code>Marco</code>) e <b>.XER</b> (Primavera P6 — tabelas TASK/TASKPRED/TASKMEMO). <b>.MPP</b> (MS Project): em breve — exporte para XLSX pelo próprio Project. Durações e desvios são tratados em <b>dias corridos</b> nesta versão.</p>
+  </div>
+
+  <div class="card">
+    <div class="section-title">1 · Upload dos cronogramas</div>
+    <div class="up-grid">
+      <div class="dropzone dz-bl" id="dz-baseline">
+        <span class="tag">Baseline (LB)</span>
+        <h3>Cronograma de linha de base</h3>
+        <p>Arraste o arquivo aqui ou</p>
+        <p><button class="btn sm" onclick="document.getElementById('file-baseline').click()">Selecionar arquivo</button></p>
+        <input type="file" id="file-baseline" class="hidden" accept=".xlsx,.xls,.csv,.xer,.mpp">
+        <div class="fname" id="fname-baseline"></div>
+      </div>
+      <div class="dropzone dz-up" id="dz-update">
+        <span class="tag">Atualização / Comparativo</span>
+        <h3>Cronograma atualizado (as-built parcial)</h3>
+        <p>Arraste o arquivo aqui ou</p>
+        <p><button class="btn sm" onclick="document.getElementById('file-update').click()">Selecionar arquivo</button></p>
+        <input type="file" id="file-update" class="hidden" accept=".xlsx,.xls,.csv,.xer,.mpp">
+        <div class="fname" id="fname-update"></div>
+      </div>
+    </div>
+    <div id="upd-list" style="margin-top:14px"></div>
+  </div>
+
+  <div class="card" id="card-valida">
+    <div class="section-title">2 · Validação de consistência da rede</div>
+    <div id="valida-out"><p class="hint">Carregue os dois cronogramas para validar a rede lógica (loops, atividades órfãs, datas inconsistentes) antes do cálculo.</p></div>
+  </div>
+
+  <div class="card" id="card-net" style="display:none">
+    <div class="section-title"><span>Rede carregada (atualização ativa)</span><span class="actions"><span class="hint" id="net-meta"></span></span></div>
+    <div class="tbl-wrap"><table class="tbl" id="tbl-net"></table></div>
+  </div>
+</section>
+
+<!-- ══════════ VIEW: ANÁLISE ══════════ -->
+<section id="view-analise" class="hidden">
+  <div class="card">
+    <div class="section-title"><span>3 · Modo de análise</span>
+      <span class="mode-switch">
+        <button id="mode-retro" class="active">Retrospectivo (29R-03)</button>
+        <button id="mode-pros">Prospectivo (52R-06 / TIA)</button>
+      </span>
+    </div>
+    <p class="hint" id="mode-desc">Modo retrospectivo: comparação observacional as-planned vs as-built (MIP 3.1) entre a baseline e a atualização ativa. Atrasos já ocorridos são identificados, causa é sugerida pelos sinais disponíveis e <b>confirmada por você</b> antes de qualquer classificação.</p>
+  </div>
+
+  <div class="card">
+    <div class="section-title"><span>4 · Exceções para confirmação</span>
+      <span class="actions">
+        <label class="hint" style="display:inline-flex;align-items:center;gap:5px"><input type="checkbox" id="flt-crit"> só caminho crítico</label>
+        <label class="hint" style="display:inline-flex;align-items:center;gap:5px"><input type="checkbox" id="flt-pend" checked> só pendentes</label>
+        <button class="btn sm primary" id="btn-recalc">Recalcular desvios</button>
+      </span>
+    </div>
+    <p class="hint">O sistema compara atividade a atividade, sugere causa provável apenas a partir de sinais nos dados (rede lógica, notas do arquivo, base de evidências) e <b>nunca inventa causa de negócio</b>. Cada item precisa ser confirmado ou editado por você para entrar na classificação e no relatório.</p>
+    <div id="exc-list"></div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">5 · Eventos confirmados &amp; classificação</div>
+    <p class="hint">Classificação temporal (concorrência) é calculada automaticamente a partir da rede. Classificação contratual (escusável/compensável) é <b>sugerida</b> a partir do responsável que você atribuiu, com a regra de decisão explícita — e pode ser sobrescrita.</p>
+    <div class="tbl-wrap"><table class="tbl" id="tbl-conf"></table></div>
+    <div class="disclaimer">⚠️ Esta ferramenta aplica a metodologia técnica das práticas recomendadas AACE 29R-03 e 52R-06. A classificação final de responsabilidade contratual/jurídica (escusável, compensável, concorrente) deve ser validada por profissional qualificado. Este material não constitui parecer jurídico.</div>
+  </div>
+</section>
+
+<!-- ══════════ VIEW: EVIDÊNCIAS ══════════ -->
+<section id="view-evidencias" class="hidden">
+  <div class="card">
+    <div class="section-title"><span>Base de evidências — upload e extração</span>
+      <span class="actions"><button class="btn sm primary" onclick="document.getElementById('file-evd').click()">Adicionar anexos</button>
+      <input type="file" id="file-evd" class="hidden" multiple accept=".pdf,.eml,.msg,.txt,.jpg,.jpeg,.png,.doc,.docx"></span>
+    </div>
+    <p class="hint">Aceita e-mails (.eml/.txt), PDFs, RDOs, atas e fotos. A extração automática de data/resumo/categoria funciona sobre o <b>texto</b> do documento (arquivos de texto são lidos diretamente; para PDF/foto, cole o texto relevante no campo do anexo). Campos extraídos são sempre editáveis — a extração é uma sugestão, não uma conclusão.</p>
+    <div class="tbl-wrap"><table class="tbl" id="tbl-evd"></table></div>
+    <div id="evd-editor"></div>
+  </div>
+
+  <div class="card">
+    <div class="section-title"><span>Linha do tempo de evidências</span>
+      <span class="actions"><button class="btn sm" id="btn-merge" disabled>Mesclar selecionados</button></span>
+    </div>
+    <p class="hint">Cada entrada referencia o(s) ID(s) de evidência que a sustentam. Selecione duas ou mais entradas do mesmo evento (ex.: e-mail + RDO da mesma chuva) para mesclar. Texto editável; falsos positivos podem ser removidos sem excluir o anexo.</p>
+    <div id="tl-out"></div>
+  </div>
+</section>
+
+<!-- ══════════ VIEW: FRAGNET / TIA ══════════ -->
+<section id="view-fragnet" class="hidden">
+  <div class="card">
+    <div class="section-title">Modelagem por fragnet — retrospectiva (MIP 3.6/3.8) ou prospectiva (TIA 52R-06)</div>
+    <p class="hint">Camada avançada para quantificar isoladamente um evento específico. No modo <b>aditivo</b>, um fragnet (subconjunto mínimo de atividades representando o atraso) é inserido na rede da atualização ativa e o CPM é recalculado. No modo <b>subtrativo</b>, atividades de atraso são removidas para medir o cronograma "mas-para" (but-for). Esta análise trata <b>apenas tempo</b>; custo é módulo separado.</p>
+    <div class="grid2">
+      <div>
+        <div class="fg"><label>Nome do evento / fragnet</label><input type="text" id="fg-name" placeholder="Ex.: Interferência de rede elétrica não cadastrada"></div>
+        <div class="fg"><label>Modo</label><select id="fg-mode"><option value="aditivo">Aditivo — inserir atividades de atraso (MIP 3.6 / TIA)</option><option value="subtrativo">Subtrativo — remover atividades (MIP 3.8, "but-for")</option></select></div>
+        <div id="fg-add-box">
+          <div class="fg"><label>Atividades do fragnet (uma por linha: <span style="text-transform:none">ID; Descrição; Duração(dias); Predecessora(s); Sucessora(s)</span>)</label>
+          <textarea id="fg-acts" rows="5" placeholder="FRG-01; Paralisação da frente; 12; A030FS; A040FS"></textarea></div>
+        </div>
+        <div id="fg-sub-box" class="hidden">
+          <div class="fg"><label>IDs das atividades a remover (separadas por ; )</label><input type="text" id="fg-remove" placeholder="A035; A036"></div>
+        </div>
+        <div class="fg"><label>Mitigação registrada (alteração de lógica/duração para recuperação, se houver)</label><textarea id="fg-mit" rows="2" placeholder="Ex.: ressequenciamento da frente B em paralelo — recupera 4 dias"></textarea></div>
+        <button class="btn primary" id="btn-fg-run">Inserir fragnet e recalcular CPM</button>
+      </div>
+      <div>
+        <div class="section-title" style="border:none;margin-bottom:6px;padding-bottom:0">Passos formais da TIA (52R-06)</div>
+        <div class="tia-steps" id="tia-steps">
+          <div class="tia-step" data-s="1">Modelar o impacto via fragnet — atividades mínimas necessárias.</div>
+          <div class="tia-step" data-s="2">Inserir o fragnet na última atualização de cronograma aceita.</div>
+          <div class="tia-step" data-s="3">Recalcular a rede CPM (forward/backward pass).</div>
+          <div class="tia-step" data-s="4">Identificar a atividade de conclusão e a variação na data de término.</div>
+          <div class="tia-step" data-s="5">Registrar mitigação, se houver alteração de lógica/duração para recuperação.</div>
+        </div>
+        <div id="fg-result"></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="section-title">Cenários fragnet calculados</div>
+    <div class="tbl-wrap"><table class="tbl" id="tbl-frag"></table></div>
+    <div id="conc-out"></div>
+  </div>
+</section>
+
+<!-- ══════════ VIEW: DASHBOARD ══════════ -->
+<section id="view-dashboard" class="hidden">
+  <div id="dash-kpis" class="kpis" style="margin-top:20px"></div>
+  <div class="card">
+    <div class="section-title"><span>Gantt comparativo — as-planned vs as-built</span>
+      <span class="actions"><label class="hint" style="display:inline-flex;align-items:center;gap:5px"><input type="checkbox" id="g-only-dev"> só atividades com desvio</label></span>
+    </div>
+    <div class="legend">
+      <span class="it"><span class="sw" style="background:var(--s-base)"></span> Baseline (planejado)</span>
+      <span class="it"><span class="sw" style="background:var(--s-atual)"></span> Atualização (real/projetado)</span>
+      <span class="it"><span class="sw" style="background:var(--crit)"></span> Trecho de atraso</span>
+      <span class="it"><span class="sw" style="background:var(--s-frag)"></span> Cenário com fragnet</span>
+      <span class="it"><span class="sw" style="background:none;border:2px solid var(--crit);height:6px"></span> Caminho crítico</span>
+    </div>
+    <div class="gantt-box" id="gantt-out"></div>
+  </div>
+  <div class="card">
+    <div class="section-title">Eventos de atraso confirmados</div>
+    <div class="tbl-wrap"><table class="tbl" id="tbl-dash-ev"></table></div>
+  </div>
+</section>
+
+<!-- ══════════ VIEW: RELATÓRIO ══════════ -->
+<section id="view-relatorio" class="hidden">
+  <div class="card no-print" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+    <p class="hint" style="max-width:640px">Relatório forense gerado automaticamente a partir dos dados calculados e das causas <b>confirmadas</b>. Use <b>Exportar PDF</b> (imprimir → salvar como PDF) para o documento de entrega. Cada linha referencia a atividade e as evidências de origem.</p>
+    <span style="display:flex;gap:8px">
+      <button class="btn" id="btn-rep-refresh">Atualizar relatório</button>
+      <button class="btn primary" id="btn-rep-pdf">Exportar PDF</button>
+    </span>
+  </div>
+  <div class="card" id="report-body"><div class="rep" id="rep"></div></div>
+</section>
+
+</div><!-- /wrap -->
+
+<div class="gtip" id="gtip"></div>
+<div class="toast" id="toast"></div>
+<script>
+'use strict';
+/* ═══════════════════════════════════════════════════════════════
+   ESTADO GLOBAL + PERSISTÊNCIA (single-tenant MVP, localStorage)
+   ═══════════════════════════════════════════════════════════════ */
+const LSKEY = 'aace-delay-tool-v1';
+const DAY = 86400000;
+
+let S = {
+  projectName: '',
+  baseline: null,              // { name, acts: [Activity] }
+  updates: [],                 // [{ name, acts }] — múltiplas atualizações do mesmo projeto
+  activeUpdate: -1,
+  mode: 'retro',               // retro | pros
+  devs: [],                    // desvios calculados (exceções)
+  conf: {},                    // id -> { status:'confirmado', causa, categoria, resp, esc, comp, editado }
+  evd: [],                     // [{ id:'EVD-001', file, date, tipo, subcat, resumo, atv, texto, dataUrl, page }]
+  evdSeq: 0,
+  tl: [],                      // linha do tempo: [{ id, date, texto, refs:[EVD ids], auto }]
+  tlSeq: 0,
+  frags: []                    // cenários fragnet: [{ name, mode, acts, removed, mit, delta, finish0, finish1, ts, tia }]
+};
+
+function save() {
+  try { localStorage.setItem(LSKEY, JSON.stringify(S)); }
+  catch (e) { toast('Aviso: não foi possível persistir (dados grandes demais para o navegador). O app segue funcionando na sessão.', true); }
+}
+function load() {
+  try {
+    const raw = localStorage.getItem(LSKEY);
+    if (raw) { const o = JSON.parse(raw); S = Object.assign(S, o); }
+  } catch (e) { /* estado limpo */ }
+}
+
+/* ═══════════ UTILITÁRIOS ═══════════ */
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function toast(msg, isErr) {
+  const t = $('toast'); t.textContent = msg; t.className = 'toast show' + (isErr ? ' err' : '');
+  clearTimeout(t._h); t._h = setTimeout(() => t.className = 'toast', 4200);
+}
+
+/** aceita Date, serial Excel, 'DD/MM/AAAA', 'AAAA-MM-DD', 'DD-MM-AAAA' → timestamp UTC-meia-noite ou null */
+function parseDate(v) {
+  if (v == null || v === '') return null;
+  if (v instanceof Date) return Date.UTC(v.getFullYear(), v.getMonth(), v.getDate());
+  if (typeof v === 'number') { // serial Excel (sistema 1900)
+    if (v > 20000 && v < 80000) return Date.UTC(1899, 11, 30) + Math.round(v) * DAY;
+    if (v > 1e11) { const d = new Date(v); return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()); }
+    return null;
+  }
+  const s = String(v).trim();
+  let m = s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/);
+  if (m) { let y = +m[3]; if (y < 100) y += 2000; return Date.UTC(y, +m[2] - 1, +m[1]); }
+  m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (m) return Date.UTC(+m[1], +m[2] - 1, +m[3]);
+  const d = new Date(s);
+  return isNaN(d) ? null : Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
+}
+function fmtD(ts) {
+  if (ts == null) return '—';
+  const d = new Date(ts);
+  return String(d.getUTCDate()).padStart(2, '0') + '/' + String(d.getUTCMonth() + 1).padStart(2, '0') + '/' + d.getUTCFullYear();
+}
+const days = (a, b) => Math.round((b - a) / DAY);           // b - a em dias corridos
+const plural = n => Math.abs(n) === 1 ? 'dia' : 'dias';
+function sigDays(n) { return (n > 0 ? '+' : '') + n + ' ' + plural(n); }
+
+/** 'A10FS+2;A20SS-1;A30' → [{id, type, lag}] */
+function parsePreds(str) {
+  if (!str) return [];
+  return String(str).split(/[;,]/).map(t => t.trim()).filter(Boolean).map(t => {
+    const m = t.match(/^(.*?)(FS|SS|FF|SF)?\s*([+-]\s*\d+(?:\.\d+)?)?$/i);
+    return {
+      id: (m ? m[1] : t).trim(),
+      type: m && m[2] ? m[2].toUpperCase() : 'FS',
+      lag: m && m[3] ? parseFloat(m[3].replace(/\s/g, '')) : 0
+    };
+  }).filter(p => p.id);
+}
+const predStr = ps => (ps || []).map(p => p.id + (p.type !== 'FS' || p.lag ? p.type : '') + (p.lag ? (p.lag > 0 ? '+' : '') + p.lag : '')).join('; ');
+
+/* ═══════════════════════════════════════════════════════════════
+   PARSERS — XLSX/CSV (formato primário) e XER (Primavera P6)
+   Activity: { id, nome, dur, preds[], ps, pf, as, af, pct, area, notas, marco }
+   ps/pf = planejado; as/af = real (as-built), timestamps UTC
+   ═══════════════════════════════════════════════════════════════ */
+const HDR_MAP = [
+  ['id',    /^(id|c[oó]digo|code|task.?code|atividade.?id)$/i],
+  ['nome',  /^(descri|nome|task.?name|activity|name)/i],
+  ['preds', /^(pred)/i],
+  ['dur',   /^(dur)/i],
+  ['ps',    /(in[ií]cio|start).*(plan|baseline|lb)|^(in[ií]cio|start)( planejad[oa])?$/i],
+  ['pf',    /(t[eé]rmino|fim|finish|end).*(plan|baseline|lb)|^(t[eé]rmino|fim|finish|end)( planejad[oa])?$/i],
+  ['as',    /(in[ií]cio|start).*(real|actual)/i],
+  ['af',    /(t[eé]rmino|fim|finish|end).*(real|actual)/i],
+  ['pct',   /(%|avan[cç]o|percent|complete)/i],
+  ['area',  /^([aá]rea|frente|zona|wbs|local)/i],
+  ['notas', /^(nota|observa|coment|memo|note)/i],
+  ['marco', /^(marco|milestone)/i],
+  ['crit',  /^(cr[ií]tic|critical)/i]
+];
+function mapHeader(h) {
+  const s = String(h || '').trim();
+  for (const [k, re] of HDR_MAP) if (re.test(s)) return k;
+  return null;
+}
+
+function rowsToActs(rows) {
+  if (!rows.length) throw new Error('Planilha vazia.');
+  const hdr = rows[0].map(mapHeader);
+  if (!hdr.includes('id')) throw new Error('Coluna "ID" não encontrada no cabeçalho.');
+  const acts = [];
+  for (let i = 1; i < rows.length; i++) {
+    const r = rows[i]; if (!r || !r.length) continue;
+    const o = {};
+    hdr.forEach((k, c) => { if (k && o[k] === undefined) o[k] = r[c]; });
+    if (o.id == null || String(o.id).trim() === '') continue;
+    acts.push({
+      id: String(o.id).trim(),
+      nome: String(o.nome || '').trim() || String(o.id).trim(),
+      preds: parsePreds(o.preds),
+      dur: o.dur != null && o.dur !== '' ? Math.max(0, parseFloat(o.dur)) : null,
+      ps: parseDate(o.ps), pf: parseDate(o.pf),
+      as: parseDate(o.as), af: parseDate(o.af),
+      pct: o.pct != null && o.pct !== '' ? Math.min(100, Math.max(0, parseFloat(String(o.pct).replace('%', '').replace(',', '.')) * (parseFloat(o.pct) <= 1 && String(o.pct).indexOf('%') < 0 && parseFloat(o.pct) > 0 && parseFloat(o.pct) < 1 ? 100 : 1))) : null,
+      area: String(o.area || '').trim(),
+      notas: String(o.notas || '').trim(),
+      marco: /^(s|sim|y|yes|1|true|x)$/i.test(String(o.marco || '').trim())
+    });
+  }
+  if (!acts.length) throw new Error('Nenhuma atividade válida encontrada.');
+  // duração ausente → derivada das datas planejadas (dias corridos, inclusivo)
+  acts.forEach(a => { if (a.dur == null) a.dur = (a.ps != null && a.pf != null) ? Math.max(0, days(a.ps, a.pf)) : 0; });
+  return acts;
+}
+
+function parseCSVText(text) {
+  const sep = (text.split('\n')[0].match(/;/g) || []).length >= (text.split('\n')[0].match(/,/g) || []).length ? ';' : ',';
+  const rows = [];
+  for (const line of text.split(/\r?\n/)) {
+    if (!line.trim()) continue;
+    const cells = []; let cur = '', q = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') { if (q && line[i + 1] === '"') { cur += '"'; i++; } else q = !q; }
+      else if (ch === sep && !q) { cells.push(cur); cur = ''; }
+      else cur += ch;
+    }
+    cells.push(cur); rows.push(cells);
+  }
+  return rowsToActs(rows);
+}
+
+/* XER: texto delimitado por tabs. %T=tabela, %F=campos, %R=registro */
+function parseXER(text) {
+  const tables = {}; let cur = null;
+  for (const line of text.split(/\r?\n/)) {
+    const c = line.split('\t');
+    if (c[0] === '%T') { cur = { fields: [], rows: [] }; tables[c[1]] = cur; }
+    else if (c[0] === '%F' && cur) cur.fields = c.slice(1).map(f => f.trim());
+    else if (c[0] === '%R' && cur) { const o = {}; cur.fields.forEach((f, i) => o[f] = c[i + 1]); cur.rows.push(o); }
+  }
+  const T = tables.TASK, P = tables.TASKPRED;
+  if (!T) throw new Error('Arquivo XER sem tabela TASK.');
+  const memo = {};
+  if (tables.TASKMEMO) tables.TASKMEMO.rows.forEach(r => {
+    const txt = String(r.task_memo || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    if (txt) memo[r.task_id] = (memo[r.task_id] ? memo[r.task_id] + ' | ' : '') + txt;
+  });
+  const byUid = {};
+  const acts = T.rows.map(r => {
+    const hrsDay = 8;
+    const a = {
+      id: String(r.task_code || r.task_id).trim(),
+      nome: String(r.task_name || '').trim(),
+      preds: [],
+      dur: r.target_drtn_hr_cnt ? Math.round(parseFloat(r.target_drtn_hr_cnt) / hrsDay) : 0,
+      ps: parseDate(r.target_start_date || r.early_start_date),
+      pf: parseDate(r.target_end_date || r.early_end_date),
+      as: parseDate(r.act_start_date), af: parseDate(r.act_end_date),
+      pct: r.phys_complete_pct ? parseFloat(r.phys_complete_pct) : null,
+      area: '', notas: memo[r.task_id] || '',
+      marco: /MILE/i.test(String(r.task_type || ''))
+    };
+    byUid[r.task_id] = a;
+    return a;
+  });
+  if (P) P.rows.forEach(r => {
+    const a = byUid[r.task_id], p = byUid[r.pred_task_id];
+    if (!a || !p) return;
+    const tm = String(r.pred_type || '').match(/(FS|SS|FF|SF)/i);
+    a.preds.push({ id: p.id, type: tm ? tm[1].toUpperCase() : 'FS', lag: r.lag_hr_cnt ? Math.round(parseFloat(r.lag_hr_cnt) / 8) : 0 });
+  });
+  return acts;
+}
+
+function parseFile(file, cb) {
+  const ext = (file.name.split('.').pop() || '').toLowerCase();
+  if (ext === 'mpp') { toast('Formato .MPP (MS Project) ainda não suportado — em breve. Exporte para XLSX pelo próprio Project (Salvar como → Excel).', true); return; }
+  const fr = new FileReader();
+  if (ext === 'xer' || ext === 'csv' || ext === 'txt') {
+    fr.onload = () => { try { cb(ext === 'xer' ? parseXER(fr.result) : parseCSVText(fr.result)); } catch (e) { toast('Erro ao ler ' + file.name + ': ' + e.message, true); } };
+    fr.readAsText(file);
+  } else if (ext === 'xlsx' || ext === 'xls') {
+    if (window.__noXLSX || typeof XLSX === 'undefined') { toast('Biblioteca XLSX não carregou (sem internet?). Use .CSV ou .XER.', true); return; }
+    fr.onload = () => {
+      try {
+        const wb = XLSX.read(fr.result, { type: 'array', cellDates: true });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        cb(rowsToActs(XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: '' })));
+      } catch (e) { toast('Erro ao ler ' + file.name + ': ' + e.message, true); }
+    };
+    fr.readAsArrayBuffer(file);
+  } else toast('Formato não reconhecido: .' + ext, true);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   VALIDAÇÃO DE REDE — loops, órfãs, referências e datas
+   ═══════════════════════════════════════════════════════════════ */
+function validateNet(acts, label) {
+  const errs = [], warns = [];
+  const ids = new Set(), dup = new Set();
+  acts.forEach(a => { if (ids.has(a.id)) dup.add(a.id); ids.add(a.id); });
+  if (dup.size) errs.push(`${label}: IDs duplicados — ${[...dup].join(', ')}`);
+
+  const hasSucc = new Set();
+  acts.forEach(a => a.preds.forEach(p => {
+    if (!ids.has(p.id)) errs.push(`${label}: atividade ${a.id} referencia predecessora inexistente "${p.id}"`);
+    else hasSucc.add(p.id);
+  }));
+
+  // ciclo lógico (DFS iterativo com coloração)
+  const map = Object.fromEntries(acts.map(a => [a.id, a]));
+  const color = {};
+  for (const a of acts) {
+    if (color[a.id]) continue;
+    const stack = [[a.id, 0]]; const path = [];
+    while (stack.length) {
+      const [id, pi] = stack[stack.length - 1];
+      if (pi === 0) { color[id] = 1; path.push(id); }
+      const node = map[id];
+      const preds = node ? node.preds.filter(p => map[p.id]) : [];
+      if (pi < preds.length) {
+        stack[stack.length - 1][1]++;
+        const nid = preds[pi].id;
+        if (color[nid] === 1) {
+          const ix = path.indexOf(nid);
+          errs.push(`${label}: loop lógico detectado — ${path.slice(ix).concat(nid).join(' → ')}`);
+          color[nid] = 2;
+        } else if (!color[nid]) stack.push([nid, 0]);
+      } else { color[id] = 2; path.pop(); stack.pop(); }
+    }
+  }
+
+  const orfas = acts.filter(a => !a.preds.length && !hasSucc.has(a.id) && !a.marco);
+  if (orfas.length > 1) warns.push(`${label}: ${orfas.length} atividade(s) órfã(s) — sem predecessora e sem sucessora: ${orfas.slice(0, 8).map(a => a.id).join(', ')}${orfas.length > 8 ? '…' : ''}`);
+
+  acts.forEach(a => {
+    if (a.ps != null && a.pf != null && a.pf < a.ps) errs.push(`${label}: ${a.id} — término planejado (${fmtD(a.pf)}) anterior ao início (${fmtD(a.ps)})`);
+    if (a.as != null && a.af != null && a.af < a.as) errs.push(`${label}: ${a.id} — término real anterior ao início real`);
+    if (a.ps == null || a.pf == null) warns.push(`${label}: ${a.id} — sem data planejada de ${a.ps == null ? 'início' : 'término'}`);
+    if (a.af != null && a.pct != null && a.pct < 100) warns.push(`${label}: ${a.id} — tem término real mas avanço ${a.pct}% (<100%)`);
+  });
+  return { errs, warns };
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MOTOR CPM — forward/backward pass, folga total, caminho crítico
+   Modelo em dias corridos, ancorado na menor data de início.
+   Relações FS/SS/FF/SF com lag em dias.
+   ═══════════════════════════════════════════════════════════════ */
+function cpm(acts) {
+  const map = Object.fromEntries(acts.map(a => [a.id, a]));
+  const t0 = Math.min(...acts.map(a => Math.min(a.ps != null ? a.ps : Infinity, a.as != null ? a.as : Infinity)));
+  const anchor = isFinite(t0) ? t0 : Date.UTC(2024, 0, 1);
+  // duração efetiva: consumo real quando a atividade está concluída (as-built)
+  const effDur = a => (a.as != null && a.af != null) ? Math.max(0, days(a.as, a.af)) : (a.dur || 0);
+  const succs = {};
+  acts.forEach(a => a.preds.forEach(p => { if (map[p.id]) (succs[p.id] = succs[p.id] || []).push({ id: a.id, type: p.type, lag: p.lag }); }));
+
+  // ordenação topológica (Kahn); ignora arestas de ciclo já sinalizadas na validação
+  const indeg = {}; acts.forEach(a => indeg[a.id] = a.preds.filter(p => map[p.id]).length);
+  const queue = acts.filter(a => !indeg[a.id]).map(a => a.id);
+  const topo = [];
+  while (queue.length) {
+    const id = queue.shift(); topo.push(id);
+    (succs[id] || []).forEach(s => { if (--indeg[s.id] === 0) queue.push(s.id); });
+  }
+  acts.forEach(a => { if (!topo.includes(a.id)) topo.push(a.id); }); // fallback p/ ciclos
+
+  // forward pass
+  const R = {}; // id -> {es,ef,ls,lf,tf}
+  for (const id of topo) {
+    const a = map[id]; const dur = effDur(a);
+    // âncoras: atividade iniciada ancora no início real; sem predecessoras, na data planejada.
+    // Datas planejadas de atividades com lógica NÃO viram restrição — o CPM refaz a rede.
+    let es = a.as != null ? days(anchor, a.as) : (!a.preds.length && a.ps != null ? days(anchor, a.ps) : 0);
+    for (const p of a.preds) {
+      if (a.as != null) break; // trabalho já iniciado não é deslocado pela lógica
+      const pr = R[p.id]; if (!pr) continue;
+      let cand;
+      if (p.type === 'FS') cand = pr.ef + p.lag;
+      else if (p.type === 'SS') cand = pr.es + p.lag;
+      else if (p.type === 'FF') cand = pr.ef + p.lag - dur;
+      else cand = pr.es + p.lag - dur; // SF
+      if (cand > es) es = cand;
+    }
+    R[id] = { es, ef: es + dur };
+  }
+  const projEF = Math.max(...Object.values(R).map(r => r.ef));
+
+  // backward pass
+  for (let i = topo.length - 1; i >= 0; i--) {
+    const id = topo[i]; const a = map[id]; const dur = effDur(a); const r = R[id];
+    let lf = projEF;
+    for (const s of (succs[id] || [])) {
+      const sr = R[s.id]; if (!sr || sr.ls === undefined) continue;
+      let cand;
+      if (s.type === 'FS') cand = sr.ls - s.lag;
+      else if (s.type === 'SS') cand = sr.ls - s.lag + dur;
+      else if (s.type === 'FF') cand = sr.lf - s.lag;
+      else cand = sr.lf - s.lag + dur; // SF
+      if (cand < lf) lf = cand;
+    }
+    r.lf = lf; r.ls = lf - dur; r.tf = r.ls - r.es;
+  }
+  acts.forEach(a => {
+    const r = R[a.id];
+    a.es = anchor + r.es * DAY; a.ef = anchor + r.ef * DAY;
+    a.tf = r.tf; a.crit = r.tf <= 0.01;
+  });
+  return { anchor, projFinish: anchor + projEF * DAY, map, succs };
+}
+
+/* datas efetivas na atualização: real quando existe, senão planejado do update */
+const uStart = a => a.as != null ? a.as : a.ps;
+/* conclusão observada (datas do próprio arquivo — base do método observacional MIP 3.1) */
+function obsFinish(acts, useUpd) {
+  let m = null;
+  for (const a of acts) { const f = useUpd ? (a.af != null ? a.af : a.pf) : a.pf; if (f != null && (m == null || f > m)) m = f; }
+  return m;
+}
+const uFinish = a => a.af != null ? a.af : a.pf;
+</script>
+<script>
+'use strict';
+/* ═══════════════════════════════════════════════════════════════
+   COMPARAÇÃO BASELINE × ATUALIZAÇÃO (MIP 3.1 — observacional)
+   Gera a lista de exceções com causa SUGERIDA pelos sinais dos
+   dados. Nunca inventa causa de negócio.
+   ═══════════════════════════════════════════════════════════════ */
+const CATS = ['clima', 'fornecedor', 'retrabalho', 'projeto/engenharia', 'cliente/contratante', 'mobilização', 'outro'];
+const RESPS = [['contratado', 'Contratado (executor)'], ['contratante', 'Contratante / cliente'], ['terceiro', 'Terceiro / força maior']];
+
+function activeUpd() { return S.activeUpdate >= 0 ? S.updates[S.activeUpdate] : null; }
+
+function computeDeviations() {
+  const bl = S.baseline, up = activeUpd();
+  if (!bl || !up) { S.devs = []; return; }
+  const bMap = Object.fromEntries(bl.acts.map(a => [a.id, a]));
+  const uMap = Object.fromEntries(up.acts.map(a => [a.id, a]));
+  cpm(bl.acts); cpm(up.acts);
+
+  const devs = [];
+  for (const u of up.acts) {
+    const b = bMap[u.id];
+    if (!b) {
+      devs.push({ id: u.id, nome: u.nome, tipo: 'nova', dS: null, dF: null, crit: !!u.crit, tf: u.tf,
+        sinais: [{ k: 'repl', txt: 'Atividade nova na atualização — não existia na baseline (replanejamento / possível fragnet incorporado).' }],
+        janela: [uStart(u), uFinish(u)], u, b: null });
+      continue;
+    }
+    const bs = b.ps, bf = b.pf, us = uStart(u), uf = uFinish(u);
+    if (bs == null || bf == null || us == null || uf == null) continue;
+    const dS = days(bs, us), dF = days(bf, uf);
+    if (Math.abs(dS) < 1 && Math.abs(dF) < 1) continue; // sem desvio relevante
+
+    const sinais = suggestCause(u, b, bMap, uMap, dS, dF);
+    devs.push({ id: u.id, nome: u.nome, tipo: dF > 0 ? 'atraso' : (dF < 0 ? 'adiantamento' : 'deslocamento'),
+      dS, dF, crit: !!u.crit, tf: u.tf, sinais, janela: [Math.min(bf, us), Math.max(bf, uf)], u, b });
+  }
+  for (const b of bl.acts) if (!uMap[b.id]) devs.push({
+    id: b.id, nome: b.nome, tipo: 'removida', dS: null, dF: null, crit: false, tf: null,
+    sinais: [{ k: 'repl', txt: 'Atividade removida na atualização (replanejamento / possível fragnet subtraído).' }],
+    janela: [b.ps, b.pf], u: null, b
+  });
+
+  devs.sort((x, y) => (y.crit - x.crit) || ((y.dF || 0) - (x.dF || 0)));
+  S.devs = devs;
+  // limpa confirmações de itens que deixaram de existir
+  const idset = new Set(devs.map(d => d.id));
+  Object.keys(S.conf).forEach(k => { if (!idset.has(k)) delete S.conf[k]; });
+}
+
+/** Sinais de causa: rede lógica (herança/replanejamento/atraso próprio), notas do arquivo, evidências */
+function suggestCause(u, b, bMap, uMap, dS, dF) {
+  const sinais = [];
+
+  // 1a) replanejamento: mudança de lógica ou duração entre baseline e atualização
+  const bp = predStr(b.preds), up_ = predStr(u.preds);
+  if (bp !== up_) sinais.push({ k: 'repl', txt: `Mudança de lógica entre baseline e atualização (preds: "${bp || '—'}" → "${up_ || '—'}") — replanejamento, não necessariamente atraso "real".` });
+  if (b.dur !== u.dur) sinais.push({ k: 'repl', txt: `Duração alterada na rede: ${b.dur}d (baseline) → ${u.dur}d (atualização) — verificar se é replanejamento ou consumo real.` });
+
+  // 1b) herança lógica: desvio herdado (total ou parcialmente) de predecessora atrasada
+  let herdou = false, maxPdF = 0;
+  for (const p of u.preds) {
+    const pu = uMap[p.id], pb = bMap[p.id];
+    if (!pu || !pb || pb.pf == null || uFinish(pu) == null) continue;
+    const pdF = days(pb.pf, uFinish(pu));
+    if (pdF < 1) continue;
+    maxPdF = Math.max(maxPdF, pdF);
+    let driven = null;
+    if (p.type === 'FS') driven = uFinish(pu) + p.lag * DAY;
+    else if (p.type === 'SS' && uStart(pu) != null) driven = uStart(pu) + p.lag * DAY;
+    const rel = p.type + (p.lag ? (p.lag > 0 ? '+' : '') + p.lag : '');
+    if (driven != null && uStart(u) != null && Math.abs(days(driven, uStart(u))) <= 1) {
+      herdou = true;
+      sinais.push({ k: 'herd', txt: `Desvio herdado por propagação lógica: predecessora ${p.id} (${esc(pu.nome)}) atrasou ${pdF} ${plural(pdF)} e empurra o início desta atividade (relação ${rel}).`, ref: p.id });
+    } else if (driven != null && b.ps != null && driven > b.ps + DAY && dS >= 1) {
+      herdou = true;
+      sinais.push({ k: 'herd', txt: `Desvio parcialmente herdado: predecessora ${p.id} (${esc(pu.nome)}) atrasou ${pdF} ${plural(pdF)} e avança sobre a janela planejada desta atividade (relação ${rel}); o início real deslocou ${sigDays(dS)}. A diferença pode ser folga consumida, calendário ou causa própria adicional.`, ref: p.id });
+    }
+  }
+  // componente próprio além do herdado: término deslocou mais que o pior atraso das predecessoras
+  if (herdou && dF > maxPdF + 1) {
+    sinais.push({ k: 'prop', txt: `Componente de atraso próprio além do herdado: o término deslocou ${sigDays(dF)}, mas a pior predecessora atrasou ${maxPdF} ${plural(maxPdF)} — os ${dF - maxPdF} ${plural(dF - maxPdF)} restantes originaram-se na própria atividade (possível produtividade abaixo do planejado).` });
+  }
+
+  // 1c) atraso próprio: predecessoras no prazo, mas a atividade consumiu mais duração / avançou abaixo da taxa
+  if (!herdou && dF > 0) {
+    const predsOnTime = u.preds.every(p => {
+      const pu = uMap[p.id], pb = bMap[p.id];
+      return !pu || !pb || pb.pf == null || uFinish(pu) == null || days(pb.pf, uFinish(pu)) < 1;
+    });
+    if (predsOnTime) {
+      const durPlan = b.pf != null && b.ps != null ? days(b.ps, b.pf) : b.dur;
+      const durReal = uFinish(u) != null && uStart(u) != null ? days(uStart(u), uFinish(u)) : null;
+      if ((durReal != null && durReal > durPlan) || dS < 1) {
+        sinais.push({ k: 'prop', txt: `Atraso próprio — possível produtividade abaixo do planejado: predecessora(s) no prazo, mas a atividade consumiu ${durReal != null ? durReal + 'd contra ' + durPlan + 'd planejados' : 'mais duração que o planejado'}${u.pct != null && u.pct < 100 ? ' (avanço ' + u.pct + '%)' : ''}. O problema está na execução da própria atividade; falta apenas a causa de negócio.` });
+      } else {
+        sinais.push({ k: 'prop', txt: `Atraso próprio (início deslocado ${sigDays(dS)} sem predecessora atrasada) — verificar mobilização/liberação da frente.` });
+      }
+    }
+  }
+
+  // 2) notas/observações do arquivo
+  if (u.notas || (b && b.notas)) sinais.push({ k: 'nota', txt: `Nota no arquivo: “${esc(u.notas || b.notas)}”`, nota: true });
+
+  // 3) base de evidências — janela do desvio × linha do tempo
+  const win0 = Math.min(b.pf, uStart(u) != null ? uStart(u) : b.pf), win1 = Math.max(b.pf, uFinish(u) != null ? uFinish(u) : b.pf);
+  for (const ev of S.tl) {
+    if (ev.date == null || ev.date < win0 - 3 * DAY || ev.date > win1 + 3 * DAY) continue;
+    const evds = ev.refs.map(r => S.evd.find(e => e.id === r)).filter(Boolean);
+    const mencionada = evds.some(e => matchesActivity(e, u));
+    sinais.push({
+      k: 'evd', refs: ev.refs, tlId: ev.id,
+      txt: mencionada
+        ? `Possível causa: ${esc(ev.texto)} (${fmtD(ev.date)}) [${ev.refs.join(', ')}] — evidência menciona esta atividade/área.`
+        : `Evidência do período coincide (${fmtD(ev.date)}: ${esc(ev.texto)}) [${ev.refs.join(', ')}], mas não menciona a atividade — confirmar relação manualmente.`
+    });
+  }
+
+  if (!sinais.length) sinais.push({ k: 'nid', txt: 'Causa não identificada — requer confirmação do usuário. Nenhum sinal disponível na rede lógica, nas notas do arquivo ou na base de evidências.' });
+  return sinais;
+}
+
+function matchesActivity(evd, act) {
+  const t = ((evd.atv || '') + ' ' + (evd.texto || '') + ' ' + (evd.resumo || '')).toLowerCase();
+  if (!t.trim()) return false;
+  if (evd.atv && (evd.atv.toLowerCase() === act.id.toLowerCase() || act.nome.toLowerCase().includes(evd.atv.toLowerCase()))) return true;
+  if (t.includes(act.id.toLowerCase())) return true;
+  if (act.area && t.includes(act.area.toLowerCase())) return true;
+  // palavras significativas do nome da atividade (≥5 letras)
+  const words = act.nome.toLowerCase().split(/\W+/).filter(w => w.length >= 5);
+  return words.some(w => t.includes(w));
+}
+
+/* ═══════════ UI: LISTA DE EXCEÇÕES ═══════════ */
+const KBADGE = { herd: ['b-herd', 'herança lógica'], repl: ['b-repl', 'replanejamento'], prop: ['b-prop', 'atraso próprio'], nota: ['b-nota', 'nota do arquivo'], evd: ['b-evd', 'evidência'], nid: ['b-nid', 'causa não identificada'] };
+
+function renderExceptions() {
+  const box = $('exc-list');
+  const onlyCrit = $('flt-crit').checked, onlyPend = $('flt-pend').checked;
+  if (!S.baseline || !activeUpd()) { box.innerHTML = '<div class="empty"><div class="big">📂</div>Carregue a baseline e a atualização na aba <b>Projeto &amp; dados</b>.</div>'; updateCounts(); return; }
+  if (!S.devs.length) { box.innerHTML = '<div class="empty"><div class="big">✅</div>Nenhum desvio relevante entre a baseline e a atualização ativa.</div>'; updateCounts(); return; }
+
+  let html = '';
+  for (const d of S.devs) {
+    const c = S.conf[d.id];
+    if (onlyCrit && !d.crit) continue;
+    if (onlyPend && c) continue;
+    const late = (d.dF || 0) > 0;
+    const sug = d.sinais[0];
+    html += `<div class="exc ${d.crit ? 'crit' : ''} ${c ? 'done' : ''}" id="exc-${cssId(d.id)}">
+      <div class="exc-top">
+        <span><span class="aid">${esc(d.id)}</span> — ${esc(d.nome)}</span>
+        <span>
+          ${d.dF != null ? `<span class="days ${late ? 'late' : 'early'}">${sigDays(d.dF)} no término</span>` : `<span class="badge b-repl">${d.tipo}</span>`}
+          ${d.dS != null && d.dS !== d.dF ? `<span class="hint" style="margin-left:8px">(${sigDays(d.dS)} no início)</span>` : ''}
+          <span class="badge ${d.crit ? 'b-crit' : 'b-folga'}" style="margin-left:8px">${d.crit ? 'caminho crítico' : 'folga ' + (d.tf != null ? d.tf + 'd' : '')}</span>
+        </span>
+      </div>
+      <div class="exc-body">
+        ${d.sinais.map(s => `<div style="margin-top:4px"><span class="badge ${KBADGE[s.k][0]}">${KBADGE[s.k][1]}</span> <span class="cause">${s.txt}</span></div>`).join('')}
+        ${c ? `<div style="margin-top:8px"><span class="badge b-conf">confirmado</span> <b>${esc(c.causa)}</b> · categoria: <b>${esc(c.categoria)}</b> · responsável: <b>${esc(respLabel(c.resp))}</b>${c.editado ? ' <span class="hint">(causa editada pelo usuário)</span>' : ''}</div>` : ''}
+      </div>
+      ${c ? `<div class="exc-actions"><button class="btn sm" onclick="undoConfirm('${jsq(d.id)}')">Desfazer confirmação</button></div>`
+        : `<div class="exc-actions">
+            ${sug.k !== 'nid' ? `<button class="btn sm ok" onclick="quickConfirm('${jsq(d.id)}')">✓ Confirmar causa sugerida</button>` : ''}
+            <button class="btn sm" onclick="toggleEdit('${jsq(d.id)}')">✎ Editar / inserir causa real</button>
+          </div>
+          <div class="exc-edit hidden" id="edit-${cssId(d.id)}"></div>`}
+    </div>`;
+  }
+  box.innerHTML = html || '<div class="empty"><div class="big">🎉</div>Nada pendente com os filtros atuais.</div>';
+  updateCounts();
+}
+const cssId = s => s.replace(/[^a-zA-Z0-9_-]/g, '_');
+const jsq = s => s.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+const respLabel = r => (RESPS.find(x => x[0] === r) || ['', r])[1];
+
+/** categoria default a partir do sinal dominante */
+function defaultCat(d) {
+  const k = d.sinais[0].k;
+  if (k === 'evd') {
+    const e = S.evd.find(x => d.sinais[0].refs.includes(x.id));
+    if (e && CATS.includes(e.subcat)) return e.subcat;
+  }
+  if (k === 'repl') return 'projeto/engenharia';
+  return 'outro';
+}
+
+window.quickConfirm = function (id) {
+  const d = S.devs.find(x => x.id === id); if (!d) return;
+  const s = d.sinais[0];
+  openEditForm(d, { causa: s.txt.replace(/<[^>]+>/g, ''), categoria: defaultCat(d), fromSug: s });
+};
+window.toggleEdit = function (id) {
+  const d = S.devs.find(x => x.id === id); if (!d) return;
+  const box = $('edit-' + cssId(id));
+  if (!box.classList.contains('hidden')) { box.classList.add('hidden'); return; }
+  openEditForm(d, { causa: '', categoria: defaultCat(d) });
+};
+
+function openEditForm(d, pre) {
+  const box = $('edit-' + cssId(d.id)); if (!box) return;
+  const refs = (pre.fromSug && pre.fromSug.refs) ? pre.fromSug.refs : (d.sinais.find(s => s.k === 'evd') || {}).refs || [];
+  box.classList.remove('hidden');
+  box.innerHTML = `
+    <div class="row">
+      <div><label>Causa real (texto livre)</label><input type="text" id="ce-causa-${cssId(d.id)}" value="${esc(pre.causa)}" placeholder="Descreva a causa do desvio"></div>
+      <div><label>Categoria</label><select id="ce-cat-${cssId(d.id)}">${CATS.map(c => `<option ${c === pre.categoria ? 'selected' : ''}>${c}</option>`).join('')}</select></div>
+      <div><label>Responsável pela causa</label><select id="ce-resp-${cssId(d.id)}" onchange="previewClass('${jsq(d.id)}')"><option value="">— selecionar —</option>${RESPS.map(r => `<option value="${r[0]}">${r[1]}</option>`).join('')}</select></div>
+    </div>
+    <div class="class-preview" id="ce-prev-${cssId(d.id)}">Selecione o responsável para ver a classificação sugerida (regra de decisão explícita, não caixa-preta).</div>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button class="btn sm ok" onclick="saveConfirm('${jsq(d.id)}', ${pre.fromSug ? 'false' : 'true'}, ${JSON.stringify(refs).replace(/"/g, '&quot;')})">Salvar confirmação</button>
+      <button class="btn sm" onclick="$('edit-${cssId(d.id)}').classList.add('hidden')">Cancelar</button>
+    </div>`;
+  box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+window.previewClass = function (id) {
+  const r = $('ce-resp-' + cssId(id)).value;
+  const p = $('ce-prev-' + cssId(id));
+  p.innerHTML = r ? classRule(r).html : 'Selecione o responsável para ver a classificação sugerida.';
+};
+/** regra de decisão explícita — AACE / prática usual de claims */
+function classRule(resp) {
+  if (resp === 'contratado') return { esc: false, comp: false, html: '<b>Sugestão: NÃO-escusável, não-compensável.</b> Regra: causa sob controle do contratado → o contratado absorve prazo e custo. ' };
+  if (resp === 'contratante') return { esc: true, comp: true, html: '<b>Sugestão: escusável e compensável.</b> Regra: causa atribuível ao contratante → contratado tem direito a prazo e, em regra (conforme cláusula contratual), a custo.' };
+  return { esc: true, comp: false, html: '<b>Sugestão: escusável, NÃO-compensável.</b> Regra: evento de terceiro/força maior, fora do controle de ambas as partes → prazo sim, custo em regra não (risco compartilhado).' };
+}
+
+window.saveConfirm = function (id, editado, refs) {
+  const causa = $('ce-causa-' + cssId(id)).value.trim();
+  const cat = $('ce-cat-' + cssId(id)).value;
+  const resp = $('ce-resp-' + cssId(id)).value;
+  if (!causa) { toast('Descreva a causa antes de salvar.', true); return; }
+  if (!resp) { toast('Atribua o responsável pela causa — a ferramenta não infere responsabilidade contratual automaticamente.', true); return; }
+  const rule = classRule(resp);
+  S.conf[id] = { causa, categoria: cat, resp, esc: rule.esc, comp: rule.comp, editado: !!editado, refs: refs || [], ts: Date.now() };
+  computeConcurrency();
+  save(); renderExceptions(); renderConfirmed(); refreshFlow();
+  toast('Causa confirmada para ' + id + '.');
+};
+window.undoConfirm = function (id) { delete S.conf[id]; computeConcurrency(); save(); renderExceptions(); renderConfirmed(); refreshFlow(); };
+
+/* ═══════════ CONCORRÊNCIA (automática, temporal) ═══════════ */
+function computeConcurrency() {
+  const items = Object.entries(S.conf).map(([id, c]) => ({ id, c, d: S.devs.find(x => x.id === id) })).filter(x => x.d);
+  items.forEach(x => x.c.conc = null);
+  const crits = items.filter(x => x.d.crit && (x.d.dF || 0) > 0);
+  for (let i = 0; i < crits.length; i++) for (let j = i + 1; j < crits.length; j++) {
+    const a = crits[i], b = crits[j];
+    if (a.c.resp === b.c.resp) continue; // mesma responsabilidade não gera concorrência contratual
+    const [a0, a1] = a.d.janela, [b0, b1] = b.d.janela;
+    if (a0 <= b1 && b0 <= a1) {
+      const ov0 = Math.max(a0, b0), ov1 = Math.min(a1, b1);
+      const ovd = Math.max(1, days(ov0, ov1));
+      a.c.conc = (a.c.conc || []).concat([{ com: b.id, dias: ovd, de: fmtD(ov0), ate: fmtD(ov1) }]);
+      b.c.conc = (b.c.conc || []).concat([{ com: a.id, dias: ovd, de: fmtD(ov0), ate: fmtD(ov1) }]);
+    }
+  }
+}
+
+/* ═══════════ TABELA DE CONFIRMADOS ═══════════ */
+function renderConfirmed() {
+  const tbl = $('tbl-conf');
+  const items = Object.entries(S.conf).map(([id, c]) => ({ id, c, d: S.devs.find(x => x.id === id) })).filter(x => x.d)
+    .sort((a, b) => (b.d.dF || 0) - (a.d.dF || 0));
+  if (!items.length) { tbl.innerHTML = '<tr><td class="hint" style="padding:16px">Nenhum evento confirmado ainda. Confirme as exceções acima para habilitar a classificação e o relatório.</td></tr>'; return; }
+  tbl.innerHTML = `<tr><th>Atividade</th><th>Causa confirmada</th><th>Categoria</th><th>Responsável</th><th class="num">Desvio</th><th>Classificação</th><th>Concorrência</th><th></th></tr>` +
+    items.map(({ id, c, d }) => `<tr>
+      <td><b>${esc(id)}</b><br><span class="hint">${esc(d.nome)}</span></td>
+      <td>${esc(c.causa)}${c.refs && c.refs.length ? `<br><span class="badge b-evd">${c.refs.join(', ')}</span>` : ''}</td>
+      <td>${esc(c.categoria)}</td>
+      <td>${esc(respLabel(c.resp))}</td>
+      <td class="num">${d.dF != null ? sigDays(d.dF) : '—'}<br><span class="badge ${d.crit ? 'b-crit' : 'b-folga'}">${d.crit ? 'crítico' : 'folga ' + d.tf + 'd'}</span></td>
+      <td>
+        <label class="hint" style="display:block"><input type="checkbox" ${c.esc ? 'checked' : ''} onchange="ovClass('${jsq(id)}','esc',this.checked)"> escusável</label>
+        <label class="hint" style="display:block"><input type="checkbox" ${c.comp ? 'checked' : ''} onchange="ovClass('${jsq(id)}','comp',this.checked)"> compensável</label>
+      </td>
+      <td>${c.conc && c.conc.length ? c.conc.map(o => `<span class="badge b-conc">concorrente c/ ${esc(o.com)} (${o.dias}d: ${o.de}–${o.ate})</span>`).join('<br>') + '<br><span class="hint">sinalizado p/ análise adicional — sem atribuição automática</span>' : '<span class="hint">não</span>'}</td>
+      <td><button class="btn sm" onclick="undoConfirm('${jsq(id)}')">desfazer</button></td>
+    </tr>`).join('');
+}
+window.ovClass = function (id, k, v) { if (S.conf[id]) { S.conf[id][k] = v; S.conf[id].override = true; save(); toast('Classificação sobrescrita manualmente para ' + id + ' (registrado no relatório).'); } };
+</script>
+<script>
+'use strict';
+/* ═══════════════════════════════════════════════════════════════
+   BASE DE EVIDÊNCIAS (3.2) — upload, extração, tabela de controle,
+   linha do tempo e correlação com o cronograma
+   ═══════════════════════════════════════════════════════════════ */
+const EVD_TYPES = ['e-mail', 'RDO', 'ata', 'foto', 'outro'];
+const SUBCAT_KW = [
+  ['clima', /chuva|chov|temporal|alagament|pluvi|clima|tempestade|vendaval|precipita/i],
+  ['fornecedor', /fornecedor|entrega|material|suprimento|log[ií]stica|frete|atraso de entrega|aço|cimento|concreto usinado/i],
+  ['retrabalho', /retrabalho|refazer|não conformidade|nao conformidade|rnc|defeito|corre[cç][aã]o/i],
+  ['mobilização', /mobiliza|desmobiliza|equipe|efetivo|m[aã]o de obra|greve|paralisa/i],
+  ['cliente/contratante', /contratante|cliente|fiscaliza|libera[cç][aã]o|aprova[cç][aã]o|ordem de servi|projeto revisado|interfer[eê]ncia/i]
+];
+
+function guessTipo(name, text) {
+  const n = name.toLowerCase(), t = (text || '').toLowerCase();
+  if (/\.(eml|msg)$/.test(n) || /^de:|^from:|assunto:|subject:/m.test(t)) return 'e-mail';
+  if (/rdo|di[aá]rio de obra/.test(n + ' ' + t)) return 'RDO';
+  if (/ata|reuni[aã]o/.test(n + ' ' + t)) return 'ata';
+  if (/\.(jpg|jpeg|png|gif|heic)$/.test(n)) return 'foto';
+  return 'outro';
+}
+function guessSubcat(text) {
+  for (const [c, re] of SUBCAT_KW) if (re.test(text || '')) return c;
+  return '';
+}
+/** extrai datas DD/MM/AAAA (e variantes) do texto — retorna a primeira como data do evento */
+function extractDates(text) {
+  const out = [];
+  const re = /(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/g; let m;
+  while ((m = re.exec(text || '')) !== null) {
+    let y = +m[3]; if (y < 100) y += 2000;
+    const d = +m[1], mo = +m[2];
+    if (mo >= 1 && mo <= 12 && d >= 1 && d <= 31 && y > 2000 && y < 2100) out.push(Date.UTC(y, mo - 1, d));
+  }
+  return out;
+}
+/** resumo: 1-2 frases no vocabulário do documento, priorizando frase com palavra-chave */
+function extractSummary(text) {
+  if (!text) return '';
+  const clean = text.replace(/\s+/g, ' ').trim();
+  const sents = clean.split(/(?<=[.!?])\s+/).filter(s => s.length > 15);
+  const kw = sents.find(s => SUBCAT_KW.some(([, re]) => re.test(s)));
+  const pick = kw || sents[0] || clean.slice(0, 180);
+  return pick.length > 240 ? pick.slice(0, 237) + '…' : pick;
+}
+/** atividade/área citada explicitamente no texto (IDs da rede ou área) — não infere */
+function extractAtvRef(text) {
+  if (!text || !S.baseline) return '';
+  const t = text.toLowerCase();
+  for (const a of S.baseline.acts) {
+    if (a.id.length >= 3 && t.includes(a.id.toLowerCase())) return a.id;
+  }
+  const areas = new Set(S.baseline.acts.map(a => a.area).filter(Boolean));
+  for (const ar of areas) if (t.includes(ar.toLowerCase())) return ar;
+  return '';
+}
+
+function addEvidenceFiles(files) {
+  let pending = files.length;
+  for (const f of files) {
+    const ext = (f.name.split('.').pop() || '').toLowerCase();
+    const isText = ['txt', 'eml', 'csv', 'md', 'log'].includes(ext);
+    const small = f.size <= 2 * 1024 * 1024;
+    const fr = new FileReader();
+    fr.onload = () => {
+      const text = isText ? fr.result : '';
+      const dataUrl = !isText && small ? fr.result : (isText && small ? 'data:text/plain;charset=utf-8,' + encodeURIComponent(fr.result) : null);
+      registerEvidence(f.name, text, dataUrl, small);
+      if (--pending === 0) { save(); renderEvidence(); rebuildTimeline(); }
+    };
+    fr.onerror = () => { registerEvidence(f.name, '', null, false); if (--pending === 0) { save(); renderEvidence(); rebuildTimeline(); } };
+    if (isText) fr.readAsText(f); else fr.readAsDataURL(f);
+  }
+  toast(files.length + ' anexo(s) em processamento — revise os campos extraídos na tabela de controle.');
+}
+function registerEvidence(fname, text, dataUrl, small) {
+  S.evdSeq++;
+  const id = 'EVD-' + String(S.evdSeq).padStart(3, '0');
+  const dates = extractDates(text);
+  S.evd.push({
+    id, file: fname,
+    date: dates[0] || null, datas: dates.slice(0, 5),
+    tipo: guessTipo(fname, text), subcat: guessSubcat(text),
+    resumo: extractSummary(text), atv: extractAtvRef(text),
+    texto: text ? text.slice(0, 20000) : '', dataUrl: dataUrl,
+    semArquivo: !dataUrl && !text ? true : false, grande: !small
+  });
+}
+
+function renderEvidence() {
+  const tbl = $('tbl-evd');
+  if (!S.evd.length) { tbl.innerHTML = '<tr><td class="hint" style="padding:16px">Nenhum anexo. Adicione e-mails, RDOs, atas e fotos — eles alimentam a sugestão de causa da análise de desvios.</td></tr>'; updateCounts(); return; }
+  tbl.innerHTML = `<tr><th>ID</th><th>Arquivo</th><th>Data do evento</th><th>Tipo</th><th>Subcategoria</th><th>Resumo (editável)</th><th>Atividade/área</th><th></th></tr>` +
+    S.evd.map((e, i) => `<tr>
+      <td><b>${e.id}</b>${e.dataUrl ? `<br><a href="${e.dataUrl}" download="${esc(e.file)}" class="hint">original ⬇</a>` : (e.grande ? '<br><span class="hint" title="arquivo acima de 2 MB — apenas metadados retidos">só metadados</span>' : '')}</td>
+      <td style="max-width:140px;word-break:break-all">${esc(e.file)}</td>
+      <td><input type="text" value="${e.date != null ? fmtD(e.date) : ''}" placeholder="DD/MM/AAAA" onchange="edEvd(${i},'date',this.value)" style="width:100px">${e.datas && e.datas.length > 1 ? `<br><span class="hint">outras: ${e.datas.slice(1).map(fmtD).join(', ')}</span>` : ''}</td>
+      <td><select onchange="edEvd(${i},'tipo',this.value)">${EVD_TYPES.map(t => `<option ${t === e.tipo ? 'selected' : ''}>${t}</option>`).join('')}</select></td>
+      <td><select onchange="edEvd(${i},'subcat',this.value)"><option value="">—</option>${CATS.map(c => `<option ${c === e.subcat ? 'selected' : ''}>${c}</option>`).join('')}</select></td>
+      <td><input type="text" value="${esc(e.resumo)}" onchange="edEvd(${i},'resumo',this.value)"></td>
+      <td><input type="text" value="${esc(e.atv)}" placeholder="ID ou área" onchange="edEvd(${i},'atv',this.value)" style="width:90px"></td>
+      <td style="white-space:nowrap"><button class="btn sm" onclick="pasteText(${i})" title="colar/editar texto extraído do documento">texto</button> <button class="btn sm danger" onclick="delEvd(${i})">✕</button></td>
+    </tr>`).join('');
+  updateCounts();
+}
+window.edEvd = function (i, k, v) {
+  const e = S.evd[i]; if (!e) return;
+  if (k === 'date') { const d = parseDate(v); if (v && d == null) { toast('Data inválida: use DD/MM/AAAA', true); return; } e.date = d; }
+  else e[k] = v;
+  save(); rebuildTimeline(); recalcAll(false);
+};
+window.delEvd = function (i) {
+  const e = S.evd[i];
+  if (!confirm('Remover ' + e.id + ' (' + e.file + ') da base de evidências?')) return;
+  S.evd.splice(i, 1);
+  S.tl.forEach(t => t.refs = t.refs.filter(r => r !== e.id));
+  S.tl = S.tl.filter(t => t.refs.length);
+  save(); renderEvidence(); rebuildTimeline(); recalcAll(false);
+};
+window.pasteText = function (i) {
+  const e = S.evd[i];
+  const box = $('evd-editor');
+  box.innerHTML = `<div class="exc-edit" style="margin-top:14px">
+    <label>Texto do documento ${e.id} — ${esc(e.file)} (para PDF/foto, cole aqui o texto relevante; a extração roda de novo ao salvar)</label>
+    <textarea id="evd-text-in" rows="6" style="width:100%;border:1px solid var(--border);border-radius:6px;padding:8px">${esc(e.texto)}</textarea>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button class="btn sm ok" onclick="saveEvdText(${i})">Salvar e re-extrair</button>
+      <button class="btn sm" onclick="$('evd-editor').innerHTML=''">Fechar</button>
+    </div></div>`;
+  box.scrollIntoView({ behavior: 'smooth' });
+};
+window.saveEvdText = function (i) {
+  const e = S.evd[i]; const txt = $('evd-text-in').value;
+  e.texto = txt.slice(0, 20000);
+  const dates = extractDates(txt);
+  if (dates.length) { e.date = e.date == null ? dates[0] : e.date; e.datas = dates.slice(0, 5); }
+  if (!e.resumo || confirm('Substituir o resumo atual pelo extraído do novo texto?')) e.resumo = extractSummary(txt);
+  if (!e.subcat) e.subcat = guessSubcat(txt);
+  if (!e.atv) e.atv = extractAtvRef(txt);
+  $('evd-editor').innerHTML = '';
+  save(); renderEvidence(); rebuildTimeline(); recalcAll(false);
+  toast('Texto salvo e campos re-extraídos para ' + e.id + ' — revise na tabela.');
+};
+
+/* ═══════════ LINHA DO TEMPO ═══════════ */
+function rebuildTimeline() {
+  // preserva entradas editadas/mescladas manualmente; regenera as automáticas
+  const manual = S.tl.filter(t => !t.auto);
+  const covered = new Set(manual.flatMap(t => t.refs));
+  const auto = S.evd.filter(e => e.date != null && !covered.has(e.id))
+    .map(e => ({ id: 'TL-' + (++S.tlSeq), date: e.date, texto: e.resumo || ('Documento ' + e.file), refs: [e.id], auto: true }));
+  S.tl = manual.concat(auto).sort((a, b) => a.date - b.date);
+  renderTimeline();
+}
+let tlSel = new Set();
+function renderTimeline() {
+  const box = $('tl-out');
+  if (!S.tl.length) { box.innerHTML = '<div class="empty"><div class="big">🗓️</div>Sem eventos datados ainda — anexos com data extraída (ou informada) aparecem aqui automaticamente.</div>'; return; }
+  box.innerHTML = '<div class="tl">' + S.tl.map((t, i) => `
+    <div class="tl-item ${tlSel.has(i) ? 'sel' : ''}">
+      <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap">
+        <span class="tld"><input type="checkbox" ${tlSel.has(i) ? 'checked' : ''} onchange="tlToggle(${i},this.checked)"> ${fmtD(t.date)}</span>
+        <span><button class="btn sm" onclick="tlEdit(${i})">editar</button> <button class="btn sm danger" onclick="tlDel(${i})">remover</button></span>
+      </div>
+      <div class="tlt" id="tlt-${i}">${esc(t.texto)}</div>
+      <div class="tlrefs">${t.refs.map(r => `<span class="badge b-evd">${r}</span>`).join(' ')}${t.auto ? ' <span class="hint">(extração automática — editável)</span>' : ' <span class="hint">(editado pelo usuário)</span>'}</div>
+    </div>`).join('') + '</div>';
+  $('btn-merge').disabled = tlSel.size < 2;
+}
+window.tlToggle = function (i, on) { on ? tlSel.add(i) : tlSel.delete(i); renderTimeline(); };
+window.tlEdit = function (i) {
+  const t = S.tl[i];
+  const nv = prompt('Texto do evento de ' + fmtD(t.date) + ' [' + t.refs.join(', ') + ']:', t.texto);
+  if (nv == null) return;
+  t.texto = nv.trim() || t.texto; t.auto = false;
+  const nd = prompt('Data do evento (DD/MM/AAAA):', fmtD(t.date));
+  if (nd != null) { const d = parseDate(nd); if (d != null) t.date = d; }
+  S.tl.sort((a, b) => a.date - b.date);
+  save(); renderTimeline(); recalcAll(false);
+};
+window.tlDel = function (i) {
+  if (!confirm('Remover esta entrada da linha do tempo? (O anexo permanece na base; só a entrada sai — útil p/ falso positivo de extração.)')) return;
+  S.tl.splice(i, 1); tlSel.clear(); save(); renderTimeline(); recalcAll(false);
+};
+$('btn-merge').addEventListener('click', () => {
+  const idx = [...tlSel].sort((a, b) => a - b);
+  if (idx.length < 2) return;
+  const items = idx.map(i => S.tl[i]);
+  const merged = {
+    id: 'TL-' + (++S.tlSeq),
+    date: items[0].date,
+    texto: items.map(t => t.texto).filter((v, i, arr) => arr.indexOf(v) === i).join(' / '),
+    refs: [...new Set(items.flatMap(t => t.refs))],
+    auto: false
+  };
+  S.tl = S.tl.filter((_, i) => !tlSel.has(i)); S.tl.push(merged);
+  S.tl.sort((a, b) => a.date - b.date); tlSel.clear();
+  save(); renderTimeline(); recalcAll(false);
+  toast('Eventos mesclados em uma única entrada com ' + merged.refs.length + ' evidências citadas.');
+});
+$('file-evd').addEventListener('change', e => { if (e.target.files.length) addEvidenceFiles([...e.target.files]); e.target.value = ''; });
+</script>
+<script>
+'use strict';
+/* ═══════════════════════════════════════════════════════════════
+   FRAGNET (MIP 3.6/3.8) + TIA (52R-06)
+   ═══════════════════════════════════════════════════════════════ */
+$('fg-mode').addEventListener('change', e => {
+  const add = e.target.value === 'aditivo';
+  $('fg-add-box').classList.toggle('hidden', !add);
+  $('fg-sub-box').classList.toggle('hidden', add);
+});
+
+$('btn-fg-run').addEventListener('click', () => {
+  const up = activeUpd();
+  if (!up) { toast('Carregue a atualização ativa antes de modelar o fragnet.', true); return; }
+  const name = $('fg-name').value.trim() || 'Evento sem nome';
+  const mode = $('fg-mode').value;
+  const mit = $('fg-mit').value.trim();
+
+  // rede base = cópia profunda da atualização ativa (última atualização aceita — passo 2 da TIA)
+  const net0 = up.acts.map(a => ({ ...a, preds: a.preds.map(p => ({ ...p })) }));
+  const r0 = cpm(net0);
+
+  let net1, fragActs = [], removed = [];
+  try {
+    if (mode === 'aditivo') {
+      const lines = $('fg-acts').value.split('\n').map(l => l.trim()).filter(Boolean);
+      if (!lines.length) throw new Error('Informe ao menos uma atividade do fragnet (passo 1 da TIA: atividades mínimas necessárias).');
+      net1 = up.acts.map(a => ({ ...a, preds: a.preds.map(p => ({ ...p })) }));
+      const byId = Object.fromEntries(net1.map(a => [a.id, a]));
+      for (const ln of lines) {
+        const [id, nome, dur, preds, succs] = ln.split(';').map(x => (x || '').trim());
+        if (!id) throw new Error('Linha sem ID: "' + ln + '"');
+        if (byId[id]) throw new Error('ID ' + id + ' já existe na rede.');
+        const fa = { id, nome: nome || id, dur: Math.max(0, parseFloat(dur) || 0), preds: parsePreds(preds), ps: null, pf: null, as: null, af: null, pct: 0, area: '', notas: 'FRAGNET: ' + name, marco: false, frag: true };
+        fa.preds.forEach(p => { if (!byId[p.id]) throw new Error('Predecessora "' + p.id + '" do fragnet não existe na rede.'); });
+        net1.push(fa); byId[id] = fa; fragActs.push(fa);
+        // religa sucessoras: cada sucessora listada passa a depender da atividade do fragnet
+        for (const sp of parsePreds(succs)) {
+          const sa = byId[sp.id];
+          if (!sa) throw new Error('Sucessora "' + sp.id + '" do fragnet não existe na rede.');
+          if (sa.frag) { sa.preds.push({ id, type: sp.type, lag: sp.lag }); continue; }
+          sa.preds = sa.preds.map(p => p); sa.preds.push({ id, type: sp.type, lag: sp.lag });
+        }
+      }
+    } else {
+      const ids = $('fg-remove').value.split(';').map(x => x.trim()).filter(Boolean);
+      if (!ids.length) throw new Error('Informe os IDs a remover no modo subtrativo.');
+      const idset = new Set(ids);
+      net1 = up.acts.filter(a => !idset.has(a.id)).map(a => ({ ...a, preds: a.preds.filter(p => !idset.has(p.id)).map(p => ({ ...p })) }));
+      removed = ids;
+      if (net1.length === up.acts.length) throw new Error('Nenhum dos IDs informados existe na rede.');
+    }
+  } catch (e) { toast(e.message, true); return; }
+
+  const v = validateNet(net1, 'Cenário');
+  if (v.errs.length) { toast('Cenário inválido: ' + v.errs[0], true); return; }
+  const r1 = cpm(net1);
+  const delta = days(r0.projFinish, r1.projFinish);
+
+  const scn = {
+    name, mode, mit, ts: Date.now(),
+    acts: fragActs.map(a => ({ id: a.id, nome: a.nome, dur: a.dur, preds: predStr(a.preds) })),
+    removed,
+    finish0: r0.projFinish, finish1: r1.projFinish, delta,
+    critIds: net1.filter(a => a.crit).map(a => a.id),
+    modoAnalise: S.mode === 'pros' ? 'TIA prospectiva (52R-06)' : (mode === 'aditivo' ? 'Fragnet aditivo modelado (MIP 3.6)' : 'Fragnet subtrativo / but-for (MIP 3.8)'),
+    net1preview: net1.map(a => ({ id: a.id, es: a.es, ef: a.ef, crit: a.crit, frag: !!a.frag }))
+  };
+  S.frags.push(scn);
+  save(); renderFragnets(); renderGantt(); renderKPIs();
+  // marca os passos formais como concluídos
+  document.querySelectorAll('.tia-step').forEach(el => el.classList.add('done'));
+  const late = delta > 0;
+  $('fg-result').innerHTML = `<div class="frag-result ${late ? 'late' : 'zero'}">
+    Variação na data de conclusão: <b>${sigDays(delta)}</b><br>
+    <span style="font-size:.8rem;font-weight:400">Sem fragnet: ${fmtD(r0.projFinish)} → Com fragnet: ${fmtD(r1.projFinish)} · método: ${scn.modoAnalise}${mit ? ' · mitigação registrada' : ''}</span>
+    ${delta === 0 && mode === 'aditivo' ? '<br><span style="font-size:.76rem;font-weight:400">Nota metodológica: atividades já iniciadas/concluídas não são deslocadas (as datas reais são preservadas, conforme TIA). Um fragnet ligado apenas a trabalho já executado, ou absorvido por folga, resulta em impacto zero — insira-o sobre trabalho remanescente ou verifique a folga disponível no trecho.</span>' : ''}
+  </div>`;
+  toast('CPM recalculado. Impacto isolado do evento "' + name + '": ' + sigDays(delta) + ' na conclusão.');
+});
+
+function renderFragnets() {
+  const tbl = $('tbl-frag');
+  if (!S.frags.length) { tbl.innerHTML = '<tr><td class="hint" style="padding:16px">Nenhum cenário fragnet calculado.</td></tr>'; renderConcOut(); return; }
+  tbl.innerHTML = `<tr><th>Evento</th><th>Método</th><th>Atividades</th><th class="num">Conclusão sem</th><th class="num">Conclusão com</th><th class="num">Impacto isolado</th><th>Mitigação</th><th></th></tr>` +
+    S.frags.map((f, i) => `<tr>
+      <td><b>${esc(f.name)}</b></td><td>${esc(f.modoAnalise)}</td>
+      <td>${f.mode === 'aditivo' ? f.acts.map(a => `${esc(a.id)} (${a.dur}d)`).join(', ') : 'removidas: ' + f.removed.join(', ')}</td>
+      <td class="num">${fmtD(f.finish0)}</td><td class="num">${fmtD(f.finish1)}</td>
+      <td class="num"><b style="color:${f.delta > 0 ? 'var(--crit)' : 'var(--good-t)'}">${sigDays(f.delta)}</b></td>
+      <td>${esc(f.mit || '—')}</td>
+      <td><button class="btn sm danger" onclick="delFrag(${i})">✕</button></td>
+    </tr>`).join('');
+  renderConcOut();
+}
+window.delFrag = function (i) { S.frags.splice(i, 1); save(); renderFragnets(); renderGantt(); renderKPIs(); };
+
+/** concorrência entre cenários fragnet: soma dos impactos isolados > impacto líquido → sobreposição */
+function renderConcOut() {
+  const box = $('conc-out');
+  if (S.frags.length < 2) { box.innerHTML = ''; return; }
+  const soma = S.frags.reduce((s, f) => s + Math.max(0, f.delta), 0);
+  const upFin = S.frags.length ? Math.max(...S.frags.map(f => f.finish1)) : null;
+  const base = S.frags[0].finish0;
+  const liq = upFin != null ? days(base, upFin) : null;
+  if (liq != null && soma > liq) {
+    box.innerHTML = `<div class="vitem warn" style="margin-top:12px"><span class="ico">⚠</span><span>
+      A soma dos impactos isolados (${soma} ${plural(soma)}) excede o impacto líquido máximo observado (${liq} ${plural(liq)}) — indício de <b>atrasos concorrentes</b> afetando o caminho crítico no mesmo período. A ferramenta sinaliza a necessidade de análise adicional de concorrência (janelas, dominância) em vez de atribuição automática de responsabilidade.</span></div>`;
+  } else box.innerHTML = '';
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   DASHBOARD — KPIs + GANTT SVG comparativo
+   ═══════════════════════════════════════════════════════════════ */
+function renderKPIs() {
+  const box = $('dash-kpis');
+  const bl = S.baseline, up = activeUpd();
+  if (!bl || !up) { box.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="big">📊</div>Carregue baseline e atualização para ver o dashboard.</div>'; return; }
+  cpm(bl.acts); cpm(up.acts);
+  const blFin = obsFinish(bl.acts, false), upFin = obsFinish(up.acts, true);
+  const netDelay = days(blFin, upFin);
+  const nExc = S.devs.length, nCrit = S.devs.filter(d => d.crit && (d.dF || 0) > 0).length;
+  const nConf = Object.keys(S.conf).length;
+  const nConc = Object.values(S.conf).filter(c => c.conc && c.conc.length).length;
+  box.innerHTML = `
+    <div class="kpi"><div class="lbl">Impacto líquido na conclusão</div><div class="val ${netDelay > 0 ? 'bad' : 'good'}">${sigDays(netDelay)}</div><div class="sub">${fmtD(blFin)} → ${fmtD(upFin)}</div></div>
+    <div class="kpi"><div class="lbl">Desvios identificados</div><div class="val">${nExc}</div><div class="sub">${nCrit} no caminho crítico</div></div>
+    <div class="kpi"><div class="lbl">Causas confirmadas</div><div class="val ${nConf < nExc ? '' : 'good'}">${nConf}<span style="font-size:1rem;color:var(--subtle)">/${nExc}</span></div><div class="sub">confirmação humana obrigatória</div></div>
+    <div class="kpi"><div class="lbl">Atrasos concorrentes</div><div class="val ${nConc ? 'bad' : ''}">${nConc}</div><div class="sub">sinalizados p/ análise adicional</div></div>
+    <div class="kpi"><div class="lbl">Cenários fragnet</div><div class="val">${S.frags.length}</div><div class="sub">${S.frags.length ? 'último: ' + sigDays(S.frags[S.frags.length - 1].delta) : 'nenhum modelado'}</div></div>`;
+}
+
+function renderGantt() {
+  const box = $('gantt-out');
+  const bl = S.baseline, up = activeUpd();
+  if (!bl || !up) { box.innerHTML = '<div class="empty"><div class="big">📊</div>Sem dados.</div>'; return; }
+  cpm(bl.acts); cpm(up.acts);
+  const bMap = Object.fromEntries(bl.acts.map(a => [a.id, a]));
+  const uMap = Object.fromEntries(up.acts.map(a => [a.id, a]));
+  const devIds = new Set(S.devs.map(d => d.id));
+  let rows = bl.acts.slice().sort((a, b) => (a.ps || 0) - (b.ps || 0));
+  if ($('g-only-dev').checked) rows = rows.filter(a => devIds.has(a.id));
+  const lastFrag = S.frags.length ? S.frags[S.frags.length - 1] : null;
+  const fragMap = lastFrag && lastFrag.net1preview ? Object.fromEntries(lastFrag.net1preview.map(a => [a.id, a])) : null;
+
+  const allT = [];
+  rows.forEach(a => { const u = uMap[a.id]; [a.ps, a.pf, u && uStart(u), u && uFinish(u)].forEach(t => t != null && allT.push(t)); });
+  if (lastFrag) allT.push(lastFrag.finish1);
+  if (!allT.length) { box.innerHTML = '<div class="empty">Sem datas para plotar.</div>'; return; }
+  const t0 = Math.min(...allT) - 4 * DAY, t1 = Math.max(...allT) + 6 * DAY;
+
+  const LBL = 210, RH = 30, CW = Math.max(640, Math.min(1400, Math.round((t1 - t0) / DAY) * 6));
+  const W = LBL + CW + 20, H = rows.length * RH + 46;
+  const x = t => LBL + (t - t0) / (t1 - t0) * CW;
+
+  let svg = `<svg width="${W}" height="${H}" font-family="DM Sans,sans-serif" style="display:block">`;
+  // gridlines mensais (recessivas)
+  const d0 = new Date(t0); let gm = Date.UTC(d0.getUTCFullYear(), d0.getUTCMonth() + 1, 1);
+  const MES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+  while (gm < t1) {
+    const gx = x(gm); const gd = new Date(gm);
+    svg += `<line x1="${gx}" y1="34" x2="${gx}" y2="${H - 8}" stroke="#e1e0d9" stroke-width="1"/>`;
+    svg += `<text x="${gx + 4}" y="26" font-size="10" fill="#898781">${MES[gd.getUTCMonth()]}/${String(gd.getUTCFullYear()).slice(2)}</text>`;
+    gm = Date.UTC(gd.getUTCFullYear(), gd.getUTCMonth() + 1, 1);
+  }
+  rows.forEach((a, i) => {
+    const y = 40 + i * RH;
+    const u = uMap[a.id];
+    const crit = u ? u.crit : a.crit;
+    // rótulo direto da linha (relief p/ contraste do verde-água)
+    svg += `<text x="6" y="${y + 12}" font-size="11" fill="${crit ? '#991b1b' : '#111827'}" font-weight="${crit ? '700' : '400'}">${esc((a.id + ' · ' + a.nome).slice(0, 34))}</text>`;
+    if (crit) svg += `<rect x="0" y="${y - 2}" width="3" height="${RH - 6}" fill="#d03b3b"/>`;
+    // barra baseline
+    if (a.ps != null && a.pf != null) {
+      const bw = Math.max(4, x(a.pf) - x(a.ps));
+      svg += `<rect class="gbar" data-i="${i}" data-k="b" x="${x(a.ps)}" y="${y}" width="${bw}" height="8" rx="4" fill="#2a78d6"/>`;
+    }
+    // barra atualização + trecho de atraso
+    if (u && uStart(u) != null && uFinish(u) != null) {
+      const us = uStart(u), uf = uFinish(u);
+      const endOk = Math.min(uf, a.pf != null ? a.pf : uf);
+      const y2 = y + 11;
+      if (endOk > us) svg += `<rect class="gbar" data-i="${i}" data-k="u" x="${x(us)}" y="${y2}" width="${Math.max(4, x(endOk) - x(us))}" height="8" rx="4" fill="#1baf7a" ${crit ? 'stroke="#d03b3b" stroke-width="1.5"' : ''}/>`;
+      if (a.pf != null && uf > a.pf) { // trecho de atraso, com respiro de 2px
+        svg += `<rect class="gbar" data-i="${i}" data-k="d" x="${x(Math.max(us, a.pf)) + 2}" y="${y2}" width="${Math.max(3, x(uf) - x(Math.max(us, a.pf)) - 2)}" height="8" rx="4" fill="#d03b3b"/>`;
+      } else if (endOk <= us) {
+        svg += `<rect class="gbar" data-i="${i}" data-k="u" x="${x(us)}" y="${y2}" width="${Math.max(4, x(uf) - x(us))}" height="8" rx="4" fill="#1baf7a" ${crit ? 'stroke="#d03b3b" stroke-width="1.5"' : ''}/>`;
+      }
+    }
+    // cenário fragnet (terceira barra fina)
+    if (fragMap && fragMap[a.id]) {
+      const fa = fragMap[a.id];
+      if (fa.es != null && fa.ef != null && (fa.frag || days(fa.es, fa.ef) > 0)) {
+        svg += `<rect class="gbar" data-i="${i}" data-k="f" x="${x(fa.es)}" y="${y + 22}" width="${Math.max(3, x(fa.ef) - x(fa.es))}" height="4" rx="2" fill="#4a3aa7" opacity=".85"/>`;
+      }
+    }
+  });
+  // linhas de conclusão (datas observadas dos arquivos)
+  const gBlFin = obsFinish(bl.acts, false), gUpFin = obsFinish(up.acts, true);
+  if (gBlFin != null) svg += `<line x1="${x(gBlFin)}" y1="34" x2="${x(gBlFin)}" y2="${H - 8}" stroke="#2a78d6" stroke-width="1.5" stroke-dasharray="4 3"/>`;
+  if (gUpFin != null) svg += `<line x1="${x(gUpFin)}" y1="34" x2="${x(gUpFin)}" y2="${H - 8}" stroke="#d03b3b" stroke-width="1.5" stroke-dasharray="4 3"/>`;
+  svg += `</svg>`;
+  box.innerHTML = svg;
+
+  // tooltip por marca (camada de hover)
+  const tip = $('gtip');
+  box.querySelectorAll('.gbar').forEach(el => {
+    el.addEventListener('mousemove', ev => {
+      const a = rows[+el.dataset.i]; const u = uMap[a.id]; const d = S.devs.find(x => x.id === a.id);
+      tip.style.display = 'block';
+      tip.style.left = Math.min(window.innerWidth - 330, ev.clientX + 14) + 'px';
+      tip.style.top = (ev.clientY + 14) + 'px';
+      tip.innerHTML = `<b>${esc(a.id)} — ${esc(a.nome)}</b><br>
+        Baseline: ${fmtD(a.ps)} → ${fmtD(a.pf)}<br>
+        ${u ? `Atualização: ${fmtD(uStart(u))} → ${fmtD(uFinish(u))}${u.af != null ? ' (real)' : ' (projetado)'}<br>` : ''}
+        ${d && d.dF != null ? `Desvio no término: <b>${sigDays(d.dF)}</b> · ${d.crit ? 'CAMINHO CRÍTICO' : 'folga ' + d.tf + 'd'}` : (u && u.crit ? 'Caminho crítico' : 'Sem desvio relevante')}`;
+    });
+    el.addEventListener('mouseleave', () => tip.style.display = 'none');
+  });
+}
+$('g-only-dev').addEventListener('change', renderGantt);
+
+function renderDashEvents() {
+  const tbl = $('tbl-dash-ev');
+  const items = Object.entries(S.conf).map(([id, c]) => ({ id, c, d: S.devs.find(x => x.id === id) })).filter(x => x.d);
+  if (!items.length) { tbl.innerHTML = '<tr><td class="hint" style="padding:16px">Nenhum evento confirmado — confirme causas na aba Análise de desvios.</td></tr>'; return; }
+  tbl.innerHTML = `<tr><th>Atividade</th><th>Causa</th><th class="num">Impacto (dias)</th><th>Crítico</th><th>Classificação</th></tr>` +
+    items.map(({ id, c, d }) => `<tr><td><b>${esc(id)}</b> ${esc(d.nome)}</td><td>${esc(c.causa)}</td>
+      <td class="num">${d.dF != null ? sigDays(d.dF) : '—'}</td><td>${d.crit ? '<span class="badge b-crit">sim</span>' : 'não'}</td>
+      <td>${c.esc ? '<span class="badge b-esc">escusável</span>' : '<span class="badge b-nesc">não-escusável</span>'} ${c.comp ? '<span class="badge b-comp">compensável</span>' : '<span class="badge b-ncomp">não-compensável</span>'} ${c.conc && c.conc.length ? '<span class="badge b-conc">concorrente</span>' : ''}</td></tr>`).join('');
+}
+</script>
+<script>
+'use strict';
+/* ═══════════════════════════════════════════════════════════════
+   RELATÓRIO FORENSE — gerado dos dados calculados + confirmados
+   ═══════════════════════════════════════════════════════════════ */
+function buildReport() {
+  const rep = $('rep');
+  const bl = S.baseline, up = activeUpd();
+  if (!bl || !up) { rep.innerHTML = '<div class="empty"><div class="big">📄</div>Carregue baseline e atualização; confirme as causas na aba Análise para gerar o relatório.</div>'; return; }
+  cpm(bl.acts); cpm(up.acts);
+  const blFin = obsFinish(bl.acts, false), upFin = obsFinish(up.acts, true);
+  const netDelay = days(blFin, upFin);
+  const items = Object.entries(S.conf).map(([id, c]) => ({ id, c, d: S.devs.find(x => x.id === id) })).filter(x => x.d)
+    .sort((a, b) => (b.d.dF || 0) - (a.d.dF || 0));
+  const pend = S.devs.length - items.length;
+  const usaTIA = S.frags.some(f => /TIA/.test(f.modoAnalise));
+  const usaFrag = S.frags.length > 0;
+  const hoje = fmtD(Date.now());
+  const nCritConf = items.filter(x => x.d.crit && (x.d.dF || 0) > 0);
+  const concPairs = items.filter(x => x.c.conc && x.c.conc.length);
+  const respSum = {};
+  nCritConf.forEach(({ c, d }) => { respSum[c.resp] = (respSum[c.resp] || 0) + Math.max(0, d.dF || 0); });
+
+  let h = `
+  <div class="cover">
+    <div class="rlogo">Relatório de Análise Forense de Cronograma</div>
+    <h1>${esc(S.projectName || 'Projeto sem nome')}</h1>
+    <p>Baseline: <b>${esc(bl.name)}</b> · Atualização analisada: <b>${esc(up.name)}</b></p>
+    <p class="hint">Emitido em ${hoje} · Metodologia AACE International RP 29R-03${usaTIA ? ' e RP 52R-06' : ''}</p>
+  </div>
+
+  <h2>1 · Sumário executivo</h2>
+  <div class="exec">
+    <p>O término do projeto, previsto na linha de base para <b>${fmtD(blFin)}</b>, está ${netDelay > 0 ? 'projetado/realizado' : 'apurado'} para <b>${fmtD(upFin)}</b> na atualização analisada — um impacto líquido de <b>${sigDays(netDelay)}</b> na data de conclusão.</p>
+    <p>Foram identificados <b>${S.devs.length}</b> desvios entre a baseline e a atualização, dos quais <b>${items.length}</b> tiveram a causa confirmada pelo analista${pend > 0 ? ` (<b>${pend}</b> permanecem pendentes de confirmação e NÃO integram a quantificação abaixo)` : ''}. ${nCritConf.length ? `<b>${nCritConf.length}</b> evento(s) confirmado(s) incidem sobre o caminho crítico.` : 'Nenhum evento confirmado incide sobre o caminho crítico.'}</p>
+    ${Object.keys(respSum).length ? `<p>Distribuição indicativa dos dias de desvio em atividades críticas confirmadas, por responsável atribuído pelo analista: ${Object.entries(respSum).map(([r, v]) => `<b>${esc(respLabel(r))}: ${v} ${plural(v)}</b>`).join(' · ')}.${concPairs.length ? ` Há <b>${concPairs.length}</b> evento(s) com concorrência temporal sinalizada — a repartição final entre as partes requer análise adicional (seção 5).` : ''}</p>` : ''}
+    <p class="hint">Valores em dias corridos. Responsabilidades indicadas foram atribuídas pelo analista e sugerem classificação conforme regra explícita da seção 2 — sujeitas a validação jurídica (ver Disclaimer).</p>
+  </div>
+
+  <h2>2 · Metodologia</h2>
+  <p>Técnica principal: <b>análise observacional as-planned vs as-built</b> (AACE RP 29R-03, MIP 3.1), comparando a rede lógica e as datas da linha de base com as datas reais/projetadas da atualização. Escolhida por ser a técnica adequada quando há baseline aprovada e atualização com avanço real registrado, e por preservar a auditabilidade: cada desvio é rastreado à atividade de origem sem remodelagem da rede.</p>
+  ${usaFrag ? `<p>Complementarmente, aplicou-se <b>modelagem por fragnet</b> (${[...new Set(S.frags.map(f => f.modoAnalise))].join('; ')}) para quantificar isoladamente eventos específicos: inserção (ou remoção) do subconjunto mínimo de atividades do evento na última atualização aceita, recálculo CPM (forward/backward pass) e apuração da variação na data de conclusão${usaTIA ? ', seguindo os cinco passos formais da TIA (RP 52R-06)' : ''}.</p>` : ''}
+  <p>Regra de classificação aplicada após atribuição humana do responsável pela causa: causa sob controle do contratado → não-escusável; causa atribuível ao contratante → escusável e, em regra, compensável; terceiro/força maior → escusável não-compensável. Concorrência temporal é calculada automaticamente pela sobreposição de janelas de desvio de responsáveis distintos no caminho crítico, e apenas <b>sinalizada</b> — nunca repartida automaticamente.</p>
+
+  <h2>3 · Base de dados</h2>
+  <table><tr><th>Papel</th><th>Arquivo</th><th>Atividades</th><th>Conclusão (datas do arquivo)</th></tr>
+  <tr><td>Baseline (LB)</td><td>${esc(bl.name)}</td><td class="num">${bl.acts.length}</td><td>${fmtD(blFin)}</td></tr>
+  ${S.updates.map((u, i) => `<tr><td>Atualização ${i + 1}${i === S.activeUpdate ? ' (analisada)' : ''}</td><td>${esc(u.name)}</td><td class="num">${u.acts.length}</td><td>${i === S.activeUpdate ? fmtD(upFin) : '—'}</td></tr>`).join('')}
+  </table>
+  <p class="hint">Limitações e ressalvas: cálculo em dias corridos (calendários de trabalho do arquivo de origem não são reproduzidos nesta versão); datas reais dependem da qualidade do apontamento em campo; ${pend > 0 ? pend + ' desvio(s) sem causa confirmada foram excluídos da quantificação; ' : ''}a rede foi validada contra loops lógicos, referências inexistentes e datas inconsistentes antes do cálculo.</p>
+  ${S.evd.length ? `<p>Base documental: <b>${S.evd.length}</b> evidência(s) catalogada(s) (${EVD_TYPES.map(t => { const n = S.evd.filter(e => e.tipo === t).length; return n ? n + ' ' + t : null; }).filter(Boolean).join(', ')}), listadas no Anexo B com rastreabilidade ao documento original.</p>` : ''}
+
+  <h2 class="pagebreak">4 · Análise técnica — evento por evento</h2>`;
+
+  if (!items.length) h += '<p class="hint">Nenhum evento com causa confirmada. Confirme as exceções na aba "Análise de desvios" para popular esta seção.</p>';
+  items.forEach(({ id, c, d }, ix) => {
+    const abs = d.crit ? 'propagou até a data de conclusão (atividade no caminho crítico da atualização)' : `foi absorvido por folga — folga total remanescente de ${d.tf} ${plural(d.tf || 0)}, sem propagação à conclusão`;
+    h += `<h3>4.${ix + 1} — <a class="actref" href="#" onclick="gotoAct('${jsq(id)}');return false">${esc(id)}</a> · ${esc(d.nome)}</h3>
+    <p>${esc(c.causa)}${c.editado ? ' <span class="hint">(causa inserida/editada pelo analista)</span>' : ' <span class="hint">(causa sugerida pelo sistema e confirmada pelo analista)</span>'}${c.override ? ' <span class="hint">(classificação sobrescrita manualmente)</span>' : ''}</p>
+    <div class="trace">
+      <div><b>O quê:</b> atividade ${esc(id)} — ${esc(d.nome)}${d.b && d.b.area ? ' (área: ' + esc(d.b.area) + ')' : ''}</div>
+      <div><b>Onde:</b> ${abs}</div>
+      <div><b>Quando:</b> término planejado ${d.b ? fmtD(d.b.pf) : '—'} vs real/projetado ${d.u ? fmtD(uFinish(d.u)) : '—'} · janela do desvio ${fmtD(d.janela[0])} a ${fmtD(d.janela[1])}</div>
+      <div><b>Quanto:</b> ${d.dF != null ? sigDays(d.dF) + ' no término da atividade (impacto isolado)' : d.tipo}; impacto líquido no projeto apurado globalmente em ${sigDays(netDelay)}${c.conc && c.conc.length ? ' — parcela sujeita a concorrência (ver 5)' : d.crit ? '' : ' — este evento não contribui (absorvido por folga)'}</div>
+      <div><b>Como:</b> observacional as-planned vs as-built (MIP 3.1); desvio = data da atualização − data da baseline; criticidade e folga por CPM da atualização</div>
+      <div><b>Categoria/responsável:</b> ${esc(c.categoria)} · ${esc(respLabel(c.resp))} → ${c.esc ? 'escusável' : 'não-escusável'}, ${c.comp ? 'compensável' : 'não-compensável'}${c.conc && c.conc.length ? ', concorrente' : ''}</div>
+      ${c.refs && c.refs.length ? `<div><b>Evidência:</b> ${c.refs.map(r => { const e = S.evd.find(x => x.id === r); return e ? `<a class="evref" ${e.dataUrl ? `href="${e.dataUrl}" download="${esc(e.file)}"` : 'href="#" onclick="return false"'}>[${r}]</a> ${esc(e.file)}${e.date != null ? ' (' + fmtD(e.date) + ')' : ''}` : '[' + r + ']'; }).join(' · ')}</div>` : ''}
+      ${d.sinais.filter(s => s.k === 'nota').map(s => `<div><b>Nota do arquivo:</b> ${s.txt.replace(/^Nota no arquivo: /, '')}</div>`).join('')}
+    </div>`;
+  });
+
+  h += `<h2>5 · Quantificação consolidada</h2>
+  <table><tr><th>Atividade</th><th>Causa confirmada</th><th>Categoria</th><th>Responsável</th><th class="num">Dias</th><th>Crítico</th><th>Classificação</th><th>Concorrência</th></tr>
+  ${items.map(({ id, c, d }) => `<tr><td>${esc(id)}</td><td>${esc(c.causa)}</td><td>${esc(c.categoria)}</td><td>${esc(respLabel(c.resp))}</td><td class="num">${d.dF != null ? sigDays(d.dF) : '—'}</td><td>${d.crit ? 'sim' : 'não'}</td><td>${c.esc ? 'escusável' : 'não-escusável'} / ${c.comp ? 'compensável' : 'não-compensável'}</td><td>${c.conc && c.conc.length ? c.conc.map(o => 'c/ ' + esc(o.com) + ' (' + o.dias + 'd)').join('; ') : '—'}</td></tr>`).join('')}
+  <tr><td colspan="4"><b>Impacto líquido total na conclusão (CPM baseline → CPM atualização)</b></td><td class="num"><b>${sigDays(netDelay)}</b></td><td colspan="3">${concPairs.length ? 'reconciliação de overlaps de concorrência pendente de análise adicional (janelas sinalizadas acima)' : 'sem overlaps de concorrência sinalizados'}</td></tr></table>
+  ${(() => { const somaCrit = nCritConf.reduce((s, x) => s + Math.max(0, x.d.dF || 0), 0); return somaCrit > Math.max(0, netDelay) ? `<p class="hint">Nota de reconciliação: a soma dos desvios isolados em atividades críticas confirmadas (${somaCrit} ${plural(somaCrit)}) excede o impacto líquido (${Math.max(0, netDelay)} ${plural(netDelay)}) — diferença explicada por sobreposição temporal (concorrência) e/ou absorção parcial por folga; o impacto líquido prevalece para fins de prazo.</p>` : ''; })()}
+
+  ${usaFrag ? `<h2>Anexos técnicos — Exhibit F: cenários fragnet</h2>
+  <table><tr><th>Evento</th><th>Método</th><th>Fragnet</th><th class="num">Sem</th><th class="num">Com</th><th class="num">Impacto isolado</th><th>Mitigação registrada</th></tr>
+  ${S.frags.map(f => `<tr><td>${esc(f.name)}</td><td>${esc(f.modoAnalise)}</td><td>${f.mode === 'aditivo' ? f.acts.map(a => esc(a.id) + ' (' + a.dur + 'd; preds: ' + esc(a.preds || '—') + ')').join('<br>') : 'removidas: ' + f.removed.join(', ')}</td><td class="num">${fmtD(f.finish0)}</td><td class="num">${fmtD(f.finish1)}</td><td class="num"><b>${sigDays(f.delta)}</b></td><td>${esc(f.mit || '—')}</td></tr>`).join('')}</table>` : ''}
+
+  <h2>Anexo A — rede lógica (atualização analisada)</h2>
+  <table><tr><th>ID</th><th>Descrição</th><th>Preds</th><th class="num">Dur</th><th>Início LB</th><th>Término LB</th><th>Início atual</th><th>Término atual</th><th class="num">Folga</th><th>Crít.</th></tr>
+  ${up.acts.map(a => { const b = bl.acts.find(x => x.id === a.id); return `<tr><td>${esc(a.id)}</td><td>${esc(a.nome)}</td><td>${esc(predStr(a.preds)) || '—'}</td><td class="num">${a.dur}d</td><td>${b ? fmtD(b.ps) : '—'}</td><td>${b ? fmtD(b.pf) : '—'}</td><td>${fmtD(uStart(a))}</td><td>${fmtD(uFinish(a))}</td><td class="num">${a.tf != null ? a.tf + 'd' : '—'}</td><td>${a.crit ? '●' : ''}</td></tr>`; }).join('')}</table>
+
+  ${S.evd.length ? `<h2>Anexo B — tabela de controle de evidências</h2>
+  <table><tr><th>ID</th><th>Arquivo</th><th>Data</th><th>Tipo</th><th>Subcategoria</th><th>Resumo</th><th>Atividade/área</th></tr>
+  ${S.evd.map(e => `<tr><td>${e.id}${e.dataUrl ? ` <a class="evref" href="${e.dataUrl}" download="${esc(e.file)}">⬇</a>` : ''}</td><td>${esc(e.file)}</td><td>${e.date != null ? fmtD(e.date) : '—'}</td><td>${esc(e.tipo)}</td><td>${esc(e.subcat || '—')}</td><td>${esc(e.resumo)}</td><td>${esc(e.atv || 'não mencionada no documento')}</td></tr>`).join('')}</table>
+  <h3>Linha do tempo de evidências</h3>
+  ${S.tl.map(t => `<p>${fmtD(t.date)} — ${esc(t.texto)} <b>[${t.refs.join(', ')}]</b></p>`).join('') || '<p class="hint">—</p>'}` : ''}
+
+  <h2>Disclaimer</h2>
+  <p class="hint">Este relatório aplica a metodologia técnica das práticas recomendadas AACE International RP 29R-03 (Forensic Schedule Analysis)${usaTIA ? ' e RP 52R-06 (Time Impact Analysis)' : ''}. A atribuição de responsáveis foi realizada pelo analista usuário da ferramenta; a classificação de responsabilidade contratual/jurídica (escusável, compensável, concorrente) aqui apresentada é sugestão metodológica e deve ser validada por advogado/perito qualificado. Este documento não constitui parecer jurídico. Cálculos em dias corridos; rastreabilidade integral disponível na ferramenta (cada evento referencia atividade, janela, método e evidências de origem).</p>`;
+
+  rep.innerHTML = h;
+}
+window.gotoAct = function (id) {
+  showView('analise');
+  $('flt-pend').checked = false; renderExceptions();
+  const el = $('exc-' + cssId(id));
+  if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.style.outline = '2px solid #1d4ed8'; setTimeout(() => el.style.outline = '', 2200); }
+};
+
+/* ═══════════════════════════════════════════════════════════════
+   WIRING — uploads, abas, fluxo, recálculo, exemplo, template
+   ═══════════════════════════════════════════════════════════════ */
+function setupDrop(zone, input, role) {
+  const dz = $(zone);
+  ['dragover', 'dragenter'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('over'); }));
+  ['dragleave', 'drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('over'); }));
+  dz.addEventListener('drop', e => { if (e.dataTransfer.files.length) handleSchedule(e.dataTransfer.files[0], role); });
+  $(input).addEventListener('change', e => { if (e.target.files.length) handleSchedule(e.target.files[0], role); e.target.value = ''; });
+}
+function handleSchedule(file, role) {
+  parseFile(file, acts => {
+    if (role === 'baseline') {
+      S.baseline = { name: file.name, acts };
+      $('dz-baseline').classList.add('loaded'); $('fname-baseline').textContent = file.name + ' · ' + acts.length + ' atividades';
+    } else {
+      S.updates.push({ name: file.name, acts });
+      S.activeUpdate = S.updates.length - 1;
+      $('dz-update').classList.add('loaded'); $('fname-update').textContent = file.name + ' · ' + acts.length + ' atividades';
+    }
+    recalcAll(true); save();
+    toast(file.name + ' carregado (' + acts.length + ' atividades).');
+  });
+}
+setupDrop('dz-baseline', 'file-baseline', 'baseline');
+setupDrop('dz-update', 'file-update', 'update');
+
+function renderUpdList() {
+  const box = $('upd-list');
+  if (!S.updates.length) { box.innerHTML = ''; return; }
+  box.innerHTML = '<div class="section-title" style="border:none;margin:0 0 8px;padding:0">Atualizações do projeto (histórico as-built)</div>' +
+    S.updates.map((u, i) => `<label class="hint" style="display:inline-flex;align-items:center;gap:6px;margin-right:16px">
+      <input type="radio" name="actupd" ${i === S.activeUpdate ? 'checked' : ''} onchange="setActiveUpd(${i})"> ${esc(u.name)} (${u.acts.length} atv)</label>
+      <button class="btn sm danger" onclick="delUpd(${i})" style="margin-right:12px">✕</button>`).join('');
+}
+window.setActiveUpd = function (i) { S.activeUpdate = i; recalcAll(true); save(); };
+window.delUpd = function (i) {
+  if (!confirm('Remover a atualização "' + S.updates[i].name + '"?')) return;
+  S.updates.splice(i, 1);
+  if (S.activeUpdate >= S.updates.length) S.activeUpdate = S.updates.length - 1;
+  recalcAll(true); save();
+};
+
+function runValidation() {
+  const out = $('valida-out');
+  if (!S.baseline && !activeUpd()) { out.innerHTML = '<p class="hint">Carregue os dois cronogramas para validar a rede.</p>'; return true; }
+  let errs = [], warns = [];
+  if (S.baseline) { const v = validateNet(S.baseline.acts, 'Baseline'); errs = errs.concat(v.errs); warns = warns.concat(v.warns); }
+  const up = activeUpd();
+  if (up) { const v = validateNet(up.acts, 'Atualização'); errs = errs.concat(v.errs); warns = warns.concat(v.warns); }
+  if (S.baseline && up) {
+    const bIds = new Set(S.baseline.acts.map(a => a.id)), uIds = new Set(up.acts.map(a => a.id));
+    const comum = [...uIds].filter(x => bIds.has(x)).length;
+    if (comum < Math.min(bIds.size, uIds.size) * 0.5) warns.push(`Apenas ${comum} atividades em comum entre baseline e atualização — confirme que são o mesmo projeto/estrutura de rede.`);
+  }
+  out.innerHTML =
+    (errs.length ? errs.map(e => `<div class="vitem err"><span class="ico">✕</span><span>${esc(e)}</span></div>`).join('') : '') +
+    (warns.length ? warns.map(w => `<div class="vitem warn"><span class="ico">⚠</span><span>${esc(w)}</span></div>`).join('') : '') +
+    (!errs.length ? `<div class="vitem ok"><span class="ico">✓</span><span>Rede consistente — ${errs.length ? '' : 'sem loops lógicos, referências quebradas ou datas invertidas.'} ${warns.length ? warns.length + ' aviso(s) não impeditivos acima.' : ''} Cálculo liberado.</span></div>` : `<div class="vitem err"><span class="ico">✕</span><span><b>${errs.length} erro(s) impeditivo(s)</b> — corrija o arquivo de origem antes de calcular. Os resultados abaixo podem estar incompletos.</span></div>`);
+  return !errs.length;
+}
+
+function renderNet() {
+  const up = activeUpd(); const card = $('card-net');
+  if (!up) { card.style.display = 'none'; return; }
+  card.style.display = '';
+  cpm(up.acts);
+  $('net-meta').textContent = up.name + ' · ' + up.acts.length + ' atividades · ' + up.acts.filter(a => a.crit).length + ' críticas';
+  $('tbl-net').innerHTML = `<tr><th>ID</th><th>Descrição</th><th>Preds</th><th class="num">Dur</th><th>Início</th><th>Término</th><th class="num">%</th><th class="num">Folga</th><th></th></tr>` +
+    up.acts.slice(0, 200).map(a => `<tr><td><b>${esc(a.id)}</b></td><td>${esc(a.nome)}${a.marco ? ' <span class="badge b-folga">marco</span>' : ''}</td><td>${esc(predStr(a.preds)) || '—'}</td><td class="num">${a.dur}d</td><td>${fmtD(uStart(a))}</td><td>${fmtD(uFinish(a))}</td><td class="num">${a.pct != null ? a.pct + '%' : '—'}</td><td class="num">${a.tf}d</td><td>${a.crit ? '<span class="badge b-crit">crítico</span>' : ''}</td></tr>`).join('') +
+    (up.acts.length > 200 ? `<tr><td colspan="9" class="hint">… ${up.acts.length - 200} atividades omitidas na pré-visualização.</td></tr>` : '');
+}
+
+function recalcAll(full) {
+  runValidation();
+  if (S.baseline && activeUpd()) computeDeviations();
+  computeConcurrency();
+  renderUpdList(); renderNet(); renderExceptions(); renderConfirmed();
+  renderKPIs(); renderGantt(); renderDashEvents(); renderFragnets(); renderEvidence(); renderTimeline();
+  refreshFlow(); updateCounts();
+  if (full) buildReport();
+}
+
+function updateCounts() {
+  const pend = S.devs.filter(d => !S.conf[d.id]).length;
+  $('cnt-exc').textContent = pend; $('cnt-exc').classList.toggle('hidden', !pend);
+  $('cnt-evd').textContent = S.evd.length; $('cnt-evd').classList.toggle('hidden', !S.evd.length);
+}
+function refreshFlow() {
+  const st = { upload: !!(S.baseline && activeUpd()), valida: false, modo: false, analise: false, relatorio: false };
+  st.valida = st.upload; st.modo = st.upload;
+  st.analise = S.devs.length > 0 && S.devs.every(d => S.conf[d.id]);
+  st.relatorio = st.analise;
+  let curr = !st.upload ? 'upload' : (S.devs.some(d => !S.conf[d.id]) ? 'analise' : 'relatorio');
+  document.querySelectorAll('#flow .step').forEach(el => {
+    const k = el.dataset.st;
+    el.className = 'step' + (st[k] ? ' done' : '') + (k === curr ? ' curr' : '');
+  });
+}
+
+/* abas */
+function showView(v) {
+  document.querySelectorAll('nav.tabs button').forEach(b => b.classList.toggle('active', b.dataset.view === v));
+  ['projeto', 'analise', 'evidencias', 'fragnet', 'dashboard', 'relatorio'].forEach(k => $('view-' + k).classList.toggle('hidden', k !== v));
+  if (v === 'relatorio') buildReport();
+  if (v === 'dashboard') { renderKPIs(); renderGantt(); renderDashEvents(); }
+}
+document.querySelectorAll('nav.tabs button').forEach(b => b.addEventListener('click', () => showView(b.dataset.view)));
+
+/* modo retro/prospectivo */
+$('mode-retro').addEventListener('click', () => setMode('retro'));
+$('mode-pros').addEventListener('click', () => setMode('pros'));
+function setMode(m) {
+  S.mode = m; save();
+  $('mode-retro').classList.toggle('active', m === 'retro');
+  $('mode-pros').classList.toggle('active', m === 'pros');
+  $('mode-desc').innerHTML = m === 'retro'
+    ? 'Modo retrospectivo: comparação observacional as-planned vs as-built (MIP 3.1) entre a baseline e a atualização ativa. Atrasos já ocorridos são identificados, causa é sugerida pelos sinais disponíveis e <b>confirmada por você</b> antes de qualquer classificação.'
+    : 'Modo prospectivo (52R-06 / TIA): simula o impacto de um evento de atraso <b>ainda em curso</b>. Modele o fragnet na aba <b>Fragnet / TIA</b> — ele será inserido na última atualização aceita, o CPM recalculado e a variação da data de conclusão apurada, com registro de mitigação. Análise apenas de tempo (custo é módulo separado).';
+  if (m === 'pros') toast('Modo prospectivo ativo — use a aba Fragnet / TIA para modelar o evento.');
+}
+
+$('btn-recalc').addEventListener('click', () => { recalcAll(true); toast('Desvios recalculados a partir da rede e da base de evidências.'); });
+$('flt-crit').addEventListener('change', renderExceptions);
+$('flt-pend').addEventListener('change', renderExceptions);
+$('proj-name').addEventListener('change', e => { S.projectName = e.target.value; save(); });
+$('btn-rep-refresh').addEventListener('click', buildReport);
+$('btn-rep-pdf').addEventListener('click', () => { buildReport(); window.print(); });
+$('btn-reset').addEventListener('click', () => {
+  if (!confirm('Limpar TODO o projeto (cronogramas, confirmações, evidências, cenários)? Esta ação não pode ser desfeita.')) return;
+  localStorage.removeItem(LSKEY); location.reload();
+});
+
+/* template XLSX/CSV */
+$('btn-template').addEventListener('click', () => {
+  const hdr = ['ID', 'Descrição', 'Predecessoras', 'Duração', 'Início Planejado', 'Término Planejado', 'Início Real', 'Término Real', '% Avanço', 'Área', 'Notas', 'Marco'];
+  const ex = [['A010', 'Mobilização', '', 10, '01/03/2026', '11/03/2026', '01/03/2026', '11/03/2026', 100, 'Geral', '', ''],
+              ['A020', 'Terraplenagem trecho 1', 'A010', 20, '11/03/2026', '31/03/2026', '', '', 40, 'Trecho 1', '', ''],
+              ['M010', 'Conclusão', 'A020FS', 0, '31/03/2026', '31/03/2026', '', '', 0, 'Geral', '', 'S']];
+  if (!window.__noXLSX && typeof XLSX !== 'undefined') {
+    const ws = XLSX.utils.aoa_to_sheet([hdr, ...ex]);
+    const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Cronograma');
+    XLSX.writeFile(wb, 'modelo-cronograma.xlsx');
+  } else {
+    const csv = [hdr, ...ex].map(r => r.join(';')).join('\n');
+    const a = document.createElement('a');
+    a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv); a.download = 'modelo-cronograma.csv'; a.click();
+  }
+});
+
+/* ═══════════ PROJETO DE EXEMPLO ═══════════ */
+$('btn-demo').addEventListener('click', loadDemo);
+function loadDemo() {
+  const D = (d, m, y) => Date.UTC(y || 2026, m - 1, d);
+  const mk = (id, nome, preds, dur, ps, pf, as, af, pct, area, notas, marco) =>
+    ({ id, nome, preds: parsePreds(preds), dur, ps, pf, as, af, pct, area: area || '', notas: notas || '', marco: !!marco });
+  // Baseline — obra de ponte, mar–jul/2026
+  const bl = [
+    mk('A010', 'Mobilização e canteiro', '', 10, D(2, 3), D(12, 3), null, null, 0, 'Geral'),
+    mk('A020', 'Escavação das fundações M1', 'A010', 12, D(12, 3), D(24, 3), null, null, 0, 'Margem 1'),
+    mk('A030', 'Estacas e blocos M1', 'A020', 18, D(24, 3), D(11, 4), null, null, 0, 'Margem 1'),
+    mk('A040', 'Escavação das fundações M2', 'A010', 12, D(12, 3), D(24, 3), null, null, 0, 'Margem 2'),
+    mk('A050', 'Estacas e blocos M2', 'A040', 16, D(24, 3), D(9, 4), null, null, 0, 'Margem 2'),
+    mk('A060', 'Pilares e travessas M1', 'A030', 15, D(11, 4), D(26, 4), null, null, 0, 'Margem 1'),
+    mk('A070', 'Pilares e travessas M2', 'A050', 15, D(9, 4), D(24, 4), null, null, 0, 'Margem 2'),
+    mk('A080', 'Fabricação de vigas pré-moldadas', 'A010SS+5', 30, D(7, 3), D(6, 4), null, null, 0, 'Usina'),
+    mk('A090', 'Lançamento de vigas', 'A060;A070;A080', 10, D(26, 4), D(6, 5), null, null, 0, 'Superestrutura'),
+    mk('A100', 'Lajes e transversinas', 'A090', 14, D(6, 5), D(20, 5), null, null, 0, 'Superestrutura'),
+    mk('A110', 'Pavimentação e acabamentos', 'A100', 12, D(20, 5), D(1, 6), null, null, 0, 'Superestrutura'),
+    mk('M100', 'Conclusão da obra', 'A110', 0, D(1, 6), D(1, 6), null, null, 0, 'Geral', '', true)
+  ];
+  // Atualização (data de corte ~15/05): chuvas em março atrasam escavação M1 (herdado p/ A030/A060);
+  // A080 atraso próprio (produtividade da usina); A050 replanejada (dur +4); A100 sem causa aparente.
+  const up = [
+    mk('A010', 'Mobilização e canteiro', '', 10, D(2, 3), D(12, 3), D(2, 3), D(12, 3), 100, 'Geral'),
+    mk('A020', 'Escavação das fundações M1', 'A010', 12, D(12, 3), D(24, 3), D(12, 3), D(2, 4), 100, 'Margem 1', 'Frente parada por alagamento na semana de 16/03'),
+    mk('A030', 'Estacas e blocos M1', 'A020', 18, D(24, 3), D(11, 4), D(2, 4), D(20, 4), 100, 'Margem 1'),
+    mk('A040', 'Escavação das fundações M2', 'A010', 12, D(12, 3), D(24, 3), D(12, 3), D(24, 3), 100, 'Margem 2'),
+    mk('A050', 'Estacas e blocos M2', 'A040', 20, D(24, 3), D(13, 4), D(24, 3), D(13, 4), 100, 'Margem 2'),
+    mk('A060', 'Pilares e travessas M1', 'A030', 15, D(11, 4), D(26, 4), D(20, 4), D(5, 5), 100, 'Margem 1'),
+    mk('A070', 'Pilares e travessas M2', 'A050', 15, D(9, 4), D(24, 4), D(13, 4), D(28, 4), 100, 'Margem 2'),
+    mk('A080', 'Fabricação de vigas pré-moldadas', 'A010SS+5', 30, D(7, 3), D(6, 4), D(7, 3), D(16, 4), 100, 'Usina'),
+    mk('A090', 'Lançamento de vigas', 'A060;A070;A080', 10, D(26, 4), D(6, 5), D(5, 5), D(15, 5), 100, 'Superestrutura'),
+    mk('A100', 'Lajes e transversinas', 'A090', 14, D(6, 5), D(29, 5), D(15, 5), null, 45, 'Superestrutura'),
+    mk('A110', 'Pavimentação e acabamentos', 'A100', 12, D(2, 6), D(14, 6), null, null, 0, 'Superestrutura'),
+    mk('M100', 'Conclusão da obra', 'A110', 0, D(14, 6), D(14, 6), null, null, 0, 'Geral', '', true)
+  ];
+  S.baseline = { name: 'exemplo-baseline.xlsx', acts: bl };
+  S.updates = [{ name: 'exemplo-atualizacao-maio.xlsx', acts: up }];
+  S.activeUpdate = 0; S.projectName = 'Ponte sobre o Rio Claro — Lote Único (exemplo)';
+  $('proj-name').value = S.projectName;
+  S.conf = {}; S.frags = []; S.evd = []; S.tl = []; S.evdSeq = 0; S.tlSeq = 0;
+  // evidências de exemplo
+  const evTexts = [
+    ['RDO-047 16-03-2026.txt', 'RDO nº 047 — 16/03/2026. Chuva forte das 7h às 15h, índice 62mm. Frente de escavação das fundações Margem 1 paralisada por alagamento da cava. Bombeamento acionado. Efetivo remanejado para o canteiro.'],
+    ['email-usina 04-04-2026.eml', 'De: usina@premoldados.com | Assunto: Reprogramação de fôrmas | 04/04/2026. Prezados, informamos que o ciclo de concretagem das vigas está em 4 dias por viga contra 3 planejados, em razão de quebra da central de concreto na semana de 23/03. Nova previsão de conclusão do lote: 16/04.'],
+    ['ata-reuniao 10-04-2026.txt', 'Ata de reunião de obra — 10/04/2026. Item 3: contratante solicitou reforço adicional nos blocos da Margem 2 (revisão de projeto R2), com acréscimo de 4 dias na atividade de estacas e blocos M2. Ordem de alteração emitida.']
+  ];
+  evTexts.forEach(([f, t]) => registerEvidence(f, t, 'data:text/plain;charset=utf-8,' + encodeURIComponent(t), true));
+  $('dz-baseline').classList.add('loaded'); $('fname-baseline').textContent = 'exemplo-baseline.xlsx · 12 atividades';
+  $('dz-update').classList.add('loaded'); $('fname-update').textContent = 'exemplo-atualizacao-maio.xlsx · 12 atividades';
+  rebuildTimeline(); recalcAll(true); save();
+  toast('Projeto de exemplo carregado: 12 atividades, 3 evidências. Veja as exceções na aba Análise de desvios.');
+  showView('analise');
+}
+
+/* ═══════════ INIT ═══════════ */
+load();
+$('proj-name').value = S.projectName || '';
+if (S.baseline) { $('dz-baseline').classList.add('loaded'); $('fname-baseline').textContent = S.baseline.name + ' · ' + S.baseline.acts.length + ' atividades'; }
+if (activeUpd()) { $('dz-update').classList.add('loaded'); $('fname-update').textContent = activeUpd().name + ' · ' + activeUpd().acts.length + ' atividades'; }
+setMode(S.mode || 'retro');
+recalcAll(true);
+</script>
+</body>
+</html>
