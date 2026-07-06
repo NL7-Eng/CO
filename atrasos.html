@@ -399,7 +399,7 @@ table.tbl input, table.tbl select { border:1px solid var(--border); border-radiu
       <span class="actions"><button class="btn sm primary" onclick="document.getElementById('file-evd').click()">Adicionar anexos</button>
       <input type="file" id="file-evd" class="hidden" multiple accept=".pdf,.eml,.msg,.txt,.jpg,.jpeg,.png,.doc,.docx"></span>
     </div>
-    <p class="hint">Aceita e-mails (.eml/.txt), PDFs, RDOs, atas e fotos. A extração automática de data/resumo/categoria funciona sobre o <b>texto</b> do documento (arquivos de texto são lidos diretamente; para PDF/foto, cole o texto relevante no campo do anexo). Campos extraídos são sempre editáveis — a extração é uma sugestão, não uma conclusão.</p>
+    <p class="hint"><b>Como funciona:</b> cada anexo vira uma linha na tabela abaixo, com data, tipo, resumo e atividade extraídos automaticamente do texto do documento. Anexos <b>com data</b> entram na linha do tempo e passam a ser sugeridos como causa dos desvios que caem na mesma janela (aba Análise). <b>.eml</b> é decodificado nativamente (assunto, remetente, data de envio e corpo, inclusive base64/HTML); <b>.txt</b> é lido direto; para <b>PDF, foto e .msg</b> (formatos binários) o arquivo fica guardado como original, mas a extração precisa que você cole o texto relevante pelo botão <b>"texto"</b> da linha. Todos os campos são editáveis — a extração é sugestão, não conclusão.</p>
     <div class="tbl-wrap"><table class="tbl" id="tbl-evd"></table></div>
     <div id="evd-editor"></div>
   </div>
@@ -1148,16 +1148,70 @@ function guessSubcat(text) {
   for (const [c, re] of SUBCAT_KW) if (re.test(text || '')) return c;
   return '';
 }
-/** extrai datas DD/MM/AAAA (e variantes) do texto — retorna a primeira como data do evento */
+/** extrai datas do texto: DD/MM/AAAA (e variantes) e "12 de março de 2026" — retorna a primeira como data do evento */
+const MESES_PT = { jan: 0, fev: 1, mar: 2, abr: 3, mai: 4, jun: 5, jul: 6, ago: 7, set: 8, out: 9, nov: 10, dez: 11 };
 function extractDates(text) {
   const out = [];
-  const re = /(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/g; let m;
-  while ((m = re.exec(text || '')) !== null) {
-    let y = +m[3]; if (y < 100) y += 2000;
-    const d = +m[1], mo = +m[2];
-    if (mo >= 1 && mo <= 12 && d >= 1 && d <= 31 && y > 2000 && y < 2100) out.push(Date.UTC(y, mo - 1, d));
+  const push = (d, mo, y) => { if (y < 100) y += 2000; if (mo >= 0 && mo <= 11 && d >= 1 && d <= 31 && y > 2000 && y < 2100) out.push(Date.UTC(y, mo, d)); };
+  let m;
+  const re = /(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/g;
+  while ((m = re.exec(text || '')) !== null) push(+m[1], +m[2] - 1, +m[3]);
+  const rePt = /(\d{1,2})\s+de\s+(janeiro|fevereiro|março|marco|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro)\s+de\s+(\d{4})/gi;
+  while ((m = rePt.exec(text || '')) !== null) push(+m[1], MESES_PT[m[2].slice(0, 3).toLowerCase().replace('ç', 'c')] ?? MESES_PT[m[2].slice(0, 3).toLowerCase()], +m[3]);
+  return [...new Set(out)];
+}
+
+/* ── parser mínimo de e-mail .EML (MIME): cabeçalhos, encoded-words,
+      quoted-printable, base64, multipart (prefere text/plain) ── */
+function utf8fix(bin) { try { return decodeURIComponent(escape(bin)); } catch (e) { return bin; } }
+function decQP(s) { return utf8fix(s.replace(/=\r?\n/g, '').replace(/=([0-9A-Fa-f]{2})/g, (_, h) => String.fromCharCode(parseInt(h, 16)))); }
+function decB64(s) { try { return utf8fix(atob(s.replace(/\s+/g, ''))); } catch (e) { return ''; } }
+function decWords(s) { // Subject: =?UTF-8?B?...?= / =?...?Q?...?=
+  return String(s || '').replace(/=\?[^?]+\?([BQbq])\?([^?]*)\?=/g, (_, enc, data) =>
+    enc.toUpperCase() === 'B' ? decB64(data) : decQP(data.replace(/_/g, ' '))).trim();
+}
+function stripHTML(s) {
+  return s.replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<br\s*\/?>/gi, '\n').replace(/<\/(p|div|tr|li|h\d)>/gi, '\n').replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'")
+    .replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
+}
+function mimeBody(headTxt, body, depth) {
+  const ct = (headTxt.match(/^content-type:\s*([^\r\n;]+)/im) || [])[1] || 'text/plain';
+  const cte = ((headTxt.match(/^content-transfer-encoding:\s*(\S+)/im) || [])[1] || '').toLowerCase();
+  if (/multipart/i.test(ct) && depth < 4) {
+    const bm = headTxt.match(/boundary\s*=\s*"?([^"\r\n;]+)"?/i);
+    if (bm) {
+      const parts = body.split(new RegExp('--' + bm[1].replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(?:--)?')).slice(1, -1);
+      const parsed = parts.map(p => {
+        const ix = p.search(/\r?\n\r?\n/); if (ix < 0) return null;
+        return { head: p.slice(0, ix), out: mimeBody(p.slice(0, ix), p.slice(ix).replace(/^\r?\n\r?\n/, ''), depth + 1) };
+      }).filter(Boolean);
+      const plain = parsed.find(p => /text\/plain/i.test(p.head));
+      const html = parsed.find(p => /text\/html/i.test(p.head));
+      return (plain && plain.out) || (html && html.out) || parsed.map(p => p.out).join('\n');
+    }
   }
-  return out;
+  let txt = body;
+  if (cte === 'quoted-printable') txt = decQP(txt);
+  else if (cte === 'base64') txt = decB64(txt);
+  if (/text\/html/i.test(ct)) txt = stripHTML(txt);
+  return txt.trim();
+}
+/** retorna { text, date, subject } a partir do fonte .eml, ou null se não parecer MIME */
+function parseEML(raw) {
+  if (!/^(from|to|subject|date|received|return-path|mime-version|delivered-to|message-id):/im.test(raw.slice(0, 3000))) return null;
+  const ix = raw.search(/\r?\n\r?\n/);
+  const headTxt = ix > 0 ? raw.slice(0, ix) : raw;
+  const bodyRaw = ix > 0 ? raw.slice(ix).replace(/^\r?\n\r?\n/, '') : '';
+  const unfolded = headTxt.replace(/\r?\n[ \t]+/g, ' ');
+  const get = n => (unfolded.match(new RegExp('^' + n + ':\\s*(.*)$', 'im')) || [])[1] || '';
+  const subject = decWords(get('subject'));
+  const from = decWords(get('from'));
+  const dh = get('date'); let date = null;
+  if (dh) { const d = new Date(dh); if (!isNaN(d)) date = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()); }
+  const body = mimeBody(unfolded, bodyRaw, 0).slice(0, 20000);
+  return { date, subject, text: ('Assunto: ' + subject + '\nDe: ' + from + (date != null ? '\nData do e-mail: ' + fmtD(date) : '') + '\n\n' + body).trim() };
 }
 /** resumo: 1-2 frases no vocabulário do documento, priorizando frase com palavra-chave */
 function extractSummary(text) {
@@ -1182,34 +1236,54 @@ function extractAtvRef(text) {
 
 function addEvidenceFiles(files) {
   let pending = files.length;
+  const added = [];
+  const finish = () => {
+    if (--pending !== 0) return;
+    save(); renderEvidence(); rebuildTimeline();
+    const comData = added.filter(e => e.date != null).length, semData = added.length - comData;
+    const semTexto = added.filter(e => !e.texto).length;
+    let msg = added.length + ' anexo(s) catalogado(s): ' + comData + ' com data extraída (já na linha do tempo)' +
+      (semData ? ', ' + semData + ' SEM data — informe a data na tabela para entrarem na linha do tempo' : '') + '.';
+    if (semTexto) msg += ' ' + semTexto + ' sem texto legível (PDF/imagem/.msg) — use o botão "texto" para colar o conteúdo e rodar a extração.';
+    toast(msg);
+  };
   for (const f of files) {
     const ext = (f.name.split('.').pop() || '').toLowerCase();
     const isText = ['txt', 'eml', 'csv', 'md', 'log'].includes(ext);
     const small = f.size <= 2 * 1024 * 1024;
     const fr = new FileReader();
     fr.onload = () => {
-      const text = isText ? fr.result : '';
+      let text = isText ? fr.result : '';
+      let meta = null;
+      if (ext === 'eml' && text) {
+        const p = parseEML(text);
+        if (p) { meta = p; text = p.text; }
+      }
       const dataUrl = !isText && small ? fr.result : (isText && small ? 'data:text/plain;charset=utf-8,' + encodeURIComponent(fr.result) : null);
-      registerEvidence(f.name, text, dataUrl, small);
-      if (--pending === 0) { save(); renderEvidence(); rebuildTimeline(); }
+      added.push(registerEvidence(f.name, text, dataUrl, small, meta));
+      finish();
     };
-    fr.onerror = () => { registerEvidence(f.name, '', null, false); if (--pending === 0) { save(); renderEvidence(); rebuildTimeline(); } };
+    fr.onerror = () => { added.push(registerEvidence(f.name, '', null, false, null)); finish(); };
     if (isText) fr.readAsText(f); else fr.readAsDataURL(f);
   }
-  toast(files.length + ' anexo(s) em processamento — revise os campos extraídos na tabela de controle.');
 }
-function registerEvidence(fname, text, dataUrl, small) {
+function registerEvidence(fname, text, dataUrl, small, meta) {
   S.evdSeq++;
   const id = 'EVD-' + String(S.evdSeq).padStart(3, '0');
-  const dates = extractDates(text);
-  S.evd.push({
+  const bodyDates = extractDates(text);
+  // e-mail: a data do cabeçalho (envio) é a âncora; datas citadas no corpo ficam como alternativas
+  const datas = [...new Set([...(meta && meta.date != null ? [meta.date] : []), ...bodyDates])];
+  const ev = {
     id, file: fname,
-    date: dates[0] || null, datas: dates.slice(0, 5),
-    tipo: guessTipo(fname, text), subcat: guessSubcat(text),
-    resumo: extractSummary(text), atv: extractAtvRef(text),
+    date: datas[0] != null ? datas[0] : null, datas: datas.slice(0, 5),
+    tipo: meta ? 'e-mail' : guessTipo(fname, text), subcat: guessSubcat(text),
+    resumo: meta && meta.subject ? (meta.subject + (extractSummary(text.split('\n\n').slice(1).join('\n\n')) ? ' — ' + extractSummary(text.split('\n\n').slice(1).join('\n\n')) : '')).slice(0, 240) : extractSummary(text),
+    atv: extractAtvRef(text),
     texto: text ? text.slice(0, 20000) : '', dataUrl: dataUrl,
     semArquivo: !dataUrl && !text ? true : false, grande: !small
-  });
+  };
+  S.evd.push(ev);
+  return ev;
 }
 
 function renderEvidence() {
@@ -1280,8 +1354,10 @@ function rebuildTimeline() {
 let tlSel = new Set();
 function renderTimeline() {
   const box = $('tl-out');
-  if (!S.tl.length) { box.innerHTML = '<div class="empty"><div class="big">🗓️</div>Sem eventos datados ainda — anexos com data extraída (ou informada) aparecem aqui automaticamente.</div>'; return; }
-  box.innerHTML = '<div class="tl">' + S.tl.map((t, i) => `
+  const semData = S.evd.filter(e => e.date == null);
+  const aviso = semData.length ? `<div class="vitem warn"><span class="ico">⚠</span><span><b>${semData.length} evidência(s) sem data</b> (${semData.map(e => e.id).join(', ')}) não aparecem na linha do tempo nem correlacionam com desvios — informe a data do evento na tabela de controle acima${semData.some(e => !e.texto) ? ', ou use o botão "texto" para colar o conteúdo do documento e extrair automaticamente' : ''}.</span></div>` : '';
+  if (!S.tl.length) { box.innerHTML = aviso + '<div class="empty"><div class="big">🗓️</div>Sem eventos datados ainda — anexos com data extraída (ou informada) aparecem aqui automaticamente.</div>'; return; }
+  box.innerHTML = aviso + '<div class="tl">' + S.tl.map((t, i) => `
     <div class="tl-item ${tlSel.has(i) ? 'sel' : ''}">
       <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap">
         <span class="tld"><input type="checkbox" ${tlSel.has(i) ? 'checked' : ''} onchange="tlToggle(${i},this.checked)"> ${fmtD(t.date)}</span>
